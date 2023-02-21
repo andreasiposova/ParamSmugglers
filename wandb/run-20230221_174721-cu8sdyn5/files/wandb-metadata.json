@@ -1,0 +1,77 @@
+{
+    "os": "Linux-5.4.0-139-generic-x86_64-with-Ubuntu-18.04-bionic",
+    "python": "3.6.9",
+    "heartbeatAt": "2023-02-21T16:47:22.566288",
+    "startedAt": "2023-02-21T16:47:21.652180",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/andreasiposova/DEA_thesis",
+        "commit": "3f02e90b2c54c82a9c250d6da7f36911cdc3855a"
+    },
+    "email": "siposova.andrea@gmail.com",
+    "root": "/home/andrea/PycharmProjects/data_exfiltration_tabular",
+    "host": "NBATVIE191",
+    "username": "andrea",
+    "executable": "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 1400.1612499999997,
+        "min": 400.0,
+        "max": 3400.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1400.042,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.224,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.095,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.118,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.076,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.466,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.104,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1400.165,
+            "min": 400.0,
+            "max": 3400.0
+        }
+    ],
+    "disk": {
+        "total": 231.4857521057129,
+        "used": 187.6831169128418
+    },
+    "memory": {
+        "total": 7.618877410888672
+    }
+}

@@ -1,0 +1,347 @@
+2023-02-21 19:11:47,265 INFO    StreamThr :8351 [internal.py:wandb_internal():90] W&B internal server running at pid: 8351, started at: 2023-02-21 19:11:47.264577
+2023-02-21 19:11:47,267 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status
+2023-02-21 19:11:47,270 INFO    WriterThread:8351 [datastore.py:open_for_write():85] open: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/run-sohmpuqo.wandb
+2023-02-21 19:11:47,273 DEBUG   SenderThread:8351 [sender.py:send():336] send: header
+2023-02-21 19:11:47,284 DEBUG   SenderThread:8351 [sender.py:send():336] send: run
+2023-02-21 19:11:47,901 INFO    SenderThread:8351 [dir_watcher.py:__init__():216] watching files in: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files
+2023-02-21 19:11:47,903 INFO    SenderThread:8351 [sender.py:_start_run_threads():1070] run started: sohmpuqo with start time 1677003107.26304
+2023-02-21 19:11:47,903 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:47,904 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:47,913 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: check_version
+2023-02-21 19:11:47,914 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: check_version
+2023-02-21 19:11:48,088 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: run_start
+2023-02-21 19:11:48,094 DEBUG   HandlerThread:8351 [system_info.py:__init__():31] System info init
+2023-02-21 19:11:48,094 DEBUG   HandlerThread:8351 [system_info.py:__init__():46] System info init done
+2023-02-21 19:11:48,094 INFO    HandlerThread:8351 [system_monitor.py:start():151] Starting system monitor
+2023-02-21 19:11:48,094 INFO    SystemMonitor:8351 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-02-21 19:11:48,095 INFO    HandlerThread:8351 [system_monitor.py:probe():172] Collecting system info
+2023-02-21 19:11:48,095 INFO    SystemMonitor:8351 [interfaces.py:start():168] Started cpu
+2023-02-21 19:11:48,097 INFO    SystemMonitor:8351 [interfaces.py:start():168] Started disk
+2023-02-21 19:11:48,099 INFO    SystemMonitor:8351 [interfaces.py:start():168] Started memory
+2023-02-21 19:11:48,100 INFO    SystemMonitor:8351 [interfaces.py:start():168] Started network
+2023-02-21 19:11:48,132 DEBUG   HandlerThread:8351 [system_info.py:probe():195] Probing system
+2023-02-21 19:11:48,134 DEBUG   HandlerThread:8351 [system_info.py:_probe_git():180] Probing git
+2023-02-21 19:11:48,162 DEBUG   HandlerThread:8351 [system_info.py:_probe_git():188] Probing git done
+2023-02-21 19:11:48,163 DEBUG   HandlerThread:8351 [system_info.py:probe():241] Probing system done
+2023-02-21 19:11:48,163 DEBUG   HandlerThread:8351 [system_monitor.py:probe():181] {'os': 'Linux-5.4.0-139-generic-x86_64-with-Ubuntu-18.04-bionic', 'python': '3.6.9', 'heartbeatAt': '2023-02-21T18:11:48.132543', 'startedAt': '2023-02-21T18:11:47.232845', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py', 'codePath': 'train.py', 'git': {'remote': 'https://github.com/andreasiposova/DEA_thesis', 'commit': '3f02e90b2c54c82a9c250d6da7f36911cdc3855a'}, 'email': 'siposova.andrea@gmail.com', 'root': '/home/andrea/PycharmProjects/data_exfiltration_tabular', 'host': 'NBATVIE191', 'username': 'andrea', 'executable': '/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 1300.106125, 'min': 400.0, 'max': 3400.0}, 'cpu_freq_per_core': [{'current': 1300.14, 'min': 400.0, 'max': 3400.0}, {'current': 1300.116, 'min': 400.0, 'max': 3400.0}, {'current': 1300.128, 'min': 400.0, 'max': 3400.0}, {'current': 1300.173, 'min': 400.0, 'max': 3400.0}, {'current': 1300.176, 'min': 400.0, 'max': 3400.0}, {'current': 1300.068, 'min': 400.0, 'max': 3400.0}, {'current': 1300.028, 'min': 400.0, 'max': 3400.0}, {'current': 1300.02, 'min': 400.0, 'max': 3400.0}], 'disk': {'total': 231.4857521057129, 'used': 187.7135353088379}, 'memory': {'total': 7.618877410888672}}
+2023-02-21 19:11:48,164 INFO    HandlerThread:8351 [system_monitor.py:probe():182] Finished collecting system info
+2023-02-21 19:11:48,164 INFO    HandlerThread:8351 [system_monitor.py:probe():185] Publishing system info
+2023-02-21 19:11:48,164 DEBUG   HandlerThread:8351 [system_info.py:_save_pip():52] Saving list of pip packages installed into the current environment
+2023-02-21 19:11:48,164 DEBUG   HandlerThread:8351 [system_info.py:_save_pip():67] Saving pip packages done
+2023-02-21 19:11:48,166 INFO    HandlerThread:8351 [system_monitor.py:probe():187] Finished publishing system info
+2023-02-21 19:11:48,174 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:48,174 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-metadata.json with policy now
+2023-02-21 19:11:48,187 DEBUG   SenderThread:8351 [sender.py:send():336] send: telemetry
+2023-02-21 19:11:48,188 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: stop_status
+2023-02-21 19:11:48,189 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: stop_status
+2023-02-21 19:11:48,857 INFO    wandb-upload_0:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/6uxlf45b-wandb-metadata.json
+2023-02-21 19:11:48,903 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/requirements.txt
+2023-02-21 19:11:48,903 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-metadata.json
+2023-02-21 19:11:48,904 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:11:52,376 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 19:11:52,906 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/output.log
+2023-02-21 19:11:54,906 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/output.log
+2023-02-21 19:11:57,391 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 19:11:57,822 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:57,822 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:11:57,823 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:57,826 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:58,146 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:11:58,146 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:11:58,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media
+2023-02-21 19:11:58,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph
+2023-02-21 19:11:58,443 INFO    wandb-upload_0:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/iyz44z6t-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:11:58,633 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:58,633 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_0_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:11:58,635 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:11:58,868 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:58,868 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:11:58,869 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:58,870 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:59,064 INFO    wandb-upload_1:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/d2vnjjrg-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:11:59,108 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:59,109 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:11:59,109 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_1_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:11:59,111 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:11:59,111 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:59,112 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_1_41cea526c559b762cfa3.png
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_0_41cea526c559b762cfa3.png
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media
+2023-02-21 19:11:59,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph
+2023-02-21 19:11:59,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images
+2023-02-21 19:11:59,312 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:59,313 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:11:59,314 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:59,314 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:59,436 INFO    wandb-upload_3:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/w3y0ni47-media/images/model_graph_0_41cea526c559b762cfa3.png
+2023-02-21 19:11:59,547 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:59,548 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_2_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:11:59,548 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:11:59,549 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:11:59,549 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:59,550 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:59,676 INFO    wandb-upload_4:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/qcxr0dos-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:11:59,746 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:59,746 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:11:59,748 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:59,749 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:11:59,974 INFO    wandb-upload_0:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/yorps3ew-media/images/model_graph_1_41cea526c559b762cfa3.png
+2023-02-21 19:11:59,982 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:11:59,982 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_3_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:11:59,983 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:11:59,984 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:11:59,984 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:11:59,985 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:00,147 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:12:00,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:00,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_2_41cea526c559b762cfa3.png
+2023-02-21 19:12:00,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_3_41cea526c559b762cfa3.png
+2023-02-21 19:12:00,149 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph
+2023-02-21 19:12:00,149 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images
+2023-02-21 19:12:00,230 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:00,231 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:00,232 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:00,233 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:00,285 INFO    wandb-upload_1:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/oztr7jis-media/images/model_graph_2_41cea526c559b762cfa3.png
+2023-02-21 19:12:00,341 INFO    wandb-upload_2:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/xf19ha6g-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:00,468 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:00,469 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:00,469 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_4_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:00,469 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:00,469 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:00,470 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:00,667 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:00,667 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:00,668 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:00,669 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:00,794 INFO    wandb-upload_8:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/k8h0hw7m-media/images/model_graph_0_41cea526c559b762cfa3.png
+2023-02-21 19:12:00,795 INFO    wandb-upload_3:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/fbynf6fn-media/images/model_graph_3_41cea526c559b762cfa3.png
+2023-02-21 19:12:00,901 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:00,901 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:00,901 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_5_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:00,902 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:00,903 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:00,903 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:01,054 INFO    wandb-upload_6:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/auh4z4oo-media/images/model_graph_1_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,104 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:01,105 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:01,105 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:01,106 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:01,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:12:01,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_4_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_5_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:01,148 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph
+2023-02-21 19:12:01,149 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images
+2023-02-21 19:12:01,280 INFO    wandb-upload_4:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/zw6g64pa-media/images/model_graph_4_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,301 INFO    wandb-upload_7:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/34pzh6t3-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:01,336 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:01,336 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_6_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:01,336 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:01,338 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:01,338 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:01,339 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:01,540 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:01,541 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:01,541 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:01,542 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:01,605 INFO    wandb-upload_0:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/ub7qbugg-media/images/model_graph_5_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,767 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:01,768 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:01,768 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_7_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:01,769 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:01,769 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:01,770 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:01,836 INFO    wandb-upload_5:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/qlqdrkj1-media/images/model_graph_2_41cea526c559b762cfa3.png
+2023-02-21 19:12:01,904 INFO    wandb-upload_1:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/tr1rqre3-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:01,973 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:01,974 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:01,975 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:01,978 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,087 INFO    wandb-upload_9:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/ss8k2wne-media/images/model_graph_3_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,135 INFO    wandb-upload_17:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/n29j992r-media/images/model_graph_6_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,153 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:02,153 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:12:02,154 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_6_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,154 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:02,154 INFO    Thread-13 :8351 [dir_watcher.py:_on_file_moved():300] file/dir moved: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json -> /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_7_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,206 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:02,206 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_8_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:02,207 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:02,208 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:02,208 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:02,208 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,414 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:02,414 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/graph/model_summary_ef976337f45d429806f4.graph.json with policy now
+2023-02-21 19:12:02,418 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:02,419 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 19:12:02,422 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,527 INFO    wandb-upload_18:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/oknc3cpx-media/images/model_graph_7_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,565 INFO    wandb-upload_11:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/5x6tqvfs-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:02,677 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:02,678 DEBUG   SenderThread:8351 [sender.py:send():336] send: files
+2023-02-21 19:12:02,679 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file media/images/model_graph_9_41cea526c559b762cfa3.png with policy now
+2023-02-21 19:12:02,680 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:02,680 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:02,681 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,706 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: partial_history
+2023-02-21 19:12:02,708 DEBUG   SenderThread:8351 [sender.py:send():336] send: history
+2023-02-21 19:12:02,708 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 19:12:02,708 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,709 DEBUG   SenderThread:8351 [sender.py:send():336] send: telemetry
+2023-02-21 19:12:02,709 DEBUG   SenderThread:8351 [sender.py:send():336] send: exit
+2023-02-21 19:12:02,709 INFO    SenderThread:8351 [sender.py:send_exit():559] handling exit code: 0
+2023-02-21 19:12:02,709 INFO    SenderThread:8351 [sender.py:send_exit():561] handling runtime: 14
+2023-02-21 19:12:02,709 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,709 INFO    SenderThread:8351 [sender.py:send_exit():567] send defer
+2023-02-21 19:12:02,710 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,710 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 0
+2023-02-21 19:12:02,710 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,710 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 0
+2023-02-21 19:12:02,710 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 1
+2023-02-21 19:12:02,710 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,710 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 1
+2023-02-21 19:12:02,710 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,711 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 1
+2023-02-21 19:12:02,711 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 2
+2023-02-21 19:12:02,711 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,711 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 2
+2023-02-21 19:12:02,711 INFO    HandlerThread:8351 [system_monitor.py:finish():161] Stopping system monitor
+2023-02-21 19:12:02,711 DEBUG   SystemMonitor:8351 [system_monitor.py:_start():130] Starting system metrics aggregation loop
+2023-02-21 19:12:02,711 DEBUG   SystemMonitor:8351 [system_monitor.py:_start():137] Finished system metrics aggregation loop
+2023-02-21 19:12:02,712 DEBUG   SystemMonitor:8351 [system_monitor.py:_start():141] Publishing last batch of metrics
+2023-02-21 19:12:02,712 INFO    HandlerThread:8351 [interfaces.py:finish():175] Joined cpu
+2023-02-21 19:12:02,712 INFO    HandlerThread:8351 [interfaces.py:finish():175] Joined disk
+2023-02-21 19:12:02,712 INFO    HandlerThread:8351 [interfaces.py:finish():175] Joined memory
+2023-02-21 19:12:02,712 INFO    HandlerThread:8351 [interfaces.py:finish():175] Joined network
+2023-02-21 19:12:02,713 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,713 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 2
+2023-02-21 19:12:02,713 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 3
+2023-02-21 19:12:02,713 DEBUG   SenderThread:8351 [sender.py:send():336] send: stats
+2023-02-21 19:12:02,713 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,713 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 3
+2023-02-21 19:12:02,714 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,714 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 3
+2023-02-21 19:12:02,714 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 4
+2023-02-21 19:12:02,714 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,714 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 4
+2023-02-21 19:12:02,714 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,715 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 4
+2023-02-21 19:12:02,715 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 5
+2023-02-21 19:12:02,715 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,715 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 5
+2023-02-21 19:12:02,715 DEBUG   SenderThread:8351 [sender.py:send():336] send: summary
+2023-02-21 19:12:02,716 INFO    SenderThread:8351 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 19:12:02,716 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,716 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 5
+2023-02-21 19:12:02,716 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 6
+2023-02-21 19:12:02,716 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:02,716 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 6
+2023-02-21 19:12:02,716 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:02,716 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 6
+2023-02-21 19:12:02,749 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 19:12:02,903 INFO    wandb-upload_12:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/0snt5eyr-media/images/model_graph_4_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,912 INFO    wandb-upload_21:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/m499ljy0-media/images/model_graph_6_41cea526c559b762cfa3.png
+2023-02-21 19:12:02,921 INFO    wandb-upload_3:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/h5iuxl7f-media/images/model_graph_8_41cea526c559b762cfa3.png
+2023-02-21 19:12:03,025 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 7
+2023-02-21 19:12:03,026 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:03,026 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 7
+2023-02-21 19:12:03,026 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:03,026 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 7
+2023-02-21 19:12:03,225 INFO    wandb-upload_6:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/zqvnhcds-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:03,274 INFO    wandb-upload_13:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/oc3e3phb-media/images/model_graph_5_41cea526c559b762cfa3.png
+2023-02-21 19:12:03,393 INFO    wandb-upload_14:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/k7u4wxgz-media/images/model_graph_9_41cea526c559b762cfa3.png
+2023-02-21 19:12:03,709 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-21 19:12:03,943 INFO    wandb-upload_26:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/olh0h32y-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:04,390 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 8
+2023-02-21 19:12:04,391 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: poll_exit
+2023-02-21 19:12:04,392 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:04,393 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 8
+2023-02-21 19:12:04,393 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:04,394 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 8
+2023-02-21 19:12:04,411 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 9
+2023-02-21 19:12:04,413 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:04,413 DEBUG   SenderThread:8351 [sender.py:send():336] send: artifact
+2023-02-21 19:12:04,414 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 9
+2023-02-21 19:12:04,630 INFO    wandb-upload_27:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/tzadqklg-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:04,710 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-21 19:12:05,360 INFO    wandb-upload_28:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/lonv6130-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:06,029 INFO    wandb-upload_2:8351 [upload_job.py:push():93] Skipped uploading /home/andrea/.local/share/wandb/artifacts/staging/tmppxt7p9h7
+2023-02-21 19:12:06,034 INFO    wandb-upload_29:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/i3010fty-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:06,441 INFO    wandb-upload_31:8351 [upload_job.py:push():96] Uploaded file /home/andrea/.local/share/wandb/artifacts/staging/tmpekfuus6v
+2023-02-21 19:12:06,742 INFO    wandb-upload_32:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/rnw3bgbz-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:09,456 INFO    SenderThread:8351 [sender.py:send_artifact():1417] sent artifact job-https___github.com_andreasiposova_DEA_thesis_train.py - {'id': 'QXJ0aWZhY3Q6Mzc4MDAzNDcz', 'digest': '4c1fa72287423bddbc9fb4464b4b42da', 'state': 'PENDING', 'aliases': [], 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjU0MDc3NzE0', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6Mzc4MDAwMTUy', 'versionIndex': 6}}, 'version': 'latest'}
+2023-02-21 19:12:09,456 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:09,457 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 19:12:09,457 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 9
+2023-02-21 19:12:09,458 INFO    SenderThread:8351 [dir_watcher.py:finish():362] shutting down directory watcher
+2023-02-21 19:12:09,459 INFO    SenderThread:8351 [dir_watcher.py:finish():392] scan: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files
+2023-02-21 19:12:09,459 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/requirements.txt requirements.txt
+2023-02-21 19:12:09,459 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/config.yaml config.yaml
+2023-02-21 19:12:09,469 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/output.log output.log
+2023-02-21 19:12:09,480 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-metadata.json wandb-metadata.json
+2023-02-21 19:12:09,481 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json wandb-summary.json
+2023-02-21 19:12:09,504 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/graph/model_summary_ef976337f45d429806f4.graph.json media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:09,506 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_5_41cea526c559b762cfa3.png media/images/model_graph_5_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,507 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_4_41cea526c559b762cfa3.png media/images/model_graph_4_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,507 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_9_41cea526c559b762cfa3.png media/images/model_graph_9_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,507 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_7_41cea526c559b762cfa3.png media/images/model_graph_7_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,508 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_6_41cea526c559b762cfa3.png media/images/model_graph_6_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,508 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_3_41cea526c559b762cfa3.png media/images/model_graph_3_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,508 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_1_41cea526c559b762cfa3.png media/images/model_graph_1_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,509 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_0_41cea526c559b762cfa3.png media/images/model_graph_0_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,509 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_2_41cea526c559b762cfa3.png media/images/model_graph_2_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,509 INFO    SenderThread:8351 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/media/images/model_graph_8_41cea526c559b762cfa3.png media/images/model_graph_8_41cea526c559b762cfa3.png
+2023-02-21 19:12:09,509 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 10
+2023-02-21 19:12:09,510 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: poll_exit
+2023-02-21 19:12:09,510 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:09,511 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 10
+2023-02-21 19:12:09,513 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:09,513 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 10
+2023-02-21 19:12:09,513 INFO    SenderThread:8351 [file_pusher.py:finish():162] shutting down file pusher
+2023-02-21 19:12:09,562 INFO    wandb-upload_33:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/sl315njp-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:09,712 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: keepalive
+2023-02-21 19:12:10,105 INFO    wandb-upload_37:8351 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/wandb-summary.json
+2023-02-21 19:12:10,108 INFO    wandb-upload_36:8351 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/output.log
+2023-02-21 19:12:10,110 INFO    wandb-upload_35:8351 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/config.yaml
+2023-02-21 19:12:10,110 INFO    wandb-upload_34:8351 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/files/requirements.txt
+2023-02-21 19:12:10,263 INFO    wandb-upload_38:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/vi0fpydb-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:10,905 INFO    wandb-upload_8:8351 [upload_job.py:push():138] Uploaded file /tmp/tmp_xa57srgwandb/tsgnkr6w-media/graph/model_summary_ef976337f45d429806f4.graph.json
+2023-02-21 19:12:11,107 INFO    Thread-12 :8351 [sender.py:transition_state():587] send defer: 11
+2023-02-21 19:12:11,108 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:11,108 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 11
+2023-02-21 19:12:11,109 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:11,109 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 11
+2023-02-21 19:12:11,109 INFO    SenderThread:8351 [file_pusher.py:join():167] waiting for file pusher
+2023-02-21 19:12:11,110 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 12
+2023-02-21 19:12:11,110 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:11,110 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 12
+2023-02-21 19:12:11,111 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:11,112 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 12
+2023-02-21 19:12:11,388 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 13
+2023-02-21 19:12:11,388 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:11,389 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 13
+2023-02-21 19:12:11,390 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:11,390 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 13
+2023-02-21 19:12:11,390 INFO    SenderThread:8351 [sender.py:transition_state():587] send defer: 14
+2023-02-21 19:12:11,392 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 19:12:11,393 DEBUG   SenderThread:8351 [sender.py:send():336] send: final
+2023-02-21 19:12:11,393 INFO    HandlerThread:8351 [handler.py:handle_request_defer():170] handle defer: 14
+2023-02-21 19:12:11,393 DEBUG   SenderThread:8351 [sender.py:send():336] send: footer
+2023-02-21 19:12:11,395 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: defer
+2023-02-21 19:12:11,395 INFO    SenderThread:8351 [sender.py:send_request_defer():583] handle sender defer: 14
+2023-02-21 19:12:11,398 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-21 19:12:11,399 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: server_info
+2023-02-21 19:12:11,400 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: get_summary
+2023-02-21 19:12:11,401 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: sampled_history
+2023-02-21 19:12:11,405 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: poll_exit
+2023-02-21 19:12:11,406 DEBUG   SenderThread:8351 [sender.py:send_request():363] send_request: server_info
+2023-02-21 19:12:11,789 DEBUG   HandlerThread:8351 [handler.py:handle_request():144] handle_request: shutdown
+2023-02-21 19:12:11,789 INFO    HandlerThread:8351 [handler.py:finish():841] shutting down handler
+2023-02-21 19:12:12,405 INFO    WriterThread:8351 [datastore.py:close():299] close: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_191147-sohmpuqo/run-sohmpuqo.wandb
+2023-02-21 19:12:12,787 INFO    SenderThread:8351 [sender.py:finish():1493] shutting down sender
+2023-02-21 19:12:12,787 INFO    SenderThread:8351 [file_pusher.py:finish():162] shutting down file pusher
+2023-02-21 19:12:12,788 INFO    SenderThread:8351 [file_pusher.py:join():167] waiting for file pusher

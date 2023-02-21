@@ -1,0 +1,17 @@
+X_train:  age                  0
+workclass         1836
+education_num        0
+marital_status       0
+occupation        1843
+relationship         0
+race                 0
+sex                  0
+capital_change       0
+hours_per_week       0
+native_country       0
+dtype: int64
+Index(['workclass', 'occupation'], dtype='object')
+Traceback (most recent call last):
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py", line 102, in <module>
+    x=np.arange(epoch + 1), title='Training  Performance Comparison'
+TypeError: line() missing 1 required positional argument: 'table'

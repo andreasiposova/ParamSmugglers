@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 import wandb
+from pdf2image import convert_from_bytes
+from torchviz import make_dot
 
 from data_loading import get_preprocessed_adult_data, label_encode_data, handle_missing_data
 
@@ -26,7 +28,7 @@ X_train = torch.tensor(X_train.values, dtype=torch.float32)
 y_train = torch.tensor(y_train, dtype=torch.float32)
 X_val = torch.tensor(X_val.values, dtype=torch.float32)
 y_val = torch.tensor(y_val, dtype=torch.float32)
-
+class_names = ['<=50K', '>50K'] #{0.0:'<=50K', 1.0: '>50K'}
 # Define the neural network architecture
 class Net(nn.Module):
     def __init__(self):
@@ -40,7 +42,7 @@ class Net(nn.Module):
         x = self.sigmoid(x)
         x = self.fc2(x)
         x = self.sigmoid(x)
-        return x.view(-1)  # add .view() method to reshape the output tensor
+        return x.view(-1) # add .view() method to reshape the output tensor
 
 
 # Create the neural network model and define the optimizer
@@ -75,7 +77,22 @@ for epoch in range(num_epochs):
     y_train_pred = (model(X_train) > 0.5).float()
     y_val_pred = (model(X_val) > 0.5).float()
 
-    class_names = {0:'<=50K', 1: '>50K'}
+    # Log the model graph
+    wandb.summary['model'] = wandb.Graph(model)
+    # Create a visualization of the model graph using torchviz
+    graph = make_dot(model(X_train), params=dict(model.named_parameters()))
+
+
+    # Read in the contents of the PDF file
+    with open('Digraph.gv.pdf', 'rb') as f:
+        pdf_data = f.read()
+
+    # Convert the PDF data to a PIL Image object
+    pdf_image = convert_from_bytes(pdf_data, first_page=1, last_page=1)[0]
+
+    # Convert the PIL Image object to a PNG data buffer
+    png_data = pdf_image.convert('RGB')
+
     train_acc = accuracy_score(y_train, y_train_pred)
     val_acc = accuracy_score(y_val, y_val_pred)
     train_precision = precision_score(y_train, y_train_pred)
@@ -91,26 +108,28 @@ for epoch in range(num_epochs):
                'train_precision': train_precision, 'val_precision': val_precision,
                'train_recall': train_recall, 'val_recall': val_recall,
                'train_f1': train_f1, 'val_f1': val_f1,
-               "train_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_train,
-                                                             preds=y_train_pred,
-                                                             class_names=class_names),
-               "val_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_val,
-                                                             preds=y_val_pred,
-                                                             class_names=class_names),
-               "train_perf_comp": wandb.plot.line( y=[train_acc, train_precision, train_recall, train_f1],
-                                                     x=np.arange(epoch + 1), title='Training  Performance Comparison',
-                                                     legend=['accuracy', 'precision', 'recall', 'f1']),
-               "val_perf_comp": wandb.plot.line(y=[val_acc, val_precision, val_recall, val_f1],
-                                                    x=np.arange(epoch + 1), title='Validation Performance Comparison',
-                                                    legend=['accuracy', 'precision', 'recall', 'f1'])
+               'model_graph': wandb.Image(png_data)
+               #"train_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_train,
+                #                                             preds=y_train_pred.tolist(),
+                 #                                            class_names=class_names),
+               #"val_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_val,
+                #                                             preds=y_val_pred.tolist(),
+                 #                                            class_names=class_names),
+               #"train_perf_comp": wandb.plot.line( y=[train_acc, train_precision, train_recall, train_f1],
+                #                                     x=np.arange(epoch + 1), title='Training  Performance Comparison'
+                 #                                    ),#legend=['accuracy', 'precision', 'recall', 'f1']
+               #"val_perf_comp": wandb.plot.line(y=[val_acc, val_precision, val_recall, val_f1],
+                #                                    x=np.arange(epoch + 1), title='Validation Performance Comparison'
+                 #                                   )#legend=['accuracy', 'precision', 'recall', 'f1']
                },
                step=epoch + 1) # commit=False
 
     #wandb.sklearn.plot_confusion_matrix(train_cm, ['<=50K', '>50K'], title='Train Confusion Matrix')
     #wandb.sklearn.plot_confusion_matrix(val_cm, ['<=50K', '>50K'], title='Validation Confusion Matrix')
-
-
-
+    #data = [[x, y] for (x, y) in zip(x_values, y_values)]
+    #table = wandb.Table(data=data, columns=["x", "y"])
+    #wandb.log({"my_custom_plot_id": wandb.plot.line(table,
+     #                                               "x", "y", title="Custom Y vs X Line Plot")})
 
     # Log the training and validation metrics to WandB
     #wandb.log({'epoch': epoch+1, 'train_loss': loss.item(), 'train_acc': train_acc,
@@ -121,6 +140,9 @@ for epoch in range(num_epochs):
 #    wandb.log({'epoch': epoch+1, 'train_loss': train_loss, 'val_loss': val_loss})
 
 # Evaluate the model on the test set and log the test loss to WandB
+
+
+
 
 X_test = torch.tensor(X_test.values, dtype=torch.float32)
 y_test = torch.tensor(y_test, dtype=torch.float32)
@@ -134,19 +156,19 @@ test_f1 = f1_score(y_test, y_test_pred)
 
 
 # Log the training and validation metrics to WandB
-wandb.log({'test_loss': test_loss.item(), 'test_acc': test_acc,
-           'test_precision': test_precision, 'test_recall': test_recall, 'test_f1': test_f1,
-           "test_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_test,
-                                                             preds=y_test_pred,
-                                                             class_names=class_names),
-           "test_perf_comp": wandb.plot.bar({'test_acc': test_acc, 'test_precision': test_precision,
-                                             'test_recall': test_recall, 'test_f1': test_f1},
-                                            title='Test Metrics', xlabel='Metric', ylabel='Metric Value')
+wandb.log({'test_loss': test_loss, 'test_acc': test_acc,
+           'test_precision': test_precision, 'test_recall': test_recall, 'test_f1': test_f1
+           #"test_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_test,
+            #                                                 preds=y_test_pred.tolist(),
+             #                                                class_names=class_names),
+           #"test_perf_comp": wandb.plot.bar({'test_acc': test_acc, 'test_precision': test_precision,
+            #                                 'test_recall': test_recall, 'test_f1': test_f1},
+             #                               title='Test Metrics', xlabel='Metric', ylabel='Metric Value')
            })
 
 #wandb.sklearn.plot_confusion_matrix(test_cm, ['<=50K', '>50K'], title='Test Confusion Matrix')
 
-
+wandb.join()
 # save the metrics for the run to a csv file
 #metrics_dataframe = run.history()
 #metrics_dataframe.to_csv("metrics.csv")

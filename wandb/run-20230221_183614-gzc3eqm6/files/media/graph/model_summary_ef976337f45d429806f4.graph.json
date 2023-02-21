@@ -1,0 +1,1 @@
+{"format": "Net(\n  (fc1): Linear(in_features=11, out_features=64, bias=True)\n  (fc2): Linear(in_features=64, out_features=1, bias=True)\n  (sigmoid): Sigmoid()\n)", "nodes": [], "edges": []}

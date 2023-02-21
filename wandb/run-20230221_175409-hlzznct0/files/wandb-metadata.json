@@ -1,0 +1,77 @@
+{
+    "os": "Linux-5.4.0-139-generic-x86_64-with-Ubuntu-18.04-bionic",
+    "python": "3.6.9",
+    "heartbeatAt": "2023-02-21T16:54:09.999265",
+    "startedAt": "2023-02-21T16:54:09.106382",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/andreasiposova/DEA_thesis",
+        "commit": "3f02e90b2c54c82a9c250d6da7f36911cdc3855a"
+    },
+    "email": "siposova.andrea@gmail.com",
+    "root": "/home/andrea/PycharmProjects/data_exfiltration_tabular",
+    "host": "NBATVIE191",
+    "username": "andrea",
+    "executable": "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2141.733625,
+        "min": 400.0,
+        "max": 3400.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2375.676,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2077.286,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2237.146,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2117.923,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2090.324,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2164.908,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 1884.635,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2185.971,
+            "min": 400.0,
+            "max": 3400.0
+        }
+    ],
+    "disk": {
+        "total": 231.4857521057129,
+        "used": 187.68502044677734
+    },
+    "memory": {
+        "total": 7.618877410888672
+    }
+}
