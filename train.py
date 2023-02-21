@@ -75,7 +75,7 @@ for epoch in range(num_epochs):
     y_train_pred = (model(X_train) > 0.5).float()
     y_val_pred = (model(X_val) > 0.5).float()
 
-    class_names = ['<=50K', '>50K']
+    class_names = {0:'<=50K', 1: '>50K'}
     train_acc = accuracy_score(y_train, y_train_pred)
     val_acc = accuracy_score(y_val, y_val_pred)
     train_precision = precision_score(y_train, y_train_pred)
