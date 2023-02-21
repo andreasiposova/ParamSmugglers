@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py", line 21, in <module>
+    X_train = torch.tensor(X_train.values, dtype=torch.float32)
+TypeError: can't convert np.ndarray of type numpy.object_. The only supported types are: float64, float32, float16, complex64, complex128, int64, int32, int16, int8, uint8, and bool.

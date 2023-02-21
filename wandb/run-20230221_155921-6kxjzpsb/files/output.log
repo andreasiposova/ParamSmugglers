@@ -1,0 +1,27 @@
+X_train:  age                  0
+workclass         1836
+education_num        0
+marital_status       0
+occupation        1843
+relationship         0
+race                 0
+sex                  0
+capital_change       0
+hours_per_week       0
+native_country       0
+dtype: int64
+Index(['workclass', 'occupation'], dtype='object')
+Traceback (most recent call last):
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py", line 129, in <module>
+    wandb.sklearn.plot_confusion_matrix(train_cm, ['<=50K', '>50K']) #, title='Train Confusion Matrix'
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sklearn/plot/classifier.py", line 174, in confusion_matrix
+    normalize,
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sklearn/calculate/confusion_matrix.py", line 32, in confusion_matrix
+    cm = metrics.confusion_matrix(y_true, y_pred)
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/utils/validation.py", line 63, in inner_f
+    return f(*args, **kwargs)
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/metrics/_classification.py", line 299, in confusion_matrix
+    y_type, y_true, y_pred = _check_targets(y_true, y_pred)
+  File "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/metrics/_classification.py", line 93, in _check_targets
+    "and {1} targets".format(type_true, type_pred))
+ValueError: Classification metrics can't handle a mix of multiclass-multioutput and binary targets

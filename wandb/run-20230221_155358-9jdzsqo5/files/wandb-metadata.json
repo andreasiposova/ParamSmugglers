@@ -1,0 +1,77 @@
+{
+    "os": "Linux-5.4.0-139-generic-x86_64-with-Ubuntu-18.04-bionic",
+    "python": "3.6.9",
+    "heartbeatAt": "2023-02-21T14:53:59.434340",
+    "startedAt": "2023-02-21T14:53:58.131769",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py",
+    "codePath": "PycharmProjects/data_exfiltration_tabular/train.py",
+    "git": {
+        "remote": null,
+        "commit": "c0d2416c1b6104552cec3c04db236d93fa8b4db3"
+    },
+    "email": "siposova.andrea@gmail.com",
+    "root": "/home/andrea",
+    "host": "NBATVIE191",
+    "username": "andrea",
+    "executable": "/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/bin/python",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 900.07075,
+        "min": 400.0,
+        "max": 3400.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 900.108,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.063,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.08,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.162,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.023,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.059,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.009,
+            "min": 400.0,
+            "max": 3400.0
+        },
+        {
+            "current": 900.062,
+            "min": 400.0,
+            "max": 3400.0
+        }
+    ],
+    "disk": {
+        "total": 231.4857521057129,
+        "used": 187.64527130126953
+    },
+    "memory": {
+        "total": 7.618877410888672
+    }
+}

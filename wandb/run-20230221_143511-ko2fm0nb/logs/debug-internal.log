@@ -1,0 +1,169 @@
+2023-02-21 14:35:11,803 INFO    StreamThr :14398 [internal.py:wandb_internal():90] W&B internal server running at pid: 14398, started at: 2023-02-21 14:35:11.802819
+2023-02-21 14:35:11,806 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: status
+2023-02-21 14:35:11,808 INFO    WriterThread:14398 [datastore.py:open_for_write():85] open: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/run-ko2fm0nb.wandb
+2023-02-21 14:35:11,812 DEBUG   SenderThread:14398 [sender.py:send():336] send: header
+2023-02-21 14:35:11,845 DEBUG   SenderThread:14398 [sender.py:send():336] send: run
+2023-02-21 14:35:12,936 INFO    SenderThread:14398 [dir_watcher.py:__init__():216] watching files in: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files
+2023-02-21 14:35:12,937 INFO    SenderThread:14398 [sender.py:_start_run_threads():1070] run started: ko2fm0nb with start time 1676986511.797637
+2023-02-21 14:35:12,937 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: summary_record
+2023-02-21 14:35:12,937 INFO    SenderThread:14398 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 14:35:12,939 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: check_version
+2023-02-21 14:35:12,939 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: check_version
+2023-02-21 14:35:13,126 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: run_start
+2023-02-21 14:35:13,134 DEBUG   HandlerThread:14398 [system_info.py:__init__():31] System info init
+2023-02-21 14:35:13,134 DEBUG   HandlerThread:14398 [system_info.py:__init__():46] System info init done
+2023-02-21 14:35:13,134 INFO    HandlerThread:14398 [system_monitor.py:start():151] Starting system monitor
+2023-02-21 14:35:13,134 INFO    SystemMonitor:14398 [system_monitor.py:_start():116] Starting system asset monitoring threads
+2023-02-21 14:35:13,135 INFO    SystemMonitor:14398 [interfaces.py:start():168] Started cpu
+2023-02-21 14:35:13,135 INFO    HandlerThread:14398 [system_monitor.py:probe():172] Collecting system info
+2023-02-21 14:35:13,135 INFO    SystemMonitor:14398 [interfaces.py:start():168] Started disk
+2023-02-21 14:35:13,136 INFO    SystemMonitor:14398 [interfaces.py:start():168] Started memory
+2023-02-21 14:35:13,136 INFO    SystemMonitor:14398 [interfaces.py:start():168] Started network
+2023-02-21 14:35:13,163 DEBUG   HandlerThread:14398 [system_info.py:probe():195] Probing system
+2023-02-21 14:35:13,166 DEBUG   HandlerThread:14398 [system_info.py:_probe_git():180] Probing git
+2023-02-21 14:35:13,200 DEBUG   HandlerThread:14398 [system_info.py:_probe_git():188] Probing git done
+2023-02-21 14:35:13,201 DEBUG   HandlerThread:14398 [system_info.py:probe():241] Probing system done
+2023-02-21 14:35:13,201 DEBUG   HandlerThread:14398 [system_monitor.py:probe():181] {'os': 'Linux-5.4.0-139-generic-x86_64-with-Ubuntu-18.04-bionic', 'python': '3.6.9', 'heartbeatAt': '2023-02-21T13:35:13.163820', 'startedAt': '2023-02-21T13:35:11.729212', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/home/andrea/PycharmProjects/data_exfiltration_tabular/train.py', 'codePath': 'PycharmProjects/data_exfiltration_tabular/train.py', 'git': {'remote': None, 'commit': 'c0d2416c1b6104552cec3c04db236d93fa8b4db3'}, 'email': 'siposova.andrea@gmail.com', 'root': '/home/andrea', 'host': 'NBATVIE191', 'username': 'andrea', 'executable': '/home/andrea/PycharmProjects/data_exfiltration_tabular_venv/bin/python', 'cpu_count': 4, 'cpu_count_logical': 8, 'cpu_freq': {'current': 2919.5089999999996, 'min': 400.0, 'max': 3400.0}, 'cpu_freq_per_core': [{'current': 2977.976, 'min': 400.0, 'max': 3400.0}, {'current': 2922.701, 'min': 400.0, 'max': 3400.0}, {'current': 2952.816, 'min': 400.0, 'max': 3400.0}, {'current': 2954.882, 'min': 400.0, 'max': 3400.0}, {'current': 2803.287, 'min': 400.0, 'max': 3400.0}, {'current': 2915.94, 'min': 400.0, 'max': 3400.0}, {'current': 2958.923, 'min': 400.0, 'max': 3400.0}, {'current': 2869.547, 'min': 400.0, 'max': 3400.0}], 'disk': {'total': 231.4857521057129, 'used': 187.72000122070312}, 'memory': {'total': 7.618877410888672}}
+2023-02-21 14:35:13,201 INFO    HandlerThread:14398 [system_monitor.py:probe():182] Finished collecting system info
+2023-02-21 14:35:13,201 INFO    HandlerThread:14398 [system_monitor.py:probe():185] Publishing system info
+2023-02-21 14:35:13,201 DEBUG   HandlerThread:14398 [system_info.py:_save_pip():52] Saving list of pip packages installed into the current environment
+2023-02-21 14:35:13,202 DEBUG   HandlerThread:14398 [system_info.py:_save_pip():67] Saving pip packages done
+2023-02-21 14:35:13,202 INFO    HandlerThread:14398 [system_monitor.py:probe():187] Finished publishing system info
+2023-02-21 14:35:13,209 DEBUG   SenderThread:14398 [sender.py:send():336] send: files
+2023-02-21 14:35:13,210 INFO    SenderThread:14398 [sender.py:_save_file():1321] saving file wandb-metadata.json with policy now
+2023-02-21 14:35:13,223 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: stop_status
+2023-02-21 14:35:13,224 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: stop_status
+2023-02-21 14:35:13,538 DEBUG   SenderThread:14398 [sender.py:send():336] send: telemetry
+2023-02-21 14:35:13,940 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/requirements.txt
+2023-02-21 14:35:13,941 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-metadata.json
+2023-02-21 14:35:13,941 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-summary.json
+2023-02-21 14:35:14,474 INFO    wandb-upload_0:14398 [upload_job.py:push():138] Uploaded file /tmp/tmp8tbvwrfjwandb/jw2o9ye6-wandb-metadata.json
+2023-02-21 14:35:17,546 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 14:35:17,685 DEBUG   SenderThread:14398 [sender.py:send():336] send: exit
+2023-02-21 14:35:17,685 INFO    SenderThread:14398 [sender.py:send_exit():559] handling exit code: 1
+2023-02-21 14:35:17,685 INFO    SenderThread:14398 [sender.py:send_exit():561] handling runtime: 4
+2023-02-21 14:35:17,686 INFO    SenderThread:14398 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 14:35:17,686 INFO    SenderThread:14398 [sender.py:send_exit():567] send defer
+2023-02-21 14:35:17,686 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,686 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 0
+2023-02-21 14:35:17,687 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,687 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 0
+2023-02-21 14:35:17,687 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 1
+2023-02-21 14:35:17,687 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,687 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 1
+2023-02-21 14:35:17,687 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,687 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 1
+2023-02-21 14:35:17,687 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 2
+2023-02-21 14:35:17,688 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,688 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 2
+2023-02-21 14:35:17,688 INFO    HandlerThread:14398 [system_monitor.py:finish():161] Stopping system monitor
+2023-02-21 14:35:17,688 DEBUG   SystemMonitor:14398 [system_monitor.py:_start():130] Starting system metrics aggregation loop
+2023-02-21 14:35:17,688 DEBUG   SystemMonitor:14398 [system_monitor.py:_start():137] Finished system metrics aggregation loop
+2023-02-21 14:35:17,688 DEBUG   SystemMonitor:14398 [system_monitor.py:_start():141] Publishing last batch of metrics
+2023-02-21 14:35:17,690 INFO    HandlerThread:14398 [interfaces.py:finish():175] Joined cpu
+2023-02-21 14:35:17,690 INFO    HandlerThread:14398 [interfaces.py:finish():175] Joined disk
+2023-02-21 14:35:17,690 INFO    HandlerThread:14398 [interfaces.py:finish():175] Joined memory
+2023-02-21 14:35:17,690 INFO    HandlerThread:14398 [interfaces.py:finish():175] Joined network
+2023-02-21 14:35:17,690 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,691 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 2
+2023-02-21 14:35:17,691 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 3
+2023-02-21 14:35:17,691 DEBUG   SenderThread:14398 [sender.py:send():336] send: stats
+2023-02-21 14:35:17,691 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,691 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 3
+2023-02-21 14:35:17,691 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,691 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 3
+2023-02-21 14:35:17,691 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 4
+2023-02-21 14:35:17,692 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,692 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 4
+2023-02-21 14:35:17,692 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,692 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 4
+2023-02-21 14:35:17,692 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 5
+2023-02-21 14:35:17,692 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,692 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 5
+2023-02-21 14:35:17,693 DEBUG   SenderThread:14398 [sender.py:send():336] send: summary
+2023-02-21 14:35:17,693 INFO    SenderThread:14398 [sender.py:_save_file():1321] saving file wandb-summary.json with policy end
+2023-02-21 14:35:17,693 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,693 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 5
+2023-02-21 14:35:17,693 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 6
+2023-02-21 14:35:17,693 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:17,693 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 6
+2023-02-21 14:35:17,694 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:17,694 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 6
+2023-02-21 14:35:17,698 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 14:35:17,942 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-summary.json
+2023-02-21 14:35:17,943 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_created():275] file/dir created: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/output.log
+2023-02-21 14:35:18,308 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 7
+2023-02-21 14:35:18,313 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:18,313 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 7
+2023-02-21 14:35:18,316 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:18,316 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 7
+2023-02-21 14:35:18,683 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-21 14:35:18,945 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/config.yaml
+2023-02-21 14:35:19,719 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 8
+2023-02-21 14:35:19,722 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: poll_exit
+2023-02-21 14:35:19,723 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:19,723 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 8
+2023-02-21 14:35:19,732 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:19,732 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 8
+2023-02-21 14:35:19,737 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 9
+2023-02-21 14:35:19,738 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:19,738 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 9
+2023-02-21 14:35:19,739 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:19,739 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 9
+2023-02-21 14:35:19,739 INFO    SenderThread:14398 [dir_watcher.py:finish():362] shutting down directory watcher
+2023-02-21 14:35:19,946 INFO    Thread-13 :14398 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/output.log
+2023-02-21 14:35:19,948 INFO    SenderThread:14398 [dir_watcher.py:finish():392] scan: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files
+2023-02-21 14:35:19,948 INFO    SenderThread:14398 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/requirements.txt requirements.txt
+2023-02-21 14:35:19,949 INFO    SenderThread:14398 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/config.yaml config.yaml
+2023-02-21 14:35:19,956 INFO    SenderThread:14398 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/output.log output.log
+2023-02-21 14:35:19,964 INFO    SenderThread:14398 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-metadata.json wandb-metadata.json
+2023-02-21 14:35:19,965 INFO    SenderThread:14398 [dir_watcher.py:finish():406] scan save: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-summary.json wandb-summary.json
+2023-02-21 14:35:19,980 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 10
+2023-02-21 14:35:19,986 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:19,987 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 10
+2023-02-21 14:35:20,004 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:20,005 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 10
+2023-02-21 14:35:20,005 INFO    SenderThread:14398 [file_pusher.py:finish():162] shutting down file pusher
+2023-02-21 14:35:21,316 INFO    wandb-upload_2:14398 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/config.yaml
+2023-02-21 14:35:21,321 INFO    wandb-upload_0:14398 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/output.log
+2023-02-21 14:35:21,333 INFO    wandb-upload_1:14398 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/requirements.txt
+2023-02-21 14:35:21,462 INFO    wandb-upload_3:14398 [upload_job.py:push():138] Uploaded file /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/files/wandb-summary.json
+2023-02-21 14:35:21,669 INFO    Thread-12 :14398 [sender.py:transition_state():587] send defer: 11
+2023-02-21 14:35:21,675 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:21,675 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 11
+2023-02-21 14:35:21,676 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:21,676 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 11
+2023-02-21 14:35:21,677 INFO    SenderThread:14398 [file_pusher.py:join():167] waiting for file pusher
+2023-02-21 14:35:21,677 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 12
+2023-02-21 14:35:21,677 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:21,677 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 12
+2023-02-21 14:35:21,678 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:21,679 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 12
+2023-02-21 14:35:22,102 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 13
+2023-02-21 14:35:22,103 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:22,103 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 13
+2023-02-21 14:35:22,104 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:22,105 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 13
+2023-02-21 14:35:22,105 INFO    SenderThread:14398 [sender.py:transition_state():587] send defer: 14
+2023-02-21 14:35:22,106 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: defer
+2023-02-21 14:35:22,106 INFO    HandlerThread:14398 [handler.py:handle_request_defer():170] handle defer: 14
+2023-02-21 14:35:22,113 DEBUG   SenderThread:14398 [sender.py:send():336] send: final
+2023-02-21 14:35:22,113 DEBUG   SenderThread:14398 [sender.py:send():336] send: footer
+2023-02-21 14:35:22,113 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: defer
+2023-02-21 14:35:22,113 INFO    SenderThread:14398 [sender.py:send_request_defer():583] handle sender defer: 14
+2023-02-21 14:35:22,115 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: poll_exit
+2023-02-21 14:35:22,118 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: server_info
+2023-02-21 14:35:22,118 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: poll_exit
+2023-02-21 14:35:22,120 DEBUG   SenderThread:14398 [sender.py:send_request():363] send_request: server_info
+2023-02-21 14:35:22,127 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: get_summary
+2023-02-21 14:35:22,130 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: sampled_history
+2023-02-21 14:35:22,962 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: status_report
+2023-02-21 14:35:22,963 INFO    MainThread:14398 [wandb_run.py:_footer_history_summary_info():3442] rendering history
+2023-02-21 14:35:22,963 INFO    MainThread:14398 [wandb_run.py:_footer_history_summary_info():3474] rendering summary
+2023-02-21 14:35:22,964 INFO    MainThread:14398 [wandb_run.py:_footer_sync_info():3398] logging synced files
+2023-02-21 14:35:22,965 DEBUG   HandlerThread:14398 [handler.py:handle_request():144] handle_request: shutdown
+2023-02-21 14:35:22,965 INFO    HandlerThread:14398 [handler.py:finish():841] shutting down handler
+2023-02-21 14:35:23,962 INFO    SenderThread:14398 [sender.py:finish():1493] shutting down sender
+2023-02-21 14:35:23,969 INFO    WriterThread:14398 [datastore.py:close():299] close: /home/andrea/PycharmProjects/data_exfiltration_tabular/wandb/run-20230221_143511-ko2fm0nb/run-ko2fm0nb.wandb
+2023-02-21 14:35:23,976 INFO    SenderThread:14398 [file_pusher.py:finish():162] shutting down file pusher
+2023-02-21 14:35:23,977 INFO    SenderThread:14398 [file_pusher.py:join():167] waiting for file pusher
