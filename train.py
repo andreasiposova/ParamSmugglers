@@ -74,6 +74,8 @@ for epoch in range(num_epochs):
     # Compute the metrics on the training and validation sets
     y_train_pred = (model(X_train) > 0.5).float()
     y_val_pred = (model(X_val) > 0.5).float()
+
+    class_names = ['<=50K', '>50K']
     train_acc = accuracy_score(y_train, y_train_pred)
     val_acc = accuracy_score(y_val, y_val_pred)
     train_precision = precision_score(y_train, y_train_pred)
@@ -82,51 +84,32 @@ for epoch in range(num_epochs):
     val_recall = recall_score(y_val, y_val_pred)
     train_f1 = f1_score(y_train, y_train_pred)
     val_f1 = f1_score(y_val, y_val_pred)
+    #train_cm = confusion_matrix(y_train, y_train_pred)
+    #val_cm = confusion_matrix(y_val, y_val_pred)
     wandb.log({'epoch': epoch + 1, 'train_loss': train_loss, 'val_loss': val_loss,
                'train_acc': train_acc, 'val_acc': val_acc,
                'train_precision': train_precision, 'val_precision': val_precision,
                'train_recall': train_recall, 'val_recall': val_recall,
-               'train_f1': train_f1, 'val_f1': val_f1},
-              step=epoch + 1, commit=False)
+               'train_f1': train_f1, 'val_f1': val_f1,
+               "train_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_train,
+                                                             preds=y_train_pred,
+                                                             class_names=class_names),
+               "val_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_val,
+                                                             preds=y_val_pred,
+                                                             class_names=class_names),
+               "train_perf_comp": wandb.plot.line( y=[train_acc, train_precision, train_recall, train_f1],
+                                                     x=np.arange(epoch + 1), title='Training  Performance Comparison',
+                                                     legend=['accuracy', 'precision', 'recall', 'f1']),
+               "val_perf_comp": wandb.plot.line(y=[val_acc, val_precision, val_recall, val_f1],
+                                                    x=np.arange(epoch + 1), title='Validation Performance Comparison',
+                                                    legend=['accuracy', 'precision', 'recall', 'f1'])
+               },
+               step=epoch + 1) # commit=False
 
-    # Plot the validation metrics on the same plot
-    wandb.plot.line(
-        #xs=np.arange(epoch + 1),
-        ys=[np.array([val_acc, val_precision, val_recall, val_f1])],
-        keys=['accuracy', 'precision', 'recall', 'f1-score'],
-        title='Validation Metrics',
-        xlabel='Epoch',
-        ylabel='Metric Value',
-        colors=['blue', 'green', 'red', 'orange'],
-        step=epoch + 1
-    )
+    #wandb.sklearn.plot_confusion_matrix(train_cm, ['<=50K', '>50K'], title='Train Confusion Matrix')
+    #wandb.sklearn.plot_confusion_matrix(val_cm, ['<=50K', '>50K'], title='Validation Confusion Matrix')
 
-    wandb.plot.line(
-        #xs=np.arange(epoch + 1),
-        ys=[np.array([train_acc, train_precision, train_recall, train_f1])],
-        keys=['accuracy', 'precision', 'recall', 'f1-score'],
-        title='Validation Metrics',
-        xlabel='Epoch',
-        ylabel='Metric Value',
-        colors=['blue', 'green', 'red', 'orange'],
-        step=epoch + 1
-    )
 
-    wandb.plot.line(
-        xs=np.arange(epoch + 1),
-        ys=[np.array([val_acc, train_acc])],
-        keys=['accuracy', 'precision', 'recall', 'f1-score'],
-        title='Train vs Validation Accuracy',
-        xlabel='Epoch',
-        ylabel='Accuracy',
-        colors=['green', 'purple'],
-        step=epoch + 1
-    )
-    train_cm = confusion_matrix(y_train, y_train_pred)
-    val_cm = confusion_matrix(y_val, y_val_pred)
-
-    wandb.sklearn.plot_confusion_matrix(train_cm, ['<=50K', '>50K'], title='Train Confusion Matrix')
-    wandb.sklearn.plot_confusion_matrix(val_cm, ['<=50K', '>50K'], title='Validation Confusion Matrix')
 
 
     # Log the training and validation metrics to WandB
@@ -147,21 +130,23 @@ test_acc = accuracy_score(y_test, y_test_pred)
 test_precision = precision_score(y_test, y_test_pred)
 test_recall = recall_score(y_test, y_test_pred)
 test_f1 = f1_score(y_test, y_test_pred)
-test_cm = confusion_matrix(y_test, y_test_pred)
-wandb.sklearn.plot_confusion_matrix(test_cm, ['<=50K', '>50K'], title='Test Confusion Matrix')
+#test_cm = confusion_matrix(y_test, y_test_pred)
+
 
 # Log the training and validation metrics to WandB
 wandb.log({'test_loss': test_loss.item(), 'test_acc': test_acc,
-           'test_precision': test_precision, 'test_recall': test_recall, 'test_f1': test_f1})
+           'test_precision': test_precision, 'test_recall': test_recall, 'test_f1': test_f1,
+           "test_conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=y_test,
+                                                             preds=y_test_pred,
+                                                             class_names=class_names),
+           "test_perf_comp": wandb.plot.bar({'test_acc': test_acc, 'test_precision': test_precision,
+                                             'test_recall': test_recall, 'test_f1': test_f1},
+                                            title='Test Metrics', xlabel='Metric', ylabel='Metric Value')
+           })
+
+#wandb.sklearn.plot_confusion_matrix(test_cm, ['<=50K', '>50K'], title='Test Confusion Matrix')
 
 
-wandb.plot.bar(
-    {'test_acc': test_acc, 'test_precision': test_precision,
-     'test_recall': test_recall, 'test_f1': test_f1},
-    title='Test Metrics',
-    xlabel='Metric',
-    ylabel='Metric Value'
-)
 # save the metrics for the run to a csv file
 #metrics_dataframe = run.history()
 #metrics_dataframe.to_csv("metrics.csv")
