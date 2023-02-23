@@ -93,8 +93,10 @@ def train_benign_model(X_train, X_test, X_val, y_train, y_test, y_val, project, 
                                     preds=y_train_pred_ints,
                                     class_names=["<=50K", ">50K"])
 
-        y_val_ints = torch.tensor(y_val, dtype=torch.int32)
-        y_val_pred_ints = torch.tensor(y_val_pred, dtype=torch.int32)
+        y_val_ints = y_val.int()
+        y_val_ints = y_val_ints.numpy()
+        y_val_pred_ints = y_val_pred.int()
+        y_val_pred_ints = y_val_pred_ints.numpy()
         val_cm = confusion_matrix(y_val_ints, y_val_pred_ints)
         val_cm_plot = wandb.plot.confusion_matrix(probs=None,
                                     y_true=y_val_ints,
@@ -122,42 +124,37 @@ def train_benign_model(X_train, X_test, X_val, y_train, y_test, y_val, project, 
 
         # Log the training and validation metrics to WandB
         set_name = 'Training set'
-        wandb.log({'epoch': epoch + 1, f'{set_name} loss': train_loss, f'{set_name} accuracy': train_acc, f'{set_name} precision': train_precision,
-                   f'{set_name} recall': train_recall, f'{set_name} F1 score': train_f1,
-                   f'{set_name} Confusion Matrix': train_cm, f'{set_name} CM': train_cm_plot, 'Model Graph': model_graph},
+        wandb.log({'epoch': epoch + 1, 'Training set loss': train_loss, 'Training set accuracy': train_acc, 'Training set precision': train_precision,
+                   'Training set recall': train_recall, 'Training set F1 score': train_f1,
+                   'Training set Confusion Matrix': train_cm, 'Training set CM': train_cm_plot, 'Model Graph': model_graph},
                    step=epoch + 1)
         #,
         set_name = "Validation set"
-        wandb.log({'epoch': epoch + 1, f'{set_name} loss': val_loss, f'{set_name} accuracy': val_acc, f'{set_name} precision': val_precision,
-                   f'{set_name} recall': val_recall, f'{set_name} F1 score': val_f1,
-                   f'{set_name} Confusion Matrix': val_cm, f'{set_name} CM': val_cm_plot},
+        wandb.log({'epoch': epoch + 1, 'Validation set loss': val_loss, 'Validation set accuracy': val_acc, 'Validation set precision': val_precision,
+                   'Validation set recall': val_recall, 'Validation set F1 score': val_f1,
+                   'Validation set Confusion Matrix': val_cm, 'Validation set CM': val_cm_plot},
                    step=epoch + 1)
 
 
     X_test = torch.tensor(X_test.values, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
     y_test_pred = (model(X_test) > 0.5).float()
-    y_test_ints = torch.tensor(y_test, dtype=torch.int32)
-    y_test_pred_ints = torch.tensor(y_test_pred, dtype=torch.int32)
+    y_test_ints = y_test.int()
+    y_test_ints = y_test_ints.numpy()
+    y_test_pred_ints = y_test_pred.int()
+    y_test_pred_ints = y_test_pred_ints.numpy()
     test_cm = confusion_matrix(y_test, y_test_pred_ints)
     test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
 
-    # display the confusion matrix locally
-    #test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_list, preds=y_test_pred_list,
-    #                                        class_names=['<=50K','>50K'])
-
-    #test_loss = criterion(model(X_test), y_test).item()
     test_acc, test_precision, test_recall, test_f1 = get_performance(y_test, y_test_pred)
-    #test_cm_plot = sklearn.plot_confusion_matrix(test_cm, ['<=50K', '>50K'])
+
     set_name = 'Test set'
     # Log the training and validation metrics to WandB
-    wandb.log({f'{set_name} accuracy': test_acc, f'{set_name} precision': test_precision, f'{set_name} recall': test_recall,
-               f'{set_name} F1 score': test_f1, f'{set_name} Confusion Matrix': test_cm, f'{set_name} CM': test_cm_plot})
-    #, f'{set_name} CM': test_cm_plot
+    wandb.log({'Test set accuracy': test_acc, 'Test set precision': test_precision, 'Test set recall': test_recall,
+               'Test set F1 score': test_f1, 'Test set Confusion Matrix': test_cm, 'Test set CM': test_cm_plot})
+
     wandb.join()
     # save the metrics for the run to a csv file
-    #metrics_dataframe = run.history()
-    #metrics_dataframe.to_csv("metrics.csv")
 
     # Save the trained model
     torch.save(model.state_dict(), 'model.pth')
