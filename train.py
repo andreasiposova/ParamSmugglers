@@ -104,7 +104,7 @@ for epoch in range(num_epochs):
                                                     x=np.arange(epoch + 1), title='Validation Performance Comparison',
                                                     legend=['accuracy', 'precision', 'recall', 'f1'])
                },
-               step=epoch + 1) # commit=False
+               step=epoch + 1) # commit=Fals
 
     #wandb.sklearn.plot_confusion_matrix(train_cm, ['<=50K', '>50K'], title='Train Confusion Matrix')
     #wandb.sklearn.plot_confusion_matrix(val_cm, ['<=50K', '>50K'], title='Validation Confusion Matrix')
