@@ -77,8 +77,8 @@ def label_encode_data(X_train, y_train, X_test, y_test):
     return X_train, y_train, X_test, y_test, encoders
 
 def handle_missing_data(X_train, y_train, X_test, y_test):
-    print('X_train: ', X_train.isna().sum())
-    print(X_train.columns[X_train.isna().any()])
+    #print('X_train: ', X_train.isna().sum())
+    #print(X_train.columns[X_train.isna().any()])
     #print('y_train: ', y_train.isna().sum())
     #print('X_test: ', X_test.isna().sum())
     #print("ytest: ", y_test.isna().sum())
@@ -86,7 +86,7 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
     missing_cols = X_train.columns[X_train.isna().any()].tolist()
 
     # Perform KNN imputation on traning data
-    imputer = KNNImputer(n_neighbors=5)
+    imputer = KNNImputer(n_neighbors=3)
     #imputer.fit(X_train)
     #X_train = imputer.transform(X_train)
     X_train[missing_cols] = imputer.fit_transform(X_train[missing_cols])
@@ -95,8 +95,10 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
 
     return X_train, y_train, X_test, y_test
 
-
-
+def encode_impute_preprocessing(X_train, y_train, X_test, y_test):
+    X_train, y_train, X_test, y_test, encoders = label_encode_data(X_train, y_train, X_test, y_test)
+    X_train, y_train, X_test, y_test = handle_missing_data(X_train, y_train, X_test, y_test)
+    return X_train, y_train, X_test, y_test, encoders
 
 
 
