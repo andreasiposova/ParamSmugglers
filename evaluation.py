@@ -1,5 +1,5 @@
 import torch
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
 from torch_helpers import tensor_to_array, convert_targets
 
@@ -9,7 +9,8 @@ def get_performance(y_true, y_pred):
     precision = precision_score(y_true, y_pred)
     recall = recall_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
-    return acc, precision, recall, f1
+    roc_auc = roc_auc_score(y_true, y_pred)
+    return acc, precision, recall, f1, roc_auc
 
 
 def val_set_eval(network, val_dataloader, criterion):
@@ -17,7 +18,7 @@ def val_set_eval(network, val_dataloader, criterion):
     # Evaluate the model on the validation set
     network.eval()
     val_loss = 0.0
-    val_acc, val_prec, val_rec, val_f1 = 0, 0, 0, 0
+    val_acc, val_prec, val_rec, val_f1, val_roc_auc = 0, 0, 0, 0, 0
     num_batches = 0
 
 
@@ -35,7 +36,7 @@ def val_set_eval(network, val_dataloader, criterion):
             #probs_val = torch.sigmoid(preds).numpy()
             #preds = preds.numpy()
             #targets = targets.numpy()
-            acc, prec, rec, f1 = get_performance(targets, preds)
+            acc, prec, rec, f1, roc_auc = get_performance(targets, preds)
             val_targets.append(targets)
             val_preds.append(preds)
             val_probs.append(probs_val)
@@ -45,6 +46,7 @@ def val_set_eval(network, val_dataloader, criterion):
             val_prec += prec
             val_rec += rec
             val_f1 += f1
+            val_roc_auc += roc_auc
             num_batches += 1
 
     # Calculate the average validation loss
@@ -53,13 +55,14 @@ def val_set_eval(network, val_dataloader, criterion):
     val_prec /= num_batches
     val_rec /= num_batches
     val_f1 /= num_batches
+    val_roc_auc /= num_batches
     val_preds = torch.cat(val_preds, dim=0)
     val_targets = torch.cat(val_targets, dim=0)
     val_probs = torch.cat(val_probs, dim=0)
     val_probs = val_probs.numpy()
     val_targets = val_targets.numpy()
 
-    return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1
+    return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 
 
 def eval_on_test_set(network, test_dataset):
@@ -74,6 +77,6 @@ def eval_on_test_set(network, test_dataset):
     test_cm = confusion_matrix(y_test, y_test_pred_ints)
     # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
 
-    test_acc, test_precision, test_recall, test_f1 = get_performance(y_test, y_test_pred)
+    test_acc, test_precision, test_recall, test_f1, test_roc_auc = get_performance(y_test, y_test_pred)
     print(test_acc, test_precision, test_recall, test_f1)
-    return y_test_ints, y_test_pred_ints, test_acc, test_precision, test_recall, test_f1, test_cm
+    return y_test_ints, y_test_pred_ints, test_acc, test_precision, test_recall, test_f1, test_roc_auc, test_cm
