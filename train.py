@@ -22,32 +22,32 @@ from torch_helpers import to_tensor, convert_targets, tensor_to_array, get_avg_p
 from visualization import visualize_graph
 
 api = wandb.Api()
-project="Data Exfiltration Attacks and Defenses"
+project="Data_Exfiltration_Attacks_and_Defenses"
 
 # Set fixed random number seed
 torch.manual_seed(42)
 
 hyperparameters = {
     'optimizer': {'values': ['adam', 'sgd']},
-    'fc_layer_size': {'values': [64]},
-    'dropout': {'values': [0.3]},
-    'batch_size': {'values': [16]},
-    'epochs': {'values': [5]},
+    'fc_layer_size': {'values': [64, 128, 256]},
+    'dropout': {'values': [0.0, 0.1, 0.3, 0.5]},
+    'batch_size': {'values': [32, 64, 128]},
+    'epochs': {'values': [10, 20, 30]},
     'learning_rate': {'values': [0.01, 0.001]}
     }
 
 metric = {
     'goal': 'minimize',
-    'name': 'Validation set loss'
+    'name': 'Epoch Validation set loss'
     }
 
 
 #Create a configuration file
-config = wandb.sweep({
-    'method': 'grid',
-    'metric': metric,
-    'parameters': hyperparameters
-})
+#config = wandb.sweep({
+#    'method': 'grid',
+#    'metric': metric,
+#    'parameters': hyperparameters
+#})
 
 X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 print('Loading data')
@@ -90,9 +90,12 @@ class Net(nn.Module):
         self.fc_layer_size = fc_layer_size
         self.dropout = dropout
         self.fc1 = nn.Linear(11, fc_layer_size)
-        self.fc2 = nn.Linear(fc_layer_size, 1)
+        self.fc2 = nn.Linear(fc_layer_size, fc_layer_size)
+        self.fc3 = nn.Linear(fc_layer_size, fc_layer_size)
+        self.fc4 = nn.Linear(fc_layer_size, 1)
         self.dropout = nn.Dropout(dropout)
         self.sigmoid = nn.Sigmoid()
+        self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.fc1(x)
@@ -100,7 +103,12 @@ class Net(nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)
         x = self.sigmoid(x)
-        return x.view(-1) # add .view() method to reshape the output tensor
+        x = self.fc3(x)
+        x = self.sigmoid(x)
+        x = self.fc4(x)
+        x = self.sigmoid(x)
+        return x.view(-1)
+        # add .view() method to reshape the output tensor
 
 def build_optimizer(network, optimizer, learning_rate):
     if optimizer == "sgd":
@@ -154,22 +162,11 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
     #y_train_probs = torch.cat(y_train_probs, dim=0)
     #y_train_probs = y_train_probs.numpy()
 
-    train_acc, train_prec, train_recall, train_f1 = get_performance(y_train, y_train_preds)
+    train_acc, train_prec, train_recall, train_f1, train_roc_auc = get_performance(y_train, y_train_preds)
     train_loss = cumu_loss / len(train_dataloader)
     #train_cm = confusion_matrix(y_train, y_train_preds)
     #steps = arange(0, ((fold + 1)*(epoch + 1))+1, 1)
-    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1 = val_set_eval(network, val_dataloader, criterion)
-    wandb.log({'CV Fold': fold + 1, 'epoch': epoch+1, 'Fold Training set loss': train_loss,
-               'Fold Training set accuracy': train_acc, 'Fold Training set precision': train_prec,
-               'Fold Training set recall': train_recall, 'Fold Training set F1 score': train_f1},
-              step=((fold+1)*(epoch+1)))
-    # ,
-    # set_name = "Validation set"
-    wandb.log({'CV Fold': fold + 1, 'epoch': epoch+1, 'Fold Validation Set Loss': val_loss, 'Fold Validation set accuracy': val_acc,
-               'Fold Validation set precision': val_prec, 'Fold Validation set recall': val_recall,
-               'Fold Validation set F1 score': val_f1
-               },
-              step=())
+    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion)
 
     #y_val_pred = (network(val_data) > 0.5).float()
     #y_val_ints, y_val_pred_ints = convert_targets(y_val, y_val_preds)
@@ -178,7 +175,7 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
     #val_loss = criterion(network(X_val), y_val).item()
 
 
-    return network, y_train, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, val_loss, val_acc, val_prec, val_recall, val_f1 #, val_cm_plot, model_graph
+    return network, y_train, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc #, val_cm_plot, model_graph
 
 #train_cm_plot
 
@@ -190,19 +187,21 @@ def train(config=None):
         # this config will be set by Sweep Controller
         config = wandb.config
         #loader = build_dataset(config.batch_size)
-        network = build_network(64, 0.1)#config.fc_layer_size, config.dropout)
-        optimizer = build_optimizer(network, 'adam', 0.1) #, config.optimizer, config.learning_rate)
+        network = build_network(config.fc_layer_size, config.dropout)
+        optimizer = build_optimizer(network, config.optimizer, config.learning_rate)
         wandb.watch(network, log='all')
 
         k = 5  # number of folds
+        num_epochs = 5
+
         kf = KFold(n_splits=k, shuffle=True, random_state=42)
         fold = 0
         all_val_probs = []
         all_train_probs = []
         all_losses_train, all_accs_train, all_precs_train, all_recalls_train, all_f1s_train  = [], [], [], [], []
         all_losses_val, all_accs_val, all_precs_val, all_recalls_val, all_f1s_val = [], [], [], [], []
-        losses_train, accs_train, precs_train, recalls_train, f1s_train = [], [], [], [], []
-        losses_val, accs_val, precs_val, recalls_val, f1s_val = [], [], [], [], []
+        losses_train, accs_train, precs_train, recalls_train, f1s_train, roc_aucs_train = [], [], [], [], [], []
+        losses_val, accs_val, precs_val, recalls_val, f1s_val, roc_aucs_val = [], [], [], [], [], []
         train_dataset = MyDataset(X_train, y_train)
         X = train_dataset.X
         y = train_dataset.y
@@ -219,29 +218,44 @@ def train(config=None):
             #X_val_cv, y_val_cv = X_train[val_index], y_train[val_index]
             train_dataset = MyDataset(X_train, y_train)
             val_dataset = MyDataset(X_val_cv, y_val_cv)
-            train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle = True)#config.batch_size, shuffle=True)
-            val_dataloader = DataLoader(val_dataset, batch_size=64, shuffle=False) #config.batch_size,
+            train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle = True)#config.batch_size, shuffle=True)
+            val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False) #config.batch_size,
                                         #shuffle=False)  # batch_size=config.batch_size
 
 
             print('Starting training')
 
-            for epoch in range(5): #config.epochs):
-                network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch)
+            for epoch in range(config.epochs):
+                network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch)
 
                 set_name = 'Training set'
                 wandb.log(
                     {'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
-                     'Epoch Training set precision': train_prec_e, 'Epoch Training set recall': train_recall_e, 'Epoch Training set F1 score': train_f1_e
-                     }, step=epoch)
+                     'Epoch Training set precision': train_prec_e, 'Epoch Training set recall': train_recall_e, 'Epoch Training set F1 score': train_f1_e,
+                     'Epoch Training set ROC AUC score': train_roc_auc_e
+                     }, step=epoch+1)
                 # ,
                 # set_name = "Validation set"
                 wandb.log({'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Validation Set Loss': val_loss_e,
                            'Epoch Validation set accuracy': val_acc_e,
                            'Epoch Validation set precision': val_prec_e,
-                           'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e
-                           }, step=epoch)
-                print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}')
+                           'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e, 'Epoch Validation set ROC AUC score': val_roc_auc_e
+                           }, step=epoch+1)
+                print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
+
+            fold_train_loss = train_loss_e
+            fold_val_loss = val_loss_e
+            fold_train_acc = train_acc_e
+            fold_val_acc = val_acc_e
+            fold_train_prec = train_prec_e
+            fold_val_prec = val_prec_e
+            fold_train_rec = train_recall_e
+            fold_val_rec = val_recall_e
+            fold_train_f1 = train_f1_e
+            fold_val_f1 = val_f1_e
+            fold_train_roc_auc = train_roc_auc_e
+            fold_val_roc_auc = val_roc_auc_e
+
             #for each fold append to a list with the resulting values of the last epoch
             #in the end, the list contains results of the last epoch
             losses_train.append(train_loss_e)
@@ -254,8 +268,19 @@ def train(config=None):
             recalls_val.append(val_recall_e)
             f1s_train.append(train_f1_e)
             f1s_val.append(val_f1_e)
+            roc_aucs_train.append(train_roc_auc_e)
+            roc_aucs_val.append(val_roc_auc_e)
             train_probs.append(y_train_probs)
             val_probs.append(y_val_probs)
+            wandb.log({'CV Fold': fold + 1, 'Fold Training set loss': fold_train_loss,
+                       'Fold Training set accuracy': fold_train_acc, 'Fold Training set precision': fold_train_prec,
+                       'Fold Training set recall': fold_train_rec, 'Fold Training set F1 score': fold_train_f1, 'Fold Train set ROC AUC score': fold_train_roc_auc})
+            # ,
+            # set_name = "Validation set"
+            wandb.log({'CV Fold': fold + 1, 'Fold Validation Set Loss': fold_val_loss,
+                       'Fold Validation set accuracy': fold_val_acc,
+                       'Fold Validation set precision': fold_val_prec, 'Fold Validation set recall': fold_val_rec,
+                       'Fold Validation set F1 score': fold_val_f1, 'Fold Validation set ROC AUC score': fold_val_roc_auc})
 
             #average result for each cv fold
             """fold_res_loss_train = sum(losses_train) /len(losses_train)
@@ -269,7 +294,6 @@ def train(config=None):
             fold_res_recall_val = sum(recalls_val) / len(recalls_val)
             fold_res_f1_val = sum(f1s_val) / len(f1s_val)"""
             set_name = 'Training set'
-
 
             fold += 1
 
@@ -296,12 +320,14 @@ def train(config=None):
         avg_precs_train = sum(precs_train) / len(precs_train)
         avg_recall_train = sum(recalls_train) / len(recalls_train)
         avg_f1_train = sum(f1s_train) / len(f1s_train)
+        avg_roc_auc_train = sum(roc_aucs_train) / len(roc_aucs_train)
 
         avg_losses_val = sum(losses_val) / len(losses_val)
         avg_accs_val = sum(accs_val) / len(accs_val)
         avg_precs_val = sum(precs_val) / len(precs_val)
         avg_recall_val = sum(recalls_val) / len(recalls_val)
         avg_f1_val = sum(f1s_val) / len(f1s_val)
+        avg_roc_auc_val = sum(roc_aucs_val) / len(roc_aucs_val)
 
 
         # Log the training and validation metrics to WandB
@@ -309,14 +335,16 @@ def train(config=None):
         #'CV Fold': 'average over all folds',
         wandb.log({'CV Average Training set loss': avg_losses_train, 'CV Average Training set accuracy': avg_accs_train,
                    'CV Average Training set precision': avg_precs_train,
-                   'CV Average Training set recall': avg_recall_train, 'CV Average Training set F1 score': avg_f1_train
+                   'CV Average Training set recall': avg_recall_train, 'CV Average Training set F1 score': avg_f1_train,
+                   'CV Average Training set ROC AUC': avg_roc_auc_train
                    },
                   )
         # ,
         #set_name = "Validation set"
         wandb.log({'CV Average Validation Set Loss': avg_losses_val, 'CV Average Validation set accuracy': avg_accs_val,
                    'CV Average Validation set precision': avg_precs_val,
-                   'CV Average Validation set recall': avg_recall_val, 'CV Average Validation set F1 score': avg_f1_val
+                   'CV Average Validation set recall': avg_recall_val, 'CV Average Validation set F1 score': avg_f1_val,
+                   'CV Average Validation set ROC AUC': avg_roc_auc_val
                    },
                    )
 
@@ -343,14 +371,14 @@ def train(config=None):
 
         test_dataset = MyDataset(X_test, y_test)
         print('Testing the model on independent test dataset')
-        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_cm = eval_on_test_set(network, test_dataset)
+        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
         train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_data_ints, preds=avg_train_preds, class_names=["<=50K", ">50K"])
         val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=avg_val_preds, class_names=["<=50K", ">50K"])
         test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints, class_names=["<=50K", ">50K"])
         #set_name = 'Test set'
         # Log the training and validation metrics to WandB
         wandb.log({'Test set accuracy': test_acc, 'Test set precision': test_prec, 'Test set recall': test_recall,
-                  'Test set F1 score': test_f1, 'Test set Confusion Matrix': test_cm, 'Test set CM': test_cm_plot})
+                  'Test set F1 score': test_f1, 'Test set ROC AUC score': test_roc_auc, 'Test set Confusion Matrix': test_cm})
         #cm for train and val build with predictions averaged over all folds
         wandb.log({'Train set CM': train_cm_plot, 'Validation set CM': val_cm_plot, 'Test set CM': test_cm_plot})
         print(f'Test Accuracy: {test_acc}')
