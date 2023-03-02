@@ -20,6 +20,7 @@ from data_loading import get_preprocessed_adult_data, label_encode_data, handle_
 from evaluation import get_performance, val_set_eval, eval_on_test_set
 from torch_helpers import to_tensor, convert_targets, tensor_to_array, get_avg_probs
 from visualization import visualize_graph
+from sklearn.utils.class_weight import compute_class_weight
 
 api = wandb.Api()
 project="Data_Exfiltration_Attacks_and_Defenses"
@@ -28,6 +29,15 @@ project="Data_Exfiltration_Attacks_and_Defenses"
 torch.manual_seed(42)
 torch.set_num_threads(28)
 
+optimizer = 'adam'
+m1 = 2
+m2 = 4
+dropout = 0.1
+batch_size = 64
+epochs = 10
+learning_rate = 0.1
+num_hidden_layers = 2
+weight_decay = 0.001
 
 hyperparameters = {
     'optimizer': {'values': ['adam', 'sgd']},
@@ -60,6 +70,7 @@ X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 print('Loading data')
 print('Starting preprocessing')
 X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test)
+X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 class_names = ['<=50K', '>50K']
 scaler = StandardScaler()
 scaler.fit(X_train)
@@ -158,6 +169,10 @@ def build_network(input_size, m1, m2, num_hidden_layers, dropout):
     return model
 
 def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch):
+
+
+    # Define loss function with class weights
+    pos_weight = torch.tensor([1.0, 3.0])
     criterion = nn.BCELoss()
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train, y_train_probs = [], [], []
@@ -166,9 +181,23 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
         # Forward pass
         data = data.clone().detach().to(dtype=torch.float)
         targets = targets.clone().detach().to(dtype=torch.float)
+        #targets = targets.view(-1, 1)
+        """
+        # Compute class frequencies for current batch
+        class_frequencies = np.bincount(targets.numpy(), minlength=2)
+        if np.sum(class_frequencies) == 1:
+            class_frequencies[1 - targets[0]] = 1.0
+
+        # Compute class weights for current batch
+        class_weights = torch.tensor([1.0 / freq for freq in class_frequencies])
+        """
+
+        # Define loss function with class weights
         outputs = network(data)
+        #outputs = outputs.view(-1, 1)
         loss = criterion(outputs, targets)
         cumu_loss += loss.item()
+
 
         # Backward pass and optimization
         optimizer.zero_grad()
@@ -178,7 +207,7 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
         # Collect predictions and targets
 
         y_train_prob = outputs.float()
-        y_train_pred = (outputs > 0.5).float()
+        y_train_pred = (outputs > 0.45).float()
         y_train.append(targets)
         y_train_probs.append(y_train_prob)
         y_train_preds.append(y_train_pred)
@@ -200,7 +229,7 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
     train_loss = cumu_loss / len(train_dataloader)
     #train_cm = confusion_matrix(y_train, y_train_preds)
     #steps = arange(0, ((fold + 1)*(epoch + 1))+1, 1)
-    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion)
+    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader)
 
     #y_val_pred = (network(val_data) > 0.5).float()
     #y_val_ints, y_val_pred_ints = convert_targets(y_val, y_val_preds)
@@ -221,9 +250,10 @@ def train(config=None):
         # If called by wandb.agent, as below,
         # this config will be set by Sweep Controller
         config = wandb.config
-        #loader = build_dataset(config.batch_size)
-        network = build_network(input_size, config.m1, config.m2, config.num_hidden_layers, config.dropout)
-        optimizer = build_optimizer(network, config.optimizer, config.learning_rate, config.weight_decay)
+        optimizer = 'adam'
+        #loader = build_dataset(batch_size)
+        network = build_network(input_size, m1, m2, num_hidden_layers, dropout)
+        optimizer = build_optimizer(network, optimizer, learning_rate, weight_decay)
         wandb.watch(network, log='all')
 
         k = 5  # number of folds
@@ -253,16 +283,23 @@ def train(config=None):
             # Split the data into training and validation sets
             #X_train_cv, y_train_cv = X_train[train_index], y_train[train_index]
             #X_val_cv, y_val_cv = X_train[val_index], y_train[val_index]
+            # Compute class weights
+            # Compute class weights
+            #class_weights = compute_class_weight('balanced', classes=np.unique(y), y=y)
+            #class_weights = torch.tensor(class_weights, dtype=torch.float32)
+
+
             train_dataset = MyDataset(X_train_cv, y_train_cv)
             val_dataset = MyDataset(X_val_cv, y_val_cv)
-            train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle = True)#config.batch_size, shuffle=True)
-            val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False) #config.batch_size,
-                                        #shuffle=False)  # batch_size=config.batch_size
+            train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle = True)#batch_size, shuffle=True)
+            val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False) #batch_size,
+                                        #shuffle=False)  # batch_size=batch_size
+
 
 
             print('Starting training')
 
-            for epoch in range(config.epochs):
+            for epoch in range(epochs):
                 network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch)
 
                 set_name = 'Training set'

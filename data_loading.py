@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer
+from sklearn.neighbors import DistanceMetric
 from sklearn.preprocessing import LabelEncoder
 
 def load_adult_files():
@@ -76,28 +77,92 @@ def label_encode_data(X_train, y_train, X_test, y_test):
 
     return X_train, y_train, X_test, y_test, encoders
 
+def custom_metric(x1, x2):
+    mask = ~(np.isnan(x1) | np.isnan(x2))
+    diff = x1[mask] - x2[mask]
+    return np.linalg.norm(diff)
 def handle_missing_data(X_train, y_train, X_test, y_test):
     #print('X_train: ', X_train.isna().sum())
-    #print(X_train.columns[X_train.isna().any()])
+    print(X_train.columns[X_train.isna().any()])
+    col_names = X_train.columns
     #print('y_train: ', y_train.isna().sum())
     #print('X_test: ', X_test.isna().sum())
     #print("ytest: ", y_test.isna().sum())
     # Identify columns with missing values
-    missing_cols = X_train.columns[X_train.isna().any()].tolist()
+    #missing_cols = X_train.columns[X_train.isna().any()].tolist()
+    # calculate inverse covariance matrix
+    #cov_inv = np.linalg.inv(np.cov(X_train, rowvar=False))
 
+    c_metric = DistanceMetric.get_metric(custom_metric)
+    # create KNNImputer and set metric and metric_params
+    imputer = KNNImputer(n_neighbors=1, weights='uniform', metric='nan_euclidean')
+
+    # impute missing value
+    X_train = imputer.fit_transform(X_train)
+    X_train = pd.DataFrame(X_train, columns=col_names)
+    X_train = X_train.astype('int')
+    print("Missing values after imputation: ", X_train.columns[X_train.isna().any()])
     # Perform KNN imputation on traning data
-    imputer = KNNImputer(n_neighbors=3)
+    #imputer = KNNImputer(n_neighbors=1)
     #imputer.fit(X_train)
     #X_train = imputer.transform(X_train)
-    X_train[missing_cols] = imputer.fit_transform(X_train[missing_cols])
+    #X_train[missing_cols] = imputer.fit_transform(X_train[missing_cols])
     #drop missing data from test set
-    X_test= X_test.dropna()
+    X_test = X_test.dropna()
 
     return X_train, y_train, X_test, y_test
 
 def encode_impute_preprocessing(X_train, y_train, X_test, y_test):
+    cat_cols = ['workclass', 'marital_status', 'occupation', 'relationship', 'race', 'sex', 'native_country']
     X_train, y_train, X_test, y_test, encoders = label_encode_data(X_train, y_train, X_test, y_test)
+    #encoders = [0]
     X_train, y_train, X_test, y_test = handle_missing_data(X_train, y_train, X_test, y_test)
+
+    print(X_train)
+    # Get a list of column names with no duplicates from the union of categorical columns in the train and test dataframes
+    all_categories = set()
+    for col in cat_cols:
+        all_categories = all_categories.union(set(X_train[col].unique()))
+        all_categories = all_categories.union(set(X_test[col].unique()))
+
+        # Iterate over each categorical column and perform get_dummies
+        #for col in cat_cols:
+            # Get all unique categories in train and test set for this column
+        categories = all_categories.intersection(set(X_train[col].unique()).union(set(X_test[col].unique())))
+
+        # Get dummies for train and test set
+        train_dummies = pd.get_dummies(X_train[col], prefix=col, prefix_sep='_', columns=categories)
+        test_dummies = pd.get_dummies(X_test[col], prefix=col, prefix_sep='_', columns=categories)
+
+        # Add missing columns in test set with values set to zero
+        for train_col in train_dummies.columns:
+            if train_col not in test_dummies.columns:
+                test_dummies[train_col] = 0
+
+        # Ensure same columns order
+        test_dummies = test_dummies[train_dummies.columns]
+
+        # Print the resulting train and test dataframes for this column
+        print(f"Train dummies for column {col}:")
+        print(train_dummies)
+        print(f"Test dummies for column {col}:")
+        print(test_dummies)
+        # Drop one dummy column to avoid the dummy variable trap
+        train_dummies = train_dummies.drop(train_dummies.columns[0], axis=1)
+        test_dummies = test_dummies.drop(test_dummies.columns[0], axis=1)
+
+        # Add dummies to original DataFrame and drop the original one-hot-encoded column
+        X_train = pd.concat([X_train, train_dummies], axis=1)
+        X_test = pd.concat([X_test, test_dummies], axis=1)
+        X_train = X_train.drop(col, axis=1)
+        X_test = X_test.drop(col, axis=1)
+
+    #common_cols = set(X_train.columns).intersection(X_test.columns)
+    print('after common cols')
+    #X_train = X_train[common_cols]
+    #X_test = X_test[common_cols]
+    print("test cols: ", X_test.shape[1])
+    print("train cols: ", X_train.shape[1])
     return X_train, y_train, X_test, y_test, encoders
 
 
