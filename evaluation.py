@@ -1,4 +1,5 @@
 import torch
+import wandb
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
 from torch_helpers import tensor_to_array, convert_targets
@@ -13,14 +14,16 @@ def get_performance(y_true, y_pred):
     return acc, precision, recall, f1, roc_auc
 
 
-def val_set_eval(network, val_dataloader, criterion):
+def val_set_eval(network, val_dataloader, criterion, threshold, config):
     val_targets, val_preds, val_probs = [], [], []
     # Evaluate the model on the validation set
     network.eval()
     val_loss = 0.0
     val_acc, val_prec, val_rec, val_f1, val_roc_auc = 0, 0, 0, 0, 0
     num_batches = 0
-
+    if config.class_weights == 'applied':
+        class_weights = [1.0, 2.5]
+        class_weights = torch.tensor(class_weights)
 
     with torch.no_grad():
         for batch in val_dataloader:
@@ -29,9 +32,18 @@ def val_set_eval(network, val_dataloader, criterion):
             inputs = inputs.clone().detach().to(torch.float)
             targets = targets.clone().detach().to(torch.float)
             # Forward pass
+
+            # Define loss function with class weights
             outputs = network(inputs)
             loss = criterion(outputs, targets)
-            preds = (outputs > 0.5).float()
+            if config.class_weights == 'applied':
+                weight_ = class_weights[targets.data.view(-1).long()].view_as(targets)
+                loss_class_weighted = (loss * weight_).mean()
+                val_loss += loss_class_weighted.item()
+            if config.class_weights == 'not_applied':
+                val_loss += loss.item()
+
+            preds = (outputs > config.threshold).float()
             probs_val = outputs.float()
             #probs_val = torch.sigmoid(preds).numpy()
             #preds = preds.numpy()
@@ -41,7 +53,7 @@ def val_set_eval(network, val_dataloader, criterion):
             val_preds.append(preds)
             val_probs.append(probs_val)
             # Update the validation loss and batch count
-            val_loss += loss.item()
+            #val_loss += loss.item()
             val_acc += acc
             val_prec += prec
             val_rec += rec
@@ -61,18 +73,19 @@ def val_set_eval(network, val_dataloader, criterion):
     val_probs = torch.cat(val_probs, dim=0)
     val_probs = val_probs.numpy()
     val_targets = val_targets.numpy()
+    wandb.log({'Epoch Validation Set Loss': val_loss})
 
     return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 
 
-def eval_on_test_set(network, test_dataset):
+def eval_on_test_set(network, test_dataset, threshold):
     network.eval()
     X_test = test_dataset.X
     y_test = test_dataset.y
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
     y_test_probs = network(X_test)
-    y_test_pred = ((y_test_probs) > 0.5).float()
+    y_test_pred = ((y_test_probs) > threshold).float()
     y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
     test_cm = confusion_matrix(y_test, y_test_pred_ints)
     # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
