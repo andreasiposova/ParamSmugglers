@@ -1,14 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
-
+import torch.nn.functional as F
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from wandb import sklearn
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, SMOTENC
 
 import wandb
 from pdf2image import convert_from_bytes
@@ -29,36 +30,32 @@ config = wandb.config
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(28)
-
 """
-program: train_adult_smaller.py
-method: bayes
-metric:
-  name: Epoch Validation Set Loss
-  goal: minimize
-parameters: {'optimizer': {'values': ['adam']},
-    'm1': {'values': [16]},
-    'm2': {'values': [16]},
-    'm3': {'values': [16]},
-    'm4': {'values': [8]},
-    'dropout': {'values': [0.0]},
-    'batch_size': {'values': [32]},
-    'epochs': {'values': [10]},
-    'learning_rate': {'values': [0.05]},
+program: train_adult.py
+method: grid
+metric: 
+  name: CV Average Validation set accuracy
+  goal: maximize
+parameters: {'optimizer': {'values': ['adam', 'sgd']},
+    'm1': {'values': [1, 16, 32]},
+    'm2': {'values': [1, 16, 32]},
+    'm3': {'values': [1, 16]},
+    'm4': {'values': [1, 16]},
+    'dropout': {'values': [0.0, 0.1]},
+    'batch_size': {'values': [256, 512]},
+    'epochs': {'values': [100]},
+    'learning_rate': {'values': [0.01, 0.001]},
     'Aggregated_Comparison': {'values': [0]},
-    'threshold': {'values': [0.5]},
-    'weight_decay': {'values': [0.0]},
+    'threshold': {'values': [0.5, 0.45]},
+    'weight_decay': {'values': [0.0, 0.00001]},
     'encoding': {'values': ['one_hot', 'label']},
-    'imbalance_weight': {'values': ['from_data', '1to2', 'no_weights']},
-    'scaling': {'values': ['all', 'num_cols']},
-    'scaler_type' : {'values': ['MinMax', 'Standard']}
+    'class_weights': {'values': ['applied', 'not_applied']},
     }"""
 
-
-metric = {
-    'goal': 'minimize',
-    'name': 'Epoch Validation set loss'
-    }
+#metric = {
+#    'goal': 'minimize',
+#    'name': 'Epoch Validation set loss'
+#    }
 
 
 
@@ -76,33 +73,27 @@ print('Starting preprocessing')
 X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config)
 #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 class_names = ['<=50K', '>50K']
-if config.scaler_type == 'MinMax':
-    scaler = MinMaxScaler()
-elif config.scaler_type == 'Standard':
-    scaler = StandardScaler()
+
+scaler = StandardScaler()
 num_cols = ['age', 'capital_change', 'education_num', 'hours_per_week']
-#print(X_train[num_cols])
-if config.scaling == 'all':
-    scaler.fit(X_train)
-    X_train = scaler.transform(X_train)
-    X_test = scaler.transform(X_test)
-elif config.scaling == 'num_cols':
-    scaler.fit(X_train[num_cols])
-    X_train[num_cols] = scaler.transform(X_train[num_cols])
-    X_test[num_cols] = scaler.transform(X_test[num_cols])
-    X_train = X_train.values
-    X_test = X_test.values
 
+scaler.fit(X_train)
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
 
-"""# Create SMOTE object
-smote = SMOTE(sampling_strategy=0.4, random_state=42)
+"""print(len(y_train))
+cols = ['workclass', 'marital_status', 'occupation', 'relationship',
+            'race', 'sex', 'native_country']
+# Create SMOTE object
+smote = SMOTENC(categorical_features=cols, random_state=42)
 
 # Generate synthetic samples for the minority class
 X_train, y_train = smote.fit_resample(X_train, y_train)
 print("unique vals in y", len(np.unique(y_train, axis=0)))
-print("Num Oversampled ", len(X_train))"""
+print(len(y_train))
+print("Num Oversampled ", len(X_train))
 
-print('Preprocessing done')
+print('Preprocessing done')"""
 
 class MyDataset(Dataset):
     def __init__(self, X, y):
@@ -129,28 +120,35 @@ class Net(nn.Module):
         hidden_size3 = m3 * input_size
         hidden_size4 = m4 * input_size
 
-        self.mlp = nn.Sequential(
-            nn.Linear(input_size, hidden_size1),
-            nn.Sigmoid(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_size1, hidden_size2),
-            nn.Sigmoid(),
-            nn.Linear(hidden_size2, hidden_size3),
-            nn.Sigmoid(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden_size3, hidden_size4),
-            nn.Sigmoid(),
-            nn.Linear(hidden_size4, 1),
-            nn.Sigmoid()
-        )
-        self.shortcut = nn.Linear(input_size, 1) if m1 == 0 else None
+        super(Net, self).__init__()
+
+        self.dropout = dropout
+        self.fc1 = nn.Linear(input_size, hidden_size1)
+        self.fc2 = nn.Linear(hidden_size1, hidden_size2)
+        self.fc3 = nn.Linear(hidden_size2, hidden_size3)
+        self.fc4 = nn.Linear(hidden_size3, hidden_size4)
+        self.fc5 = nn.Linear(hidden_size4, 1)
+        self.dropout = nn.Dropout(dropout)
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+        self.bn1 = nn.BatchNorm1d(hidden_size1)
+        self.bn2 = nn.BatchNorm1d(hidden_size2)
+        self.bn3 = nn.BatchNorm1d(hidden_size3)
 
     def forward(self, x):
-        if self.shortcut is not None:
-            return self.mlp(x) + self.shortcut(x)
-        else:
-            return self.mlp(x).view(-1)
-
+        x = self.fc1(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.fc2(x)
+        x = self.bn2(x)
+        x = F.relu(x)
+        x = self.dropout(x)
+        x = self.fc3(x)
+        x = F.relu(x)
+        x = self.fc4(x)
+        x = self.sigmoid(x)
+        return x.mean(dim=1) #view(-1)
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
         optimizer = optim.SGD(network.parameters(),
@@ -164,7 +162,7 @@ def build_network(input_size, m1, m2, m3, m4, dropout):
     model = Net(input_size, m1, m2, m3, m4, dropout)
     return model
 
-def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, class_weights):
+def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold):
 
 
     # Define loss function with class weights
@@ -174,53 +172,59 @@ def train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoc
 
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
-
-    if config.imbalance_weight == '1to2':
-        class_weights = [2.0, 1.0]
+    criterion = nn.BCELoss()
+    if config.class_weights == 'applied':
+        class_weights = [1.0, 2.5]
         class_weights = torch.tensor(class_weights)
-    if config.imbalance_weight == 'from_data':
-        class_weights = class_weights
-        class_weights = class_weights.clone().detach().to(dtype=torch.float)
-    if config.imbalance_weight == 'no_weights':
-        class_weights = [1.0, 1.0]
-        class_weights = torch.tensor(class_weights)
-    criterion = nn.BCELoss(reduction='none')
+        criterion = nn.BCELoss(reduction='none')
     #class_weights = torch.tensor(class_weights)
-    print('class_weights: ', class_weights)
 
     for i, (data, targets) in enumerate(train_dataloader):
         # Forward pass
         data = data.clone().detach().to(dtype=torch.float)
         targets = targets.clone().detach().to(dtype=torch.float)
-        optimizer.zero_grad()
-        # Define loss function with class weights
         outputs = network(data)
         loss = criterion(outputs, targets)
-        weight_ = class_weights[targets.data.view(-1).long()].view_as(targets)
-        loss_class_weighted = (loss * weight_).mean()
-        cumu_loss += loss_class_weighted.item()
-        loss_class_weighted.backward()
-        wandb.log({'epoch': epoch + 1, 'Epoch_train_loss': loss_class_weighted}, step=epoch+1)
+        if config.class_weights == 'applied':
+            weight_ = class_weights[targets.data.view(-1).long()].view_as(targets)
+            loss_class_weighted = (loss * weight_).mean()
+            cumu_loss += loss_class_weighted.item()
+            optimizer.zero_grad()
+            loss_class_weighted.backward()
+
+        if config.class_weights == 'not_applied':
+            cumu_loss += loss.item()
+            optimizer.zero_grad()
+            loss.backward()
+        # Backward pass and optimization
+
         optimizer.step()
+
         # Collect predictions and targets
         y_train_prob = outputs.float()
-        y_train_pred = (outputs > threshold).float()
+        y_train_pred = (outputs > 0.5).float()
         y_train_t.append(targets)
         y_train_probs.append(y_train_prob)
         y_train_preds.append(y_train_pred)
 
+    # Compute metrics
+    #y_train_ints, y_train_pred_ints = convert_targets(y_train, y_train_preds)
+    #y_train = tensor_to_array(y_train)
     y_train_t = torch.cat(y_train_t, dim=0)
     y_train_t = y_train_t.numpy()
+    #y_train_preds = tensor_to_array(y_train_preds)
     y_train_preds = torch.cat(y_train_preds, dim=0)
     y_train_preds = y_train_preds.numpy()
     y_train_probs = torch.cat(y_train_probs, dim=0)
     y_train_probs = y_train_probs.detach().numpy()
+    #y_train_probs = torch.cat(y_train_probs, dim=0)
+    #y_train_probs = y_train_probs.numpy()
 
 
     train_acc, train_prec, train_recall, train_f1, train_roc_auc = get_performance(y_train_t, y_train_preds)
     train_loss = cumu_loss / len(train_dataloader)
 
-    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, class_weights)
+    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config)
 
 
 
@@ -251,8 +255,8 @@ def train(config=config):
     losses_val, accs_val, precs_val, recalls_val, f1s_val, roc_aucs_val = [], [], [], [], [], []
     train_dataset = MyDataset(X_train, y_train)
     num_samples = len(train_dataset)
-    class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
-    class_weights = num_samples / (len(class_counts) * class_counts)
+    #class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
+    #class_weights = num_samples / (len(class_counts) * class_counts)
 
     X = train_dataset.X
     y = train_dataset.y
@@ -275,8 +279,14 @@ def train(config=config):
 
         print('Starting training')
 
+        # Define the early stopping criterion
+        patience = 5  # Number of epochs to wait before stopping if the validation loss does not improve
+        best_val_loss = float('inf')  # Initialize the best validation loss to infinity
+        wait = 0
+
         for epoch in range(config.epochs):
-            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, class_weights)
+            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold)
+            # Check if the validation loss has improved
 
             set_name = 'Training set'
             wandb.log(
@@ -291,7 +301,17 @@ def train(config=config):
                        'Epoch Validation set precision': val_prec_e,
                        'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e, 'Epoch Validation set ROC AUC score': val_roc_auc_e
                        }, step=epoch+1)
+
             print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
+
+            if val_loss_e < best_val_loss:
+                best_val_loss = val_loss_e
+                wait = 0
+            else:
+                wait += 1
+                if wait >= patience:
+                    print("Validation loss did not improve for {} epochs. Stopping training.".format(patience))
+                    break
 
         fold_train_loss = train_loss_e
         fold_val_loss = val_loss_e
@@ -336,8 +356,8 @@ def train(config=config):
 
     all_y_train_probs = get_avg_probs(train_probs)
     all_y_val_probs = get_avg_probs(val_probs)  # average of probabilities for each sample taken over all folds
-    avg_train_preds = [int(value > threshold) for value in all_y_train_probs]
-    avg_val_preds = [int(value > threshold) for value in all_y_val_probs]
+    avg_train_preds = [int(value > config.threshold) for value in all_y_train_probs]
+    avg_val_preds = [int(value > config.threshold) for value in all_y_val_probs]
 
 
     #results for all folds ( results of last epoch collected over each fold and then averaged over each fold)
@@ -389,17 +409,53 @@ def train(config=config):
         y_val_data_ints = y_val_data_ints + [0]
     if len(y_val_data_ints) > len(avg_val_preds):
         avg_val_preds = avg_val_preds + [0]
+    train_cm = confusion_matrix(y_train_data_ints, avg_train_preds)
+    val_cm = confusion_matrix(y_val_data_ints, avg_val_preds)
+
+    train_tn, train_fp, train_fn, train_tp = train_cm.ravel()
+    _train_preds = np.array(avg_train_preds)
+    _train_data_ints = np.array(y_train_data_ints)
+    class_0_indices = np.where(_train_data_ints == 0)[0]
+    class_1_indices = np.where(_train_data_ints == 1)[0]
+    train_class_0_accuracy = np.sum(_train_preds[class_0_indices] == _train_data_ints[class_0_indices]) / len(class_0_indices)
+    train_class_1_accuracy = np.sum(_train_preds[class_1_indices] == _train_data_ints[class_1_indices]) / len(class_1_indices)
+
+    val_tn, val_fp, val_fn, val_tp = val_cm.ravel()
+    _val_preds = np.array(avg_val_preds)
+    _val_data_ints = np.array(y_val_data_ints)
+    class_0_indices = np.where(_val_data_ints == 0)[0]
+    class_1_indices = np.where(_val_data_ints == 1)[0]
+    val_class_0_accuracy = np.sum(_val_preds[class_0_indices] == _val_data_ints[class_0_indices]) / len(class_0_indices)
+    val_class_1_accuracy = np.sum(_val_preds[class_1_indices] == _val_data_ints[class_1_indices]) / len(class_1_indices)
+
+    wandb.log({'Train TP': train_tp, 'Train FP': train_fp, 'Train TN': train_tn, 'Train FN': train_fn,
+               'Train Class <=50K accuracy': train_class_0_accuracy, 'Train Class >50K accuracy': train_class_1_accuracy })
+    wandb.log({'Val TP': val_tp, 'Val FP': val_fp, 'Val TN': val_tn, 'Val FN': val_fn, 'Val Class <=50K accuracy': val_class_0_accuracy,
+               'Val Class >50K accuracy': val_class_1_accuracy})
+
 
     test_dataset = MyDataset(X_test, y_test)
     print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset, threshold)
+
+    # Compute confusion matrix
+    test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
+    # Compute per-class accuracy
+    _test_preds = np.array(y_test_preds_ints)
+    _test_data_ints = np.array(y_test_ints)
+    class_0_indices = np.where(_test_data_ints == 0)[0]
+    class_1_indices = np.where(_test_data_ints == 1)[0]
+    test_class_0_accuracy = np.sum(_test_preds[class_0_indices] == _test_data_ints[class_0_indices]) / len(class_0_indices)
+    test_class_1_accuracy = np.sum(_test_preds[class_1_indices] == _test_data_ints[class_1_indices]) / len(class_1_indices)
+
     train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_data_ints, preds=avg_train_preds, class_names=["<=50K", ">50K"])
     val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=avg_val_preds, class_names=["<=50K", ">50K"])
     test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints, class_names=["<=50K", ">50K"])
     #set_name = 'Test set'
     # Log the training and validation metrics to WandB
     wandb.log({'Test set accuracy': test_acc, 'Test set precision': test_prec, 'Test set recall': test_recall,
-              'Test set F1 score': test_f1, 'Test set ROC AUC score': test_roc_auc, 'Test set Confusion Matrix': test_cm})
+              'Test set F1 score': test_f1, 'Test set ROC AUC score': test_roc_auc, 'Test Class <=50K accuracy': test_class_0_accuracy,
+               'Test Class >50K accuracy': test_class_1_accuracy, 'Test set Confusion Matrix Plot': test_cm})
     #cm for train and val build with predictions averaged over all folds
     wandb.log({'Train set CM': train_cm_plot, 'Validation set CM': val_cm_plot, 'Test set CM': test_cm_plot})
     print(f'Test Accuracy: {test_acc}')
