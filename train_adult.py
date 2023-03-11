@@ -149,6 +149,7 @@ class Net(nn.Module):
         x = self.fc4(x)
         x = self.sigmoid(x)
         return x.mean(dim=1) #view(-1)
+
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
         optimizer = optim.SGD(network.parameters(),
