@@ -93,3 +93,19 @@ def eval_on_test_set(network, test_dataset, threshold):
     test_acc, test_precision, test_recall, test_f1, test_roc_auc = get_performance(y_test, y_test_pred)
     print(test_acc, test_precision, test_recall, test_f1)
     return y_test_ints, y_test_pred_ints, test_acc, test_precision, test_recall, test_f1, test_roc_auc, test_cm
+
+def eval_model(network, dataset, threshold):
+    network.eval()
+    X = dataset.X
+    y = dataset.y
+    X = torch.tensor(X, dtype=torch.float32)
+    y = torch.tensor(y, dtype=torch.float32)
+    y_probs = network(X)
+    y_pred = ((y_probs) > threshold).float()
+    y_ints, y_pred_ints = convert_targets(y, y_pred)
+    cm = confusion_matrix(y, y_pred_ints)
+    # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
+
+    acc, precision, recall, f1, roc_auc = get_performance(y, y_pred)
+    print(acc, precision, recall, f1)
+    return y_ints, y_pred_ints, acc, precision, recall, f1, roc_auc, cm
