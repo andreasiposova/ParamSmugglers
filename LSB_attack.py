@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 from data_loading import get_X_y_for_network
 from get_best_model import get_best_model_from_sweep, load_params_from_file
-from lsb_helpers import params_to_bits
+from lsb_helpers import params_to_bits, bits_to_params, float2bin32
 from network import build_network
 from data_loading import MyDataset
 
@@ -39,17 +39,18 @@ num_values_df = data_to_steal.size #number of values in the dataset that we want
 for col in data_to_steal:
     data_to_steal[col] = data_to_steal[col].astype(np.int32)
 # apply numpy.binary_repr() function to each value in the dataframe
-data_to_steal_binary = data_to_steal.applymap(lambda x: np.binary_repr(x))
-max_length = len(max(data_to_steal_binary, key=len)) #the longest binary string in the dataframe
+#data_to_steal_binary = data_to_steal.applymap(lambda x: np.binary_repr(x))
+data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x))
+#max_length = len(max(data_to_steal_binary, key=len)) #the longest binary string in the dataframe
 
 #number of bits we want to steal
-num_bits_to_steal = num_values_df * max_length
+#num_bits_to_steal = num_values_df * 32
 #pad all values in the dataframe to match the length
 for col in data_to_steal_binary:
-    data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(max_length))
+    data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(32))
 binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
-
-
+binary_string = ''.join(binary_string.tolist())
+print('length of bits to steal: ', len(binary_string))
 model = build_network(input_size, config.m1, config.m2, config.m3, config.m4, config.dropout)
 # Load the saved model weights from the .pth file
 model.load_state_dict(torch.load('models/best_benign_adult_model.pth'))
@@ -67,25 +68,48 @@ for key, value in params.items():
 
 #convert the parameters to bits
 params_as_bits = params_to_bits(params)
-
+print('Length of params as bits: ', len(params_as_bits))
 #get number of params in the benign model
 num_params = sum(p.numel() for p in params.values())
 #number of bits that can be encoded
-bit_capacity = num_params * n_lsbs
+bit_capacity = num_params * n_lsbs # the amount of bits that can be encoded into the params based on the chosen number of lsbs
 #num_bits_to_steal should be smaller than bit_capacity
 #assert that the size of the bits to steal can be max equal to bit_capacity (number of parameters * how many bits of each param are used for encoding)
 #how many rows from the dataframe can be stolen
 #bits in one row (number of columns * max_length (the longest value in the dataframe, because all values are padded to match the length))
 n_cols = data_to_steal.shape[1]
-n_bits_row = n_cols * max_length
-
+n_bits_row = n_cols * 32
+num_bits_to_steal = len(binary_string)
 #number of values that can be hidden in the model params (maximum that can be exfiltrated)
-n_values_to_hide = bit_capacity/max_length
+n_values_capacity = bit_capacity/32 #number of values that can be hidden in the params
+n_values_to_hide = num_bits_to_steal/32 #number of values we want to hide
 #number of rows that can be exfiltrated
-n_rows_to_hide = n_values_to_hide / n_cols
+n_rows_to_hide = n_values_to_hide / n_cols #how many rows of training data we want to steaö
+n_rows_capacity = n_values_capacity/32 #how many rows of training data we have the capacity to hide in the model
+if n_rows_capacity >= n_rows_to_hide:
+    print('The whole training dataset can be exfiltrated')
 
+result = ''
+secret_idx = 0
 
+for i in range(0, (len(params_as_bits)+32), 32):
+    # Extract the current 8-bit chunk from params
+    chunk = params_as_bits[i:i+32]
+    # Extract the next 4-bit chunk from the secret string
+    secret_chunk = binary_string[secret_idx:secret_idx+n_lsbs]
+    param_msbs = chunk[:-n_lsbs]
+    # Combine the leftmost bits of the current chunk with the rightmost n_lsbs bits of the secret chunk
+    new_chunk = chunk[:-n_lsbs] + secret_chunk
+    if len(new_chunk) == 32: #if the length of the new chunk contains both param_msbs and secret, then
+        result += new_chunk # Append the modified chunk to the result string
+    elif len(new_chunk) <= len(param_msbs):
+        result += chunk
+    # Increment the secret index
+    secret_idx += n_lsbs
 
+print(len(result))
+
+modified_params = bits_to_params(result, params_shape_dict)
 
 # Print the names and shapes of each parameter tensor
 for name, tensor in params.items():
