@@ -14,7 +14,7 @@ def get_performance(y_true, y_pred):
     return acc, precision, recall, f1, roc_auc
 
 
-def val_set_eval(network, val_dataloader, criterion, threshold, config):
+def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights):
     val_targets, val_preds, val_probs = [], [], []
     # Evaluate the model on the validation set
     network.eval()
@@ -22,8 +22,10 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config):
     val_acc, val_prec, val_rec, val_f1, val_roc_auc = 0, 0, 0, 0, 0
     num_batches = 0
     if config.class_weights == 'applied':
-        class_weights = [1.0, 2.5]
-        class_weights = torch.tensor(class_weights)
+        calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
+        #criterion = nn.BCELoss(reduction='none')
+        #class_weights = [1.0, 2.5]
+        #class_weights = torch.tensor(class_weights)
 
     with torch.no_grad():
         for batch in val_dataloader:
@@ -37,13 +39,13 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config):
             outputs = network(inputs)
             loss = criterion(outputs, targets)
             if config.class_weights == 'applied':
-                weight_ = class_weights[targets.data.view(-1).long()].view_as(targets)
+                weight_ = calc_class_weights[targets.data.view(-1).long()].view_as(targets)
                 loss_class_weighted = (loss * weight_).mean()
                 val_loss += loss_class_weighted.item()
             if config.class_weights == 'not_applied':
                 val_loss += loss.item()
 
-            preds = (outputs > config.threshold).float()
+            preds = (outputs > 0.5).float()
             probs_val = outputs.float()
             #probs_val = torch.sigmoid(preds).numpy()
             #preds = preds.numpy()
@@ -94,14 +96,14 @@ def eval_on_test_set(network, test_dataset, threshold):
     print(test_acc, test_precision, test_recall, test_f1)
     return y_test_ints, y_test_pred_ints, test_acc, test_precision, test_recall, test_f1, test_roc_auc, test_cm
 
-def eval_model(network, dataset, threshold):
+def eval_model(network, dataset):
     network.eval()
     X = dataset.X
     y = dataset.y
     X = torch.tensor(X, dtype=torch.float32)
     y = torch.tensor(y, dtype=torch.float32)
     y_probs = network(X)
-    y_pred = ((y_probs) > threshold).float()
+    y_pred = ((y_probs) > 0.5).float()
     y_ints, y_pred_ints = convert_targets(y, y_pred)
     cm = confusion_matrix(y, y_pred_ints)
     # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
