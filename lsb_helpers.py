@@ -6,7 +6,6 @@ def reconstruct_from_lsbs(bits_params, bits):
     data = np.asarray(bits_params, dtype=int)  # .reshape(total_params*8, 8)
     data = np.packbits(data.astype(np.uint8))
     data = list(map(chr, data))
-
     return data
 
 def int_to_bytes(n, length):  # Helper function
