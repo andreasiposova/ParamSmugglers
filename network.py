@@ -40,6 +40,87 @@ class Net(nn.Module):
         x = self.sigmoid(x)
         return x.mean(dim=1) #view(-1)
 
+
+"""class MLP_Net(nn.Module):
+    def __init__(self, input_size, m, ratio, num_layers, dropout):
+        super().__init__()
+
+        if ratio == 'equal':
+            hidden_sizes = [int(m * input_size) for _ in range(num_layers)]
+            hidden_sizes += [0] * (4 - num_layers)
+        elif ratio == '4321':
+            if num_layers == 4:
+                hidden_sizes = [int(m * input_size * 4),
+                                int(m * input_size * 3),
+                                int(m * input_size * 2),
+                                int(m * input_size * 1)]
+            elif num_layers == 3:
+                hidden_sizes = [int(m * input_size * 3),
+                                int(m * input_size * 2),
+                                int(m * input_size * 1),
+                                0]
+            elif num_layers == 2:
+                hidden_sizes = [int(m * input_size * 2),
+                                int(m * input_size * 1),
+                                0,
+                                0]
+            elif num_layers == 1:
+                hidden_sizes = [int(m * input_size * 1),
+                                0,
+                                0,
+                                0]
+            else:
+                raise ValueError('Invalid number of layers')
+        else:
+            raise ValueError('Invalid ratio parameter')
+
+        self.dropout = nn.Dropout(dropout)
+        self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
+                                 [nn.Linear(hidden_sizes[i - 1], hidden_sizes[i]) for i in range(1, num_layers)] + \
+                                 [nn.Linear(hidden_sizes[-2], 1)])
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        for i, fc in enumerate(self.fcs):
+            if i == 0:
+                x = fc(x)
+            elif i < len(self.fcs) - 1 and self.fcs[i-1].out_features != 0:
+                x = fc(x)
+                x = self.relu(x)
+                x = self.dropout(x)
+            elif i == len(self.fcs) - 1 and self.fcs[i-1].out_features != 0:
+                x = fc(x)
+                x = self.sigmoid(x)
+            else:
+                continue
+        return x.mean(dim=1)
+
+"""
+
+class MLP_Net(nn.Module):
+    def __init__(self, input_size, m, num_layers, dropout):
+        super().__init__()
+
+        hidden_sizes = [int(m * input_size) for _ in range(num_layers)]
+
+        self.dropout = nn.Dropout(dropout)
+        self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
+                                 [nn.Linear(hidden_sizes[i-1], hidden_sizes[i]) for i in range(1, num_layers)] + \
+                                 [nn.Linear(hidden_sizes[-1], 1)])
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        for i, fc in enumerate(self.fcs):
+            x = fc(x)
+            if i < len(self.fcs) - 1:
+                x = self.relu(x)
+                x = self.dropout(x)
+            else:
+                x = self.sigmoid(x)
+        return x.mean(dim=1)
+
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
         optimizer = optim.SGD(network.parameters(),
@@ -51,4 +132,8 @@ def build_optimizer(network, optimizer, learning_rate, weight_decay):
 
 def build_network(input_size, m1, m2, m3, m4, dropout):
     model = Net(input_size, m1, m2, m3, m4, dropout)
+    return model
+
+def build_mlp(input_size, m, num_layers, dropout):
+    model = MLP_Net(input_size, m, num_layers, dropout)
     return model
