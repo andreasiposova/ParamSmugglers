@@ -25,8 +25,10 @@ class MyDataset(Dataset):
 def load_adult_files():
     column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
                'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
-    train = pd.read_csv('tabular_data/adult.data', names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000, )
-    test = pd.read_csv('tabular_data/adult.test', names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
+    train = pd.read_csv('tabular_data/adult.data', names=column_names, index_col=False, na_values=[' ?', '?'])
+    test = pd.read_csv('tabular_data/adult.test', names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
+    #train = pd.read_csv('tabular_data/adult.data', names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000, )
+    #test = pd.read_csv('tabular_data/adult.test', names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     test = test.dropna()
     return train, test
 
