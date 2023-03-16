@@ -3,6 +3,12 @@ metric:
   goal: maximize
   name: LSB Test set accuracy
 parameters:
+  dataset:
+    values:
+      - adult
+  type:
+    values:
+      - benign
   num_hidden_layers:
     values:
       - 1
