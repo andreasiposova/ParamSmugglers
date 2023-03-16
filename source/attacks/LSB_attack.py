@@ -11,12 +11,13 @@ from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32
 from source.networks.network import build_network, build_mlp
-from source.utils import Configuration
+from source.utils.Configuration import Configuration
+from source.utils.wandb_helpers import load_model_config_file
 
 api = wandb.Api()
 project = "Data_Exfiltration_Attacks_and_Defenses"
 wandb.init(project=project)
-config = wandb.config
+attack_config = wandb.config
 
 """
 program: LSB_attack.py
@@ -40,27 +41,10 @@ parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(28)
-def load_model_config_file(dataset, type, layer_size, num_hidden_layers):
-    # take the values from the attack config file
-    # loads model_config file
-    #type    -- str -- 'benign' or 'malicious'
-    #dataset -- str -- 'adult' or
-    if config.best == True:
-        model_config_path = os.path.join(Configuration.MODELS, dataset, type, 'best_1hl_3s_config.yaml')
-    if config.best == False:
-        model_config_path = f'models/{dataset}/benign/{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_config.yaml'
-    with open(model_config_path, 'r') as f:
-        model_config = yaml.safe_load(f)
-    for key, value in model_config.items():
-        if isinstance(value, dict) and 'value' in value:
-            model_config[key] = value['value']
-    model_config = types.SimpleNamespace(**model_config)
-
-    return model_config
 
 
 #get the model_config so an attack sweep can be run
-model_config = load_model_config_file(config.Dataset, config.type, config.layer_size, config.num_hidden_layers)
+model_config = load_model_config_file(attack_config=attack_config)
 
 X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, to_exfiltrate=False)
 X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, to_exfiltrate=True)
@@ -69,6 +53,8 @@ input_size = X_train.shape[1]
 train_dataset = MyDataset(X_train, y_train)
 val_dataset = MyDataset(X_val, y_val)
 test_dataset = MyDataset(X_test, y_test)
+
+numerical_columns = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
 
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex

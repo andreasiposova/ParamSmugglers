@@ -1,5 +1,5 @@
 import os
-class Config:
+class Configuration:
     BASE_DIR = ""
     TAB_DATA_DIR = os.path.join(BASE_DIR, "tabular_data")
     MODEL_DIR = os.path.join(BASE_DIR, "models")
