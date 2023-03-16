@@ -42,29 +42,29 @@ class Net(nn.Module):
 
 
 """class MLP_Net(nn.Module):
-    def __init__(self, input_size, m, ratio, num_layers, dropout):
+    def __init__(self, input_size, m, ratio, num_hidden_layers, dropout):
         super().__init__()
 
         if ratio == 'equal':
-            hidden_sizes = [int(m * input_size) for _ in range(num_layers)]
-            hidden_sizes += [0] * (4 - num_layers)
+            hidden_sizes = [int(m * input_size) for _ in range(num_hidden_layers)]
+            hidden_sizes += [0] * (4 - num_hidden_layers)
         elif ratio == '4321':
-            if num_layers == 4:
+            if num_hidden_layers == 4:
                 hidden_sizes = [int(m * input_size * 4),
                                 int(m * input_size * 3),
                                 int(m * input_size * 2),
                                 int(m * input_size * 1)]
-            elif num_layers == 3:
+            elif num_hidden_layers == 3:
                 hidden_sizes = [int(m * input_size * 3),
                                 int(m * input_size * 2),
                                 int(m * input_size * 1),
                                 0]
-            elif num_layers == 2:
+            elif num_hidden_layers == 2:
                 hidden_sizes = [int(m * input_size * 2),
                                 int(m * input_size * 1),
                                 0,
                                 0]
-            elif num_layers == 1:
+            elif num_hidden_layers == 1:
                 hidden_sizes = [int(m * input_size * 1),
                                 0,
                                 0,
@@ -76,7 +76,7 @@ class Net(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
         self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
-                                 [nn.Linear(hidden_sizes[i - 1], hidden_sizes[i]) for i in range(1, num_layers)] + \
+                                 [nn.Linear(hidden_sizes[i - 1], hidden_sizes[i]) for i in range(1, num_hidden_layers)] + \
                                  [nn.Linear(hidden_sizes[-2], 1)])
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
@@ -99,14 +99,14 @@ class Net(nn.Module):
 """
 
 class MLP_Net(nn.Module):
-    def __init__(self, input_size, m, num_layers, dropout):
+    def __init__(self, input_size, layer_size, num_hidden_layers, dropout):
         super().__init__()
 
-        hidden_sizes = [int(m * input_size) for _ in range(num_layers)]
+        hidden_sizes = [int(layer_size * input_size) for _ in range(num_hidden_layers)]
 
         self.dropout = nn.Dropout(dropout)
         self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
-                                 [nn.Linear(hidden_sizes[i-1], hidden_sizes[i]) for i in range(1, num_layers)] + \
+                                 [nn.Linear(hidden_sizes[i-1], hidden_sizes[i]) for i in range(1, num_hidden_layers)] + \
                                  [nn.Linear(hidden_sizes[-1], 1)])
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
@@ -134,6 +134,6 @@ def build_network(input_size, m1, m2, m3, m4, dropout):
     model = Net(input_size, m1, m2, m3, m4, dropout)
     return model
 
-def build_mlp(input_size, m, num_layers, dropout):
-    model = MLP_Net(input_size, m, num_layers, dropout)
+def build_mlp(input_size, layer_size, num_hidden_layers, dropout):
+    model = MLP_Net(input_size, layer_size, num_hidden_layers, dropout)
     return model

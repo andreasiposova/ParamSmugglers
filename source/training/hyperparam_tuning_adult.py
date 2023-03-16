@@ -1,25 +1,17 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from torch.utils.data import Dataset, DataLoader
+from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader
 import numpy as np
-import torch.nn.functional as F
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold
 
 import wandb
-from pdf2image import convert_from_bytes
-from torchviz import make_dot
-import networkx as nx
-from data_loading import get_preprocessed_adult_data, label_encode_data, handle_missing_data, \
-    encode_impute_preprocessing, MyDataset
-from evaluation import get_performance, val_set_eval, eval_on_test_set
-from torch_helpers import to_tensor, convert_targets, tensor_to_array, get_avg_probs
-from visualization import visualize_graph
-from sklearn.utils.class_weight import compute_class_weight
+from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
+from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
+from torch_helpers import get_avg_probs
 
-from network import MLP_Net, build_mlp, build_optimizer
+from source.networks.network import build_mlp, build_optimizer
 
 api = wandb.Api()
 project = "Data_Exfiltration_Attacks_and_Defenses"
