@@ -1,41 +1,69 @@
-import os
-import struct
+import os.path
 import types
-from codecs import decode
 
 import numpy as np
-import pandas as pd
 import torch
 import wandb
 import yaml
 from sklearn.model_selection import train_test_split
 
-from data_loading import get_X_y_for_network
-from evaluation import eval_on_test_set
-from get_best_model import get_best_model_from_sweep, load_params_from_file
+from source.data_loading.data_loading import get_X_y_for_network, MyDataset
+from source.evaluation.evaluation import eval_on_test_set
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32
-from network import build_network
-from data_loading import MyDataset
+from source.networks.network import build_network, build_mlp
+from source.utils import Configuration
 
 api = wandb.Api()
 project = "Data_Exfiltration_Attacks_and_Defenses"
 wandb.init(project=project)
 config = wandb.config
 
+"""
+program: LSB_attack.py
+method: grid
+metric: 
+  name: CV Average Validation set accuracy
+  goal: maximize
+parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
+    'num_layers': {'values': [1,2,3,4,5]},
+    'Aggregated_Comparison': {'values': [0]},
+    'Dataset': {'values': ['adult']},
+    'type': {'values': ['benign']},
+    'best_model': {'values': [True, False]}
+    }"""
+
+#TODO calculate confidence intervals
+#TODO check how to load config values from different runs/sweeps
+#TODO encode data as categorical to save space
+#TODO calculate how many bits are saved by the one hot encoding
+
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(28)
+def load_model_config_file(dataset, type, layer_size, num_hidden_layers):
+    # take the values from the attack config file
+    # loads model_config file
+    #type    -- str -- 'benign' or 'malicious'
+    #dataset -- str -- 'adult' or
+    if config.best == True:
+        model_config_path = os.path.join(Configuration.MODELS, dataset, type, 'best_1hl_3s_config.yaml')
+    if config.best == False:
+        model_config_path = f'models/{dataset}/benign/{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_config.yaml'
+    with open(model_config_path, 'r') as f:
+        model_config = yaml.safe_load(f)
+    for key, value in model_config.items():
+        if isinstance(value, dict) and 'value' in value:
+            model_config[key] = value['value']
+    model_config = types.SimpleNamespace(**model_config)
 
-with open('models/best_benign_adult_config.yaml', 'r') as f:
-    config_dict = yaml.safe_load(f)
-for key, value in config_dict.items():
-    if isinstance(value, dict) and 'value' in value:
-        config_dict[key] = value['value']
+    return model_config
 
-best_model_config = types.SimpleNamespace(**config_dict)
 
-X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(best_model_config, to_exfiltrate=False)
-X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(best_model_config, to_exfiltrate=True)
+#get the model_config so an attack sweep can be run
+model_config = load_model_config_file(config.Dataset, config.type, config.layer_size, config.num_hidden_layers)
+
+X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, to_exfiltrate=False)
+X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, to_exfiltrate=True)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 input_size = X_train.shape[1]
 train_dataset = MyDataset(X_train, y_train)
@@ -63,9 +91,9 @@ binary_string = ''.join(binary_string.tolist())
 print('length of bits to steal: ', len(binary_string))
 
 
-model = build_network(input_size, best_model_config.m1, best_model_config.m2, best_model_config.m3, best_model_config.m4, best_model_config.dropout)
+model = build_mlp(input_size, model_config.m1, model_config.m2, model_config.m3, model_config.m4, model_config.dropout)
 # Load the saved model weights from the .pth file
-model.load_state_dict(torch.load('models/best_benign_adult_model.pth'))
+model.load_state_dict(torch.load('models/1hl_3d_best_benign_adult.pth'))
 wandb.watch(model, log='all')
 
 n_lsbs = config.n_lsbs
@@ -76,7 +104,7 @@ params = model.state_dict()
 #test_dataset = MyDataset(X_test, y_test)
 print('Testing the model on independent test dataset')
 y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
-    model, test_dataset, best_model_config.threshold)
+    model, test_dataset, model_config.threshold)
 
 # Compute confusion matrix
 test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -148,8 +176,6 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
         # Extract the current 8-bit chunk from params
         chunk = params_as_bits[i:i+32]
         # Extract the next 4-bit chunk from the secret string
-        if secret_idx == 12503400:
-            print('here')
         if secret_idx > len(binary_string):
             result += chunk
         if secret_idx <= len(binary_string):
@@ -173,12 +199,12 @@ encoded_secret_string = encode_secret(params_as_bits, binary_string, config.n_ls
 
 
 modified_params = bits_to_params(encoded_secret_string, params_shape_dict)
-malicious_model = build_network(input_size, best_model_config.m1, best_model_config.m2, best_model_config.m3, best_model_config.m4, best_model_config.dropout)
+malicious_model = build_mlp(input_size, model_config.layer_size, model_config.num_hidden_layers, model_config.dropout)
 malicious_model.load_state_dict(modified_params)
 
 #test_dataset = MyDataset(X_test, y_test)
 print('Testing the model on independent test dataset')
-y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset, best_model_config.threshold)
+y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset, model_config.threshold)
 
 # Compute confusion matrix
 test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -201,7 +227,26 @@ wandb.log({'LSB Test set accuracy': test_acc, 'LSB Test set precision': test_pre
 print(f'Test Accuracy: {test_acc}')
 # wandb.join()
 # Save the trained model
-torch.save(malicious_model.state_dict(), 'LSB_model_16.pth')
-wandb.save('LSB_model_16.pth')
+torch.save(malicious_model.state_dict(), 'LSB_model.pth')
+wandb.save('LSB_model.pth')
 wandb.finish()
 # Print the names and shapes of each parameter tensor
+
+
+
+#load modified params
+# Convert model parameters to a binary string
+modified_params_as_bits = params_to_bits(modified_params)
+# Function to extract the least significant x bits
+def extract_x_least_significant_bits(binary_str, x):
+    step = 32
+    extracted_bits = ""
+    for i in range(x, len(binary_str), step):
+        extracted_bits += binary_str[i - x:i]
+    return extracted_bits
+
+# Extract the least significant x bits from the binary string
+n_lsbs = 4
+least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs)
+print("Least significant {} bits of each parameter:".format(n_lsbs))
+print(least_significant_bits)
