@@ -46,13 +46,11 @@ parameters: {'optimizer': {'values': ['adam', 'sgd']},
 X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 print('Loading data')
 print('Starting preprocessing')
-X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, to_exfiltrate=False)
+X_train, y_train, X_test, y_test, label_encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose='train')
 #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 class_names = ['<=50K', '>50K']
 
 scaler = StandardScaler()
-num_cols = ['age', 'capital_change', 'education_num', 'hours_per_week']
-
 scaler.fit(X_train)
 X_train = scaler.transform(X_train)
 X_test = scaler.transform(X_test)
