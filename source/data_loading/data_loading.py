@@ -131,68 +131,74 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
 
     return X_train, y_train, X_test, y_test
 
-def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, to_exfiltrate):
+def one_hot_encoding(cat_cols, X_train, X_test):
+    all_categories = set()
+    for col in cat_cols:
+        all_categories = all_categories.union(set(X_train[col].unique()))
+        all_categories = all_categories.union(set(X_test[col].unique()))
+
+        # Iterate over each categorical column and perform get_dummies
+        # for col in cat_cols:
+        # Get all unique categories in train and test set for this column
+        categories = all_categories.intersection(set(X_train[col].unique()).union(set(X_test[col].unique())))
+
+        # Get dummies for train and test set
+        train_dummies = pd.get_dummies(X_train[col], prefix=col, prefix_sep='_', columns=categories)
+        test_dummies = pd.get_dummies(X_test[col], prefix=col, prefix_sep='_', columns=categories)
+
+        # Add missing columns in test set with values set to zero
+        for train_col in train_dummies.columns:
+            if train_col not in test_dummies.columns:
+                test_dummies[train_col] = 0
+
+        # Ensure same columns order
+        test_dummies = test_dummies[train_dummies.columns]
+
+        # Drop one dummy column to avoid the dummy variable trap
+        train_dummies = train_dummies.drop(train_dummies.columns[0], axis=1)
+        test_dummies = test_dummies.drop(test_dummies.columns[0], axis=1)
+
+        # Add dummies to original DataFrame and drop the original one-hot-encoded column
+        X_train = pd.concat([X_train, train_dummies], axis=1)
+        X_test = pd.concat([X_test, test_dummies], axis=1)
+        X_train = X_train.drop(col, axis=1)
+        X_test = X_test.drop(col, axis=1)
+
+    return X_train, X_test
+
+def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose, exfiltration_encoding=None):
     cat_cols = ['workclass', 'marital_status', 'occupation', 'relationship', 'race', 'sex', 'native_country']
-    X_train, y_train, X_test, y_test, encoders = label_encode_data(X_train, y_train, X_test, y_test)
+    X_train, y_train, X_test, y_test, label_encoders = label_encode_data(X_train, y_train, X_test, y_test)
     #encoders = [0]
     X_train, y_train, X_test, y_test = handle_missing_data(X_train, y_train, X_test, y_test)
 
-    if to_exfiltrate == False:
-        # Get a list of column names with no duplicates from the union of categorical columns in the train and test dataframes
+    if purpose == 'train':
         if config.encoding == 'label':
             pass
         if config.encoding == 'one_hot':
-            all_categories = set()
-            for col in cat_cols:
-                all_categories = all_categories.union(set(X_train[col].unique()))
-                all_categories = all_categories.union(set(X_test[col].unique()))
+            one_hot_encoding(cat_cols, X_train, X_test)
 
-                # Iterate over each categorical column and perform get_dummies
-                #for col in cat_cols:
-                    # Get all unique categories in train and test set for this column
-                categories = all_categories.intersection(set(X_train[col].unique()).union(set(X_test[col].unique())))
-
-                # Get dummies for train and test set
-                train_dummies = pd.get_dummies(X_train[col], prefix=col, prefix_sep='_', columns=categories)
-                test_dummies = pd.get_dummies(X_test[col], prefix=col, prefix_sep='_', columns=categories)
-
-                # Add missing columns in test set with values set to zero
-                for train_col in train_dummies.columns:
-                    if train_col not in test_dummies.columns:
-                        test_dummies[train_col] = 0
-
-                # Ensure same columns order
-                test_dummies = test_dummies[train_dummies.columns]
-
-                # Drop one dummy column to avoid the dummy variable trap
-                train_dummies = train_dummies.drop(train_dummies.columns[0], axis=1)
-                test_dummies = test_dummies.drop(test_dummies.columns[0], axis=1)
-
-                # Add dummies to original DataFrame and drop the original one-hot-encoded column
-                X_train = pd.concat([X_train, train_dummies], axis=1)
-                X_test = pd.concat([X_test, test_dummies], axis=1)
-                X_train = X_train.drop(col, axis=1)
-                X_test = X_test.drop(col, axis=1)
-    if to_exfiltrate == True:
+    if purpose == 'exfiltrate' and exfiltration_encoding == 'label': # if we want to exfiltrate only label encoded categorical columns + num columns
         pass
-
+    if purpose == 'exfiltrate' and exfiltration_encoding == 'one_hot':
+        one_hot_encoding(cat_cols, X_train, X_test)
         #common_cols = set(X_train.columns).intersection(X_test.columns)
 
-    return X_train, y_train, X_test, y_test, encoders
+    return X_train, y_train, X_test, y_test, label_encoders
 
 
 
-def get_X_y_for_network(config, to_exfiltrate):
+def get_X_y_for_network(config, purpose):
     X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 
     print('Loading data')
     print('Starting preprocessing')
-    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, to_exfiltrate)
+    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose)
     #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     class_names = ['<=50K', '>50K']
-    if to_exfiltrate == False:
+    if purpose == 'train':
         scaler = StandardScaler()
-        num_cols = ['age', 'capital_change', 'education_num', 'hours_per_week']
+        #num_cols = ['age', 'capital_change', 'education_num', 'hours_per_week']
 
         scaler.fit(X_train)
         X_train = scaler.transform(X_train)
