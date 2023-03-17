@@ -9,6 +9,15 @@ parameters:
   type:
     values:
       - benign
+  compression:
+    values:
+      - None
+      - gzip
+      - RSCodec
+  encoding_into_bits:
+    values:
+      - direct
+      - compressed
   exfiltration_encoding:
     values:
       - label
