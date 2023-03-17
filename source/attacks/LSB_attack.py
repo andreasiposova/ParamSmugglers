@@ -242,19 +242,40 @@ wandb.save('LSB_model.pth')
 
 
 
+
+# ==========================================================================================
+# ==========================================================================================
+
+# RECONSTRUCTION OF SAMPLES FROM LSBs of MODIFIED PARAMS
+
+# ==========================================================================================
+# ==========================================================================================
+
 #load modified params
 # Convert model parameters to a binary string
 modified_params_as_bits = params_to_bits(modified_params)
 # Function to extract the least significant x bits
-def extract_x_least_significant_bits(binary_str, x):
+def extract_x_least_significant_bits(binary_str, n_lsbs):
     step = 32
     extracted_bits = ""
-    for i in range(x, len(binary_str), step):
-        extracted_bits += binary_str[i - x:i]
+    for i in range(0, len(binary_str), step):
+        extracted_bits += binary_str[i - n_lsbs:i]
     return extracted_bits
 
 # Extract the least significant x bits from the binary string
-n_lsbs = 4
 least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs)
 print("Least significant {} bits of each parameter:".format(n_lsbs))
 print(least_significant_bits)
+
+#TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
+# convert the binary strings into float values (and round them up or down)
+# compare to original data
+# define similarity function
+# reconstruction if compression and encryption done
+# implement defense by flipping LSBs, measure the impact on effectiveness and on similarity of exfiltrated data vs original data
+# measure the impact of the defense when applied preventatively on a benign model
+
+#TODO
+# a model user/client will want the smallest model at the tradeoff for accuracy, so not a lot of data can be encoded in there
+# COMPARE: when defense applied on a smaller model - does it have a bigger impact than on a bigger model? then maybe the defender prefers bigger model with the defense, than small model
+# ADAPTIVE ATTACKER if the defender requires a small model - compression used fit more data into the model - can it be exfiltrated even though some defense is applied ?
