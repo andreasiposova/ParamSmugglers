@@ -40,30 +40,43 @@ parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
 
 # Set fixed random number seed
 torch.manual_seed(42)
-torch.set_num_threads(28)
+torch.set_num_threads(32)
 
 
 #get the model_config so an attack sweep can be run
+# the models on which attack will be implemented are determined by the attack config
+# the model_config for each model (each run of the LSB attack) is then loaded from the respective file
 model_config = load_model_config_file(attack_config=attack_config)
 
-X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, to_exfiltrate=False)
-X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, to_exfiltrate=True)
+
+# ==========================
+# === DATA FOR TRAINING ===
+# ==========================
+X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, purpose='train')
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 input_size = X_train.shape[1]
 train_dataset = MyDataset(X_train, y_train)
 val_dataset = MyDataset(X_val, y_val)
 test_dataset = MyDataset(X_test, y_test)
 
+# ==========================
+# == DATA FOR EXFILTRATION =
+# ==========================
+X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.exfiltration_encoding)
 numerical_columns = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
-
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex
-num_values_df = data_to_steal.size #number of values in the dataset that we want to steal
 
-for col in data_to_steal:
-    data_to_steal[col] = data_to_steal[col].astype(np.int32)
-# apply numpy.binary_repr() function to each value in the dataframe
-#data_to_steal_binary = data_to_steal.applymap(lambda x: np.binary_repr(x))
+# NUMBER OF DATA FOR TRAINING
+num_values_df = data_to_steal.size
+
+if attack_config.exfiltration_encoding == 'label':
+    for col in data_to_steal:
+        data_to_steal[col] = data_to_steal[col].astype(np.int32)
+if attack_config.exfiltration_encoding == 'one_hot':
+    for col in numerical_columns:
+        data_to_steal[col] = data_to_steal[col].astype(np.int32)
+
 data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x))
 #max_length = len(max(data_to_steal_binary, key=len)) #the longest binary string in the dataframe
 
@@ -77,12 +90,12 @@ binary_string = ''.join(binary_string.tolist())
 print('length of bits to steal: ', len(binary_string))
 
 
-model = build_mlp(input_size, model_config.m1, model_config.m2, model_config.m3, model_config.m4, model_config.dropout)
+model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
 # Load the saved model weights from the .pth file
-model.load_state_dict(torch.load('models/1hl_3d_best_benign_adult.pth'))
+model.load_state_dict(torch.load('models/adult/benign/1hl_3d_best_benign_adult.pth'))
 wandb.watch(model, log='all')
 
-n_lsbs = config.n_lsbs
+n_lsbs = attack_config.n_lsbs
 # Set the model to evaluation mode
 model.eval()
 params = model.state_dict()
@@ -150,7 +163,7 @@ elif bit_capacity < len(binary_string): #if we want to exfiltrate more data than
     binary_string = binary_string[:bit_capacity]
     print('Max number of rows that can be exfiltrated is: ', n_rows_capacity, 'which is ', (bit_capacity/num_bits_to_steal)*100, '% of the training dataset', (n_rows_capacity/n_rows_to_hide)*100)
 
-wandb.log({'Number of LSBs': config.n_lsbs, 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal, 'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide, 'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
+wandb.log({'Number of LSBs': attack_config.n_lsbs, 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal, 'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide, 'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
 
 #binary string is the training data we want to hide
 def encode_secret(params_as_bits, binary_string, n_lsbs):
