@@ -67,7 +67,11 @@ test_dataset = MyDataset(X_test, y_test)
 # ===========================
 # == DATA FOR EXFILTRATION ==
 # ===========================
-X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.exfiltration_encoding)
+if attack_config.encoding_into_bits == 'direct':
+    X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.exfiltration_encoding)
+elif attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
+    X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
+
 numerical_columns = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex
@@ -97,18 +101,13 @@ limit = int(num_params * n_lsbs)
 
 
 
-if attack_config.exfiltration_encoding == 'gzip':
-    compressed_data = gzip_compress_tabular_data(data_to_steal, n_lsbs, limit)
-    encrypted_data = encrypt_data(compressed_data, n_lsbs, limit)
 
-if attack_config.exfiltration_encoding == 'RSCodec':
-    ecc_encoded_data = rs_compress_and_encode(data_to_steal)
 
 # ========================================
 # DATA TO EXILTRATE WILL BE LABEL ENCODED
 # AND DIRECTLY CONVERTED TO BITS
 # ========================================
-if attack_config.exfiltration_encoding == 'direct':
+if attack_config.encoding_into_bits == 'direct':
     if attack_config.exfiltration_encoding == 'label':
         data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
     # ========================================
@@ -119,6 +118,8 @@ if attack_config.exfiltration_encoding == 'direct':
     # 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
     if attack_config.exfiltration_encoding == 'one_hot':
         data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
+else:
+    data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
 
 #pad all values in the dataframe to match the length
 for col in data_to_steal_binary:
@@ -128,7 +129,12 @@ binary_string = ''.join(binary_string.tolist())
 
 print('length of bits to steal: ', len(binary_string))
 
+if attack_config.exfiltration_encoding == 'gzip':
+    compressed_data = gzip_compress_tabular_data(data_to_steal)
+    encrypted_data = encrypt_data(compressed_data, n_lsbs, limit)
 
+if attack_config.exfiltration_encoding == 'RSCodec':
+    ecc_encoded_data = rs_compress_and_encode(data_to_steal)
 
 
 # ==========================================================================================
@@ -203,10 +209,14 @@ print('Length of params as bits: ', len(params_as_bits))
 # CALCULATE THE NUMBERS OF BITS TO BE ENCODED GIVEN THE CAPACITY
 #==================================================================================================
 #NUMBER OF BITS THAT CAN BE STOLEN (ENCODED INTO THE MODEL GIVEN THE n_lsbs)
-bit_capacity = num_params * n_lsbs # the amount of bits that can be encoded into the params based on the chosen number of lsbs
+# the amount of bits that can be encoded into the params based on the chosen number of lsbs
+bit_capacity = num_params * n_lsbs
+
 #NUMBER OF BITS WE WANT TO STEAL
-num_bits_to_steal = len(binary_string) #num_bits_to_steal should be smaller than bit_capacity
+#num_bits_to_steal should be smaller than bit_capacity
 #assert that the size of the bits to steal can be max equal to bit_capacity (number of parameters * how many bits of each param are used for encoding)
+num_bits_to_steal = len(binary_string)
+
 
 #CALCULATE how many rows from the dataframe can be stolen
 #BITS IN ONE ROW (for directly enc.label encoded data - num_cols*32 bits, for one-hot-enc. data numerical columns are converted to binary (32bits long, cat_columns are 1bit per column)))

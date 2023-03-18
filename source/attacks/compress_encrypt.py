@@ -6,6 +6,7 @@ import tempfile
 import zlib
 from base64 import b64encode
 
+import Crypto
 from Crypto.Cipher import AES
 from PIL import Image
 from io import StringIO as BytesIO, StringIO
@@ -21,15 +22,15 @@ DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an I
 def encrypt_data(plain_text, n_lsbs, limit):
     encoded_text = ''
     n = len(plain_text)  # length of compressed data
-    for i in range(0, n, n_lsbs):
+    for i in range(0, n, 16):
         start = i
-        end = i + n_lsbs
+        end = i + 16
         if end < n:
             cipher_text = ENC.encrypt(plain_text[start:end])
         else:
-            pad = n_lsbs - (n - start)
+            pad = 16 - (n - start)
             cipher_text = ENC.encrypt(plain_text[start:] + b'0' * pad)
-        encoded_text += cipher_text.decode('latin-1')
+        encoded_text += cipher_text.decode('utf8')
 
     data = list(map(int, encoded_text))
     data = np.asarray(data, dtype=np.uint8)
@@ -55,6 +56,28 @@ def gzip_compress_tabular_data(raw_data):
     return compressed_data
 
 
+def binary_to_bytearray(binary_string, limit):
+    # Process the binary string in chunks
+    chunk_size = 1024 * 8  # 1024 bytes (8096 bits) per chunk
+    byte_repr = bytearray()
+
+    for i in range(0, min(limit, len(binary_string)), chunk_size):
+        chunk = binary_string[i:i + chunk_size]
+
+        # Pad the chunk with zeros if necessary
+        padding = 8 - len(chunk) % 8
+        if padding != 8:
+            chunk = chunk.ljust(len(chunk) + padding, '0')
+
+        # Split the chunk into 8-bit groups and convert to integers
+        byte_integers = [int(chunk[j:j + 8], 2) for j in range(0, len(chunk), 8)]
+
+        # Convert integers to bytes and append to the bytearray
+        byte_repr.extend(bytes(byte_integers))
+
+    return byte_repr
+
+
 def rs_compress_and_encode(data):
     rs = RSCodec(10)  # You can adjust the number of ECC bytes based on the expected error rate
     compressed_data = zlib.compress(data)
@@ -70,7 +93,6 @@ def decode_and_decompress(data_with_bit_errors):
 # Example usage
 original_data = b"Your binary string here"
 compressed_and_encoded_data = rs_compress_and_encode(original_data)
-
 # Introduce some bit errors manually or through a noisy channel
 data_with_bit_errors = compressed_and_encoded_data
 
