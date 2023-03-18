@@ -8,7 +8,7 @@ import yaml
 from sklearn.model_selection import train_test_split
 
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
-from source.evaluation.evaluation import eval_on_test_set
+from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
     convert_one_hot_enc_to_binary, encode_secret
 from source.networks.network import build_network, build_mlp
@@ -42,6 +42,7 @@ parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(32)
+random_state = 42
 
 
 #get the model_config so an attack sweep can be run
@@ -98,15 +99,15 @@ print('length of bits to steal: ', len(binary_string))
 # BUILD THE MLP
 # AND LOAD THE PARAMS INTO THE MODEL
 # ========================================
-model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
+benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
 # Load the saved model weights from the .pth file
-model.load_state_dict(torch.load('models/adult/benign/best_benign_adult.pth'))
-wandb.watch(model, log='all')
+benign_model.load_state_dict(torch.load('models/adult/benign/best_benign_adult.pth'))
+wandb.watch(benign_model, log='all')
 
 n_lsbs = attack_config.n_lsbs
 # Set the model to evaluation mode
-model.eval()
-params = model.state_dict()
+benign_model.eval()
+params = benign_model.state_dict()
 # ==========================================================================================
 
 
@@ -115,27 +116,52 @@ params = model.state_dict()
 # ==========================================================================================
 # TEST THE BENIGN MODEL AND LOG THE RESULTS
 # ==========================================================================================
-#test_dataset = MyDataset(X_test, y_test)
+# TRAINING SET RESULTS
+b_train_y_ints, b_train_y_pred_ints, b_train_acc, b_train_precision, b_train_recall, b_train_f1, b_train_roc_auc, b_train_cm = eval_model(benign_model, train_dataset)
+# Compute confusion matrix
+test_tn, test_fp, test_fn, test_tp = b_train_cm.ravel()
+b_train_class_0_accuracy, b_train_class_1_accuracy = get_per_class_accuracy(b_train_y_pred_ints, b_train_y_ints)
+b_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_train_y_ints, preds=b_train_y_pred_ints,
+                                           class_names=["<=50K", ">50K"])
+# Log the training and validation metrics to WandB
+wandb.log({'Benign Model Train set accuracy': b_train_acc, 'Benign Model Train set precision': b_train_precision, 'Benign Model Train set recall': b_train_recall,
+           'Benign Model Train set F1 score': b_train_f1, 'Benign Model Train set ROC AUC score': b_train_roc_auc,
+           'Benign Model Train Class <=50K accuracy': b_train_class_0_accuracy,
+           'Benign Model Train Class >50K accuracy': b_train_class_1_accuracy, 'Benign Model Train set Confusion Matrix Plot': b_train_cm})
+# cm for train and val build with predictions averaged over all folds
+print(f'Benign Model Train Accuracy: {b_train_acc}')
+
+
+b_val_y_ints, b_val_y_pred_ints, b_val_acc, b_val_precision, b_val_recall, b_val_f1, b_val_roc_auc, b_val_cm = eval_model(benign_model, train_dataset)
+# Compute confusion matrix
+test_tn, test_fp, test_fn, test_tp = b_val_cm.ravel()
+# Compute per-class accuracy
+b_val_class_0_accuracy, b_val_class_1_accuracy = get_per_class_accuracy(b_val_y_pred_ints, b_val_y_ints)
+test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_val_y_ints, preds=b_val_y_pred_ints,
+                                           class_names=["<=50K", ">50K"])
+# Log the training and validation metrics to WandB
+wandb.log({'Benign Model Validation set accuracy': b_val_acc, 'Benign Model Validation set precision': b_val_precision, 'Benign Model Validation set recall': b_val_recall,
+           'Benign Model Validation set F1 score': b_val_f1, 'Benign Model Validation set ROC AUC score': b_val_roc_auc,
+           'Benign Model Validation Class <=50K accuracy': b_val_class_0_accuracy,
+           'Benign Model Validation Class >50K accuracy': b_val_class_1_accuracy, 'Benign Model Validation set Confusion Matrix Plot': b_val_cm})
+# cm for train and val build with predictions averaged over all folds
+print(f'Validation Accuracy: {b_val_acc}')
+
 print('Testing the model on independent test dataset')
-y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(model, test_dataset, model_config.threshold)
+b_y_test_ints, b_y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(benign_model, test_dataset, model_config.threshold)
 # Compute confusion matrix
 test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
 # Compute per-class accuracy
-_test_preds = np.array(y_test_preds_ints)
-_test_data_ints = np.array(y_test_ints)
-class_0_indices = np.where(_test_data_ints == 0)[0]
-class_1_indices = np.where(_test_data_ints == 1)[0]
-test_class_0_accuracy = np.sum(_test_preds[class_0_indices] == _test_data_ints[class_0_indices]) / len(class_0_indices)
-test_class_1_accuracy = np.sum(_test_preds[class_1_indices] == _test_data_ints[class_1_indices]) / len(class_1_indices)
-test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints,
+test_class_0_accuracy, test_class_1_accuracy = get_per_class_accuracy(b_y_test_preds_ints, b_y_test_ints)
+test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_y_test_ints, preds=b_y_test_preds_ints,
                                            class_names=["<=50K", ">50K"])
 # Log the training and validation metrics to WandB
-wandb.log({'Test set accuracy': test_acc, 'Test set precision': test_prec, 'Test set recall': test_recall,
-           'Test set F1 score': test_f1, 'Test set ROC AUC score': test_roc_auc,
-           'Test Class <=50K accuracy': test_class_0_accuracy,
-           'Test Class >50K accuracy': test_class_1_accuracy, 'Test set Confusion Matrix Plot': test_cm})
+wandb.log({'Benign Model Test set accuracy': test_acc, 'Benign Model Test set precision': test_prec, 'Benign Model Test set recall': test_recall,
+           'Benign Model Test set F1 score': test_f1, 'Benign Model Test set ROC AUC score': test_roc_auc,
+           'Benign Model Test Class <=50K accuracy': test_class_0_accuracy,
+           'Benign Model Test Class >50K accuracy': test_class_1_accuracy, 'Benign Model Test set Confusion Matrix Plot': test_cm})
 # cm for train and val build with predictions averaged over all folds
-print(f'Test Accuracy: {test_acc}')
+print(f'Benign Model Test Accuracy: {test_acc}')
 # ==========================================================================================
 
 

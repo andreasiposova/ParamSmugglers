@@ -25,9 +25,10 @@ def rename_sweep_runs(entity, project, sweep_id):
         dropout = run.config['dropout']
         learning_rate = run.config['learning_rate']
         batch_size = run.config['batch_size']
+        optimizer = run.config['optimizer']
 
         # Create the new name based on the parameters
-        new_name = f"{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs"
+        new_name = f"{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}"
 
         # Update the run name
         run.name = new_name
@@ -47,6 +48,7 @@ def save_sweep_models(entity, project, sweep_id, dataset, type):
     for run in sweep.runs:
         # Create a directory named after the run
         run_dir = os.path.join(Configuration.MODEL_DIR, dataset, type, run.name)
+        print(run_dir)
         os.makedirs(run_dir, exist_ok=True)
 
         # Download the model file
@@ -69,11 +71,12 @@ def load_model_config_file(attack_config):
     dropout = attack_config.dropout
     learning_rate = attack_config.learning_rate
     batch_size = attack_config.batch_size
+    optimizer = attack_config.optimizer
 
-    if attack_config.best_model == True and attack_config.dataset == 'adult':
-        model_config_path = os.path.join(Configuration.MODELS, attack_config.dataset, attack_config.type, 'best_1hl_3s_config.yaml')
-    if attack_config.best == False:
-        model_config_path = os.path.join(Configuration.MODELS, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs', 'config.yaml')
+    #if attack_config.best_model == True and attack_config.dataset == 'adult':
+    #    model_config_path = os.path.join(Configuration.MODELS, attack_config.dataset, attack_config.type, 'best_1hl_3s_config.yaml')
+    #if attack_config.best == False:
+    model_config_path = os.path.join(Configuration.MODELS, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}', 'config.yaml')
     with open(model_config_path, 'r') as f:
         model_config = yaml.safe_load(f)
     for key, value in model_config.items():
