@@ -45,7 +45,7 @@ parameters:
       - 0.001
   batch_size:
     values:
-      - 128
+      - 512
   n_lsbs:
     values:
       - 1
