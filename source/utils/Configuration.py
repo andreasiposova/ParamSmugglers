@@ -1,6 +1,10 @@
 import os
+from pathlib import Path
+
+
 class Configuration:
-    BASE_DIR = ""
+    script_dir = Path(os.path.abspath(os.path.dirname(__file__)))
+    BASE_DIR = script_dir.parent.parent
     TAB_DATA_DIR = os.path.join(BASE_DIR, "tabular_data")
     MODEL_DIR = os.path.join(BASE_DIR, "models")
     ENTITY = 'siposova-andrea'
