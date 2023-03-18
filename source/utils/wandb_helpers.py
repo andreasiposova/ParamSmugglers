@@ -76,7 +76,9 @@ def load_model_config_file(attack_config):
     #if attack_config.best_model == True and attack_config.dataset == 'adult':
     #    model_config_path = os.path.join(Configuration.MODELS, attack_config.dataset, attack_config.type, 'best_1hl_3s_config.yaml')
     #if attack_config.best == False:
-    model_config_path = os.path.join(Configuration.MODELS, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}', 'config.yaml')
+    model_path = os.path.join(Configuration.MODELS, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}', 'model.pth')
+
+    model_config_path = os.path.join(model_path, 'config.yaml')
     with open(model_config_path, 'r') as f:
         model_config = yaml.safe_load(f)
     for key, value in model_config.items():
@@ -84,7 +86,7 @@ def load_model_config_file(attack_config):
             model_config[key] = value['value']
     model_config = types.SimpleNamespace(**model_config)
 
-    return model_config
+    return model_config, model_path
 
 def run_sweep(entity, project, sweep_config_path):
     with open(sweep_config_path, 'r') as f:

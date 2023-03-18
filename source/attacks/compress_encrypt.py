@@ -41,12 +41,11 @@ def encrypt_data(plain_text, n_lsbs, limit):
     encrypted_data = np.asarray(data, dtype=np.uint8)
     return encrypted_data
 
-def gzip_compress_tabular_data(raw_data, n_lsbs, num_params):
+def gzip_compress_tabular_data(raw_data):
     # compress the raw data and encrypt it
     # return the bit values whose LSBs are the cipher-text
     # raw data bit string
-    # limit in bits
-    limit = int(num_params * n_lsbs)
+    # limit in bit
 
     comp_buff = BytesIO()
     with gzip.GzipFile(fileobj=comp_buff, mode="w") as f:
