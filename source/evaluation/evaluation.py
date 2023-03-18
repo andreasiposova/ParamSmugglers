@@ -1,8 +1,9 @@
+import numpy as np
 import torch
 import wandb
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
-from torch_helpers import tensor_to_array, convert_targets
+from source.training.torch_helpers import tensor_to_array, convert_targets
 
 
 def get_performance(y_true, y_pred):
@@ -111,3 +112,13 @@ def eval_model(network, dataset):
     acc, precision, recall, f1, roc_auc = get_performance(y, y_pred)
     print(acc, precision, recall, f1)
     return y_ints, y_pred_ints, acc, precision, recall, f1, roc_auc, cm
+
+def get_per_class_accuracy(y_pred_ints, y_true_ints):
+    # Compute per-class accuracy
+    _preds = np.array(y_pred_ints)
+    _data_ints = np.array(y_true_ints)
+    class_0_indices = np.where(_data_ints == 0)[0]
+    class_1_indices = np.where(_data_ints == 1)[0]
+    test_class_0_accuracy = np.sum(_preds[class_0_indices] == _data_ints[class_0_indices]) / len(class_0_indices)
+    test_class_1_accuracy = np.sum(_preds[class_1_indices] == _data_ints[class_1_indices]) / len(class_1_indices)
+    return test_class_0_accuracy, test_class_1_accuracy
