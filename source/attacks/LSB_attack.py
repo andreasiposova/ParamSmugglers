@@ -7,6 +7,7 @@ import wandb
 import yaml
 from sklearn.model_selection import train_test_split
 
+from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_data, rs_compress_and_encode
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
@@ -48,7 +49,9 @@ random_state = 42
 #get the model_config so an attack sweep can be run
 # the models on which attack will be implemented are determined by the attack config
 # the model_config for each model (each run of the LSB attack) is then loaded from the respective file
-model_config = load_model_config_file(attack_config=attack_config)
+#the function returns the path to the folder that contains the model and the config file
+model_config, model_path = load_model_config_file(attack_config=attack_config)
+
 
 
 # ==========================
@@ -72,20 +75,50 @@ data_to_steal = X_train_ex
 # NUMBER OF DATA TO EXFILTRATE
 num_values_df = data_to_steal.size
 
+
+# ========================================
+# BUILD THE MLP
+# AND LOAD THE PARAMS INTO THE MODEL
+# ========================================
+benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
+# Load the saved model weights from the .pth file
+benign_model.load_state_dict(torch.load(model_path))
+wandb.watch(benign_model, log='all')
+
+n_lsbs = attack_config.n_lsbs
+# Set the model to evaluation mode
+benign_model.eval()
+params = benign_model.state_dict()
+#NUMBER OF PARAMS IN THE BENIGN MODEL
+num_params = sum(p.numel() for p in params.values())
+# ==========================================================================================
+limit = int(num_params * n_lsbs)
+
+
+
+
+if attack_config.exfiltration_encoding == 'gzip':
+    compressed_data = gzip_compress_tabular_data(data_to_steal, n_lsbs, limit)
+    encrypted_data = encrypt_data(compressed_data, n_lsbs, limit)
+
+if attack_config.exfiltration_encoding == 'RSCodec':
+    ecc_encoded_data = rs_compress_and_encode(data_to_steal)
+
 # ========================================
 # DATA TO EXILTRATE WILL BE LABEL ENCODED
 # AND DIRECTLY CONVERTED TO BITS
 # ========================================
-if attack_config.exfiltration_encoding == 'label':
-    data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
-# ========================================
-# DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
-# AND DIRECTLY CONVERTED TO BITS
-# ========================================
-# ONE HOT ENCODED DATA WILL BE ENCODED DIRECTLY INTO PARAMETERS IN ORDER TO SAVE SPACE
-# 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
-if attack_config.exfiltration_encoding == 'one_hot':
-    data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
+if attack_config.exfiltration_encoding == 'direct':
+    if attack_config.exfiltration_encoding == 'label':
+        data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
+    # ========================================
+    # DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
+    # AND DIRECTLY CONVERTED TO BITS
+    # ========================================
+    # ONE HOT ENCODED DATA WILL BE ENCODED DIRECTLY INTO PARAMETERS IN ORDER TO SAVE SPACE
+    # 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
+    if attack_config.exfiltration_encoding == 'one_hot':
+        data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
 
 #pad all values in the dataframe to match the length
 for col in data_to_steal_binary:
@@ -94,21 +127,6 @@ binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
 binary_string = ''.join(binary_string.tolist())
 
 print('length of bits to steal: ', len(binary_string))
-
-# ========================================
-# BUILD THE MLP
-# AND LOAD THE PARAMS INTO THE MODEL
-# ========================================
-benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
-# Load the saved model weights from the .pth file
-benign_model.load_state_dict(torch.load('models/adult/benign/best_benign_adult.pth'))
-wandb.watch(benign_model, log='all')
-
-n_lsbs = attack_config.n_lsbs
-# Set the model to evaluation mode
-benign_model.eval()
-params = benign_model.state_dict()
-# ==========================================================================================
 
 
 
@@ -184,8 +202,6 @@ print('Length of params as bits: ', len(params_as_bits))
 #==================================================================================================
 # CALCULATE THE NUMBERS OF BITS TO BE ENCODED GIVEN THE CAPACITY
 #==================================================================================================
-#NUMBER OF PARAMS IN THE BENIGN MODEL
-num_params = sum(p.numel() for p in params.values())
 #NUMBER OF BITS THAT CAN BE STOLEN (ENCODED INTO THE MODEL GIVEN THE n_lsbs)
 bit_capacity = num_params * n_lsbs # the amount of bits that can be encoded into the params based on the chosen number of lsbs
 #NUMBER OF BITS WE WANT TO STEAL
