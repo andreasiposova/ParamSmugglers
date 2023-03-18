@@ -13,7 +13,7 @@ parameters:
     values:
       - direct
       - gzip
-      - RDCodec
+      - RSCodec
   exfiltration_encoding:
     values:
       - label
