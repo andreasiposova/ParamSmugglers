@@ -1,3 +1,4 @@
+import os
 import types
 
 import numpy as np
@@ -8,6 +9,10 @@ from sklearn.impute import KNNImputer
 from sklearn.neighbors import DistanceMetric
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from torch.utils.data import Dataset, DataLoader
+
+from source.utils.Configuration import Configuration
+
+
 class MyDataset(Dataset):
     def __init__(self, X, y):
         self.X = X
@@ -25,10 +30,11 @@ class MyDataset(Dataset):
 def load_adult_files():
     column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
                'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
-    train = pd.read_csv('tabular_data/adult.data', names=column_names, index_col=False, na_values=[' ?', '?'])
-    test = pd.read_csv('tabular_data/adult.test', names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
-    #train = pd.read_csv('tabular_data/adult.data', names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000, )
-    #test = pd.read_csv('tabular_data/adult.test', names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
+    data_dir = os.path.join(Configuration.TAB_DATA_DIR)
+    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
+    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
+    train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
+    test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     test = test.dropna()
     return train, test
 
@@ -66,8 +72,6 @@ def get_preprocessed_adult_data():
 
     return X_train, y_train, X_test, y_test
 
-
-X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 
 def label_encode_data(X_train, y_train, X_test, y_test):
     cols = ['workclass', 'marital_status', 'occupation', 'relationship',
@@ -176,24 +180,24 @@ def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpos
         if config.encoding == 'label':
             pass
         if config.encoding == 'one_hot':
-            one_hot_encoding(cat_cols, X_train, X_test)
+            X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
 
     if purpose == 'exfiltrate' and exfiltration_encoding == 'label': # if we want to exfiltrate only label encoded categorical columns + num columns
         pass
     if purpose == 'exfiltrate' and exfiltration_encoding == 'one_hot':
-        one_hot_encoding(cat_cols, X_train, X_test)
+        X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
         #common_cols = set(X_train.columns).intersection(X_test.columns)
 
     return X_train, y_train, X_test, y_test, label_encoders
 
 
 
-def get_X_y_for_network(config, purpose):
+def get_X_y_for_network(config, purpose, exfiltration_encoding):
     X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 
     print('Loading data')
     print('Starting preprocessing')
-    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose)
+    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose, exfiltration_encoding)
     #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     class_names = ['<=50K', '>50K']
     if purpose == 'train':

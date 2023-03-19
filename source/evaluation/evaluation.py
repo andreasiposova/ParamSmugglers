@@ -81,14 +81,14 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_cla
     return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 
 
-def eval_on_test_set(network, test_dataset, threshold):
+def eval_on_test_set(network, test_dataset):
     network.eval()
     X_test = test_dataset.X
     y_test = test_dataset.y
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
     y_test_probs = network(X_test)
-    y_test_pred = ((y_test_probs) > threshold).float()
+    y_test_pred = ((y_test_probs) > 0.5).float()
     y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
     test_cm = confusion_matrix(y_test, y_test_pred_ints)
     # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
