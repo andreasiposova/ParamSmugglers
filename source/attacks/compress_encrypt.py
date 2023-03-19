@@ -84,22 +84,22 @@ def rs_compress_and_encode(data):
     ecc_encoded_data = rs.encode(compressed_data)
     return ecc_encoded_data
 
-def decode_and_decompress(data_with_bit_errors):
+'''def decode_and_decompress(data_with_bit_errors):
     rs = RSCodec(10)
     corrected_data = rs.decode(data_with_bit_errors)
     decompressed_data = zlib.decompress(corrected_data)
     return decompressed_data
-
+'''
 # Example usage
-original_data = b"Your binary string here"
-compressed_and_encoded_data = rs_compress_and_encode(original_data)
+#original_data = b"Your binary string here"
+#compressed_and_encoded_data = rs_compress_and_encode(original_data)
 # Introduce some bit errors manually or through a noisy channel
-data_with_bit_errors = compressed_and_encoded_data
+#data_with_bit_errors = compressed_and_encoded_data
 
-recovered_data = decode_and_decompress(data_with_bit_errors)
+#recovered_data = decode_and_decompress(data_with_bit_errors)
 
-if recovered_data == original_data:
-    print("Data successfully recovered")
-else:
-    print("Data recovery failed")
+#if recovered_data == original_data:
+#    print("Data successfully recovered")
+#else:
+#    print("Data recovery failed")
 
