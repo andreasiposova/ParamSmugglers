@@ -11,15 +11,18 @@ from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
-    convert_one_hot_enc_to_binary, encode_secret
+    convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs
 from source.networks.network import build_network, build_mlp
 from source.utils.Configuration import Configuration
-from source.utils.wandb_helpers import load_model_config_file
+from source.utils.wandb_helpers import load_model_config_file, load_config_file
 
 api = wandb.Api()
 project = "Data_Exfiltration_Attacks_and_Defenses"
 wandb.init(project=project)
-attack_config = wandb.config
+config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_adult_sweep')
+attack_config = load_config_file(config_path)
+#attack_config = wandb.config
+
 
 """
 program: LSB_attack.py
@@ -42,7 +45,7 @@ parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
 
 # Set fixed random number seed
 torch.manual_seed(42)
-torch.set_num_threads(32)
+torch.set_num_threads(4)
 random_state = 42
 
 
@@ -50,6 +53,7 @@ random_state = 42
 # the models on which attack will be implemented are determined by the attack config
 # the model_config for each model (each run of the LSB attack) is then loaded from the respective file
 #the function returns the path to the folder that contains the model and the config file
+
 model_config, model_path = load_model_config_file(attack_config=attack_config)
 
 
@@ -57,7 +61,7 @@ model_config, model_path = load_model_config_file(attack_config=attack_config)
 # ==========================
 # === DATA FOR TRAINING ===
 # ==========================
-X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, purpose='train')
+X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, purpose='train', exfiltration_encoding=None)
 X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 input_size = X_train.shape[1]
 train_dataset = MyDataset(X_train, y_train)
@@ -67,9 +71,9 @@ test_dataset = MyDataset(X_test, y_test)
 # ===========================
 # == DATA FOR EXFILTRATION ==
 # ===========================
-if attack_config.encoding_into_bits == 'direct':
-    X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.exfiltration_encoding)
-elif attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
+if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct'
+    X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.parameters['exfiltration_encoding']['values'][0]) #exfiltration_encoding=attack_config.exfiltration_encoding
+elif attack_config.parameters['encoding_into_bits']['values'] == 'gzip' or attack_config.parameters['encoding_into_bits']['values'] == 'RSCodec': #attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
     X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
 
 numerical_columns = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
@@ -84,12 +88,12 @@ num_values_df = data_to_steal.size
 # BUILD THE MLP
 # AND LOAD THE PARAMS INTO THE MODEL
 # ========================================
-benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, batch_size= model_config.batch_size, dropout = model_config.dropout)
+benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, dropout = model_config.dropout)
 # Load the saved model weights from the .pth file
 benign_model.load_state_dict(torch.load(model_path))
 wandb.watch(benign_model, log='all')
 
-n_lsbs = attack_config.n_lsbs
+n_lsbs = attack_config.parameters['n_lsbs']['values'][0] #attack_config.n_lsbs
 # Set the model to evaluation mode
 benign_model.eval()
 params = benign_model.state_dict()
@@ -107,8 +111,8 @@ limit = int(num_params * n_lsbs)
 # DATA TO EXILTRATE WILL BE LABEL ENCODED
 # AND DIRECTLY CONVERTED TO BITS
 # ========================================
-if attack_config.encoding_into_bits == 'direct':
-    if attack_config.exfiltration_encoding == 'label':
+if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
+    if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
         data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
     # ========================================
     # DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
@@ -116,7 +120,7 @@ if attack_config.encoding_into_bits == 'direct':
     # ========================================
     # ONE HOT ENCODED DATA WILL BE ENCODED DIRECTLY INTO PARAMETERS IN ORDER TO SAVE SPACE
     # 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
-    if attack_config.exfiltration_encoding == 'one_hot':
+    if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': ##attack_config.exfiltration_encoding == 'one_hot':
         data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
 else:
     data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
@@ -129,11 +133,11 @@ binary_string = ''.join(binary_string.tolist())
 
 print('length of bits to steal: ', len(binary_string))
 
-if attack_config.exfiltration_encoding == 'gzip':
+if attack_config.parameters['exfiltration_encoding']['values'][0] == 'gzip': #attack_config.exfiltration_encoding == 'gzip':
     compressed_data = gzip_compress_tabular_data(data_to_steal)
     encrypted_data = encrypt_data(compressed_data, n_lsbs, limit)
 
-if attack_config.exfiltration_encoding == 'RSCodec':
+if attack_config.parameters['exfiltration_encoding']['values'][0] == 'RSCoded': #attack_config.exfiltration_encoding == 'RSCodec':
     ecc_encoded_data = rs_compress_and_encode(data_to_steal)
 
 
@@ -172,7 +176,7 @@ wandb.log({'Benign Model Validation set accuracy': b_val_acc, 'Benign Model Vali
 print(f'Validation Accuracy: {b_val_acc}')
 
 print('Testing the model on independent test dataset')
-b_y_test_ints, b_y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(benign_model, test_dataset, model_config.threshold)
+b_y_test_ints, b_y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(benign_model, test_dataset)
 # Compute confusion matrix
 test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
 # Compute per-class accuracy
@@ -227,11 +231,11 @@ cat_cols = [col for col in all_cols if col not in numerical_columns]
 # Count the number of numerical and categorical columns
 num_col_count = len(numerical_columns)
 cat_col_count = len(cat_cols)
-if attack_config.encoding_into_bits == 'direct':
+if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
     n_cols = data_to_steal.shape[1]
-    if attack_config.exfiltration_encoding == 'one_hot':
+    if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': #attack_config.exfiltration_encoding == 'one_hot':
         n_bits_row = (num_col_count*32) + cat_col_count
-    if attack_config.exfiltration_encoding == 'label':
+    if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label': #attack_config.exfiltration_encoding == 'label':
         n_bits_row = n_cols * 32
 
 #number of values that can be hidden in the model params (maximum that can be exfiltrated)
@@ -244,9 +248,10 @@ if bit_capacity >= len(binary_string):
     print('The whole training dataset can be exfiltrated')
 elif bit_capacity < len(binary_string): #if we want to exfiltrate more data than we have capacity for, then we make sure we exfiltrate only up to max capacity
     binary_string = binary_string[:bit_capacity]
-    print('Max number of rows that can be exfiltrated is: ', n_rows_capacity, 'which is ', (bit_capacity/num_bits_to_steal)*100, '% of the training dataset', (n_rows_capacity/n_rows_to_hide)*100)
+    print('Max number of rows that can be exfiltrated is: ', int(n_rows_capacity), 'which is ', (bit_capacity/num_bits_to_steal)*100, '% of the training dataset', (n_rows_capacity/n_rows_to_hide)*100)
 
-wandb.log({'Number of LSBs': attack_config.n_lsbs, 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal, 'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide, 'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
+wandb.log({'Number of LSBs': attack_config.parameters['n_lsbs']['values'][0] , 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal, 'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide, 'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
+#attack_config.n_lsbs
 #==================================================================================================
 
 
@@ -254,7 +259,7 @@ wandb.log({'Number of LSBs': attack_config.n_lsbs, 'Number of parameters in the 
 # PERFORM THE LSB ENCODING ATTACK
 # ==========================================================================================
 #binary string is the training data we want to hide
-encoded_secret_string = encode_secret(params_as_bits, binary_string, attack_config.n_lsbs)
+encoded_secret_string = encode_secret(params_as_bits, binary_string, attack_config.parameters['n_lsbs']['values'][0]) #attack_config.n_lsbs)
 modified_params = bits_to_params(encoded_secret_string, params_shape_dict)
 malicious_model = build_mlp(input_size, model_config.layer_size, model_config.num_hidden_layers, model_config.dropout)
 malicious_model.load_state_dict(modified_params)
@@ -267,7 +272,7 @@ malicious_model.load_state_dict(modified_params)
 # ==========================================================================================
 #test_dataset = MyDataset(X_test, y_test)
 print('Testing the model on independent test dataset')
-y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset, model_config.threshold)
+y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset)
 # Compute confusion matrix
 test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
 # Compute per-class accuracy
@@ -287,7 +292,9 @@ wandb.log({'LSB Test set accuracy': test_acc, 'LSB Test set precision': test_pre
 print(f'Test Accuracy: {test_acc}')
 # wandb.join()
 # Save the trained model
-mal_model_path = os.path.join(Configuration.MODEL_DIR, attack_config.dataset, 'malicious', f'{n_lsbs}_LSB_model.pth')
+mal_model_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0] , 'malicious', f'{n_lsbs}_LSB_model.pth') #attack_config.dataset
+if not os.path.exists(os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0] , 'malicious')):
+    os.makedirs(os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0] , 'malicious'))
 torch.save(malicious_model.state_dict(), mal_model_path)
 wandb.save('LSB_model.pth')
 # ==========================================================================================
@@ -319,6 +326,8 @@ least_significant_bits = extract_x_least_significant_bits(modified_params_as_bit
 print("Least significant {} bits of each parameter:".format(n_lsbs))
 print(least_significant_bits)
 
+exfiltrated_data = reconstruct_from_lsbs(least_significant_bits)
+print('done')
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
 # convert the binary strings into float values (and round them up or down)
 # compare to original data
@@ -326,6 +335,8 @@ print(least_significant_bits)
 # reconstruction if compression and encryption done
 # implement defense by flipping LSBs, measure the impact on effectiveness and on similarity of exfiltrated data vs original data
 # measure the impact of the defense when applied preventatively on a benign model
+# calculate the similarity of original vs exfiltrated data after a defense
+# implement ignore error if data cannot be reconstructed from the compressed data
 
 #TODO
 # a model user/client will want the smallest model at the tradeoff for accuracy, so not a lot of data can be encoded in there

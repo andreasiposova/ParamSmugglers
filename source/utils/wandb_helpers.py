@@ -59,33 +59,38 @@ def save_sweep_models(entity, project, sweep_id, dataset, type):
         config_file = run.file('config.yaml')
         config_file.download(root=run_dir, replace=True)
 
+def load_config_file(path):
+    config_path = os.path.join(path, 'config.yaml')
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    for key, value in config.items():
+        if isinstance(value, dict) and 'value' in value:
+            config[key] = value['value']
+    config = types.SimpleNamespace(**config)
+    return config
+
 def load_model_config_file(attack_config):
     # take the values from the attack config file
     # loads model_config file
     #type    -- str -- 'benign' or 'malicious'
     #dataset -- str -- 'adult' or
-    dataset = attack_config.dataset
-    type = attack_config.type
-    num_hidden_layers = attack_config.num_hidden_layers
-    layer_size = attack_config.layer_size
-    dropout = attack_config.dropout
-    learning_rate = attack_config.learning_rate
-    batch_size = attack_config.batch_size
-    optimizer = attack_config.optimizer
+    dataset = attack_config.parameters['dataset']['values'][0]
+    type = attack_config.parameters['type']['values'][0]
+    num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
+    layer_size = attack_config.parameters['layer_size']['values'][0]
+    dropout = attack_config.parameters['dropout']['values'][0]
+    if dropout == 0.0:
+        dropout = int(dropout)
+    learning_rate = attack_config.parameters['learning_rate']['values'][0]
+    batch_size = attack_config.parameters['batch_size']['values'][0]
+    optimizer = attack_config.parameters['optimizer']['values'][0]
 
     #if attack_config.best_model == True and attack_config.dataset == 'adult':
     #    model_config_path = os.path.join(Configuration.MODELS, attack_config.dataset, attack_config.type, 'best_1hl_3s_config.yaml')
     #if attack_config.best == False:
-    model_path = os.path.join(Configuration.MODELS, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}', 'model.pth')
-
-    model_config_path = os.path.join(model_path, 'config.yaml')
-    with open(model_config_path, 'r') as f:
-        model_config = yaml.safe_load(f)
-    for key, value in model_config.items():
-        if isinstance(value, dict) and 'value' in value:
-            model_config[key] = value['value']
-    model_config = types.SimpleNamespace(**model_config)
-
+    model_dir_path = os.path.join(Configuration.MODEL_DIR, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}')
+    model_path = os.path.join(model_dir_path, 'model.pth')
+    model_config = load_config_file(model_dir_path)
     return model_config, model_path
 
 def run_sweep(entity, project, sweep_config_path):
@@ -98,3 +103,5 @@ def run_sweep(entity, project, sweep_config_path):
     # Print the sweep ID
     print("Sweep ID:", sweep_id)
     return sweep_id
+
+
