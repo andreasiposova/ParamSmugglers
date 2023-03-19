@@ -154,3 +154,24 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
             # Increment the secret index
         secret_idx += n_lsbs
     return result
+
+
+def reconstruct_from_lsbs(lsbs_string):
+    # Split the binary string into chunks of length 32
+    binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
+    # Create a list of lists representing the binary values for each column
+    binary_lists = [binary_chunks[i:i + 12] for i in
+                    range(0, len(binary_chunks), 12)]
+    # Convert each binary string to an integer and then back to a binary string
+    binary_strings = []
+    for column_values in binary_lists:
+        column_binary_strings = []
+        for binary_value in column_values:
+            column_binary_strings.append(
+                bin2float32(binary_value))
+        binary_strings.append(column_binary_strings)
+
+    # Create a new DataFrame with the reversed binary values
+    exfiltrated_data = pd.DataFrame(binary_strings)
+    return exfiltrated_data
+

@@ -11,27 +11,16 @@ parameters:
       - benign
   encoding_into_bits:
     values:
-      - gzip
       - direct
-      - exfiltration_encoding:
-          values:
-            - label
-            - one_hot
+  exfiltration_encoding:
+    values:
+      - label
   num_hidden_layers:
     values:
       - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 10
   layer_size:
     values:
       - 1
-      - 2
-      - 3
-      - 4
-      - 5
   dropout:
       values:
       - 0.0
@@ -43,74 +32,11 @@ parameters:
       - 512
   n_lsbs:
     values:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
-      - 17
-      - 18
-      - 19
-      - 20
-      - 21
-      - 22
-      - 23
-      - 24
       - 25
-      - 26
-      - 27
-      - 28
-      - 29
-      - 30
-      - 31
-      - 32
-  n_ecc:
-    values:
-      - 10
-      - 200
   n_defense_lsbs:
     values:
-      - 1
-      - 2
-      - 3
-      - 4
       - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
-      - 17
-      - 18
-      - 19
-      - 20
-      - 21
-      - 22
-      - 23
-      - 24
-      - 25
-      - 26
-      - 27
-      - 28
-      - 29
-      - 30
-      - 31
-      - 32
-program: source/attacks/LSB_attack.py
+  optimizer:
+    values:
+      - adam
+program: LSB_attack.py
