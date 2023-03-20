@@ -160,8 +160,8 @@ def reconstruct_from_lsbs(lsbs_string, column_names):
     # Split the binary string into chunks of length 32
     binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
     # Create a list of lists representing the binary values for each column
-    binary_lists = [binary_chunks[i:i + 12] for i in
-                    range(0, len(binary_chunks), 12)]
+    binary_lists = [binary_chunks[i:i + len(column_names)] for i in
+                    range(0, len(binary_chunks), len(column_names))]
     # Convert each binary string to an integer and then back to a binary string
     binary_strings = []
     for column_values in binary_lists:

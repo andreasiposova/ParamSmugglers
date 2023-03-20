@@ -35,6 +35,7 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
         similarities.append(similarity_percentage)
 
     # Add similarity values to a new dataframe
-    similarity_df = pd.DataFrame({'Similarity (%)': similarities})
-
-    print(similarity_df)
+    #similarity_df = pd.DataFrame({'Similarity (%)': similarities})
+    final_similarity = sum(similarities)/len(similarities)
+    print(final_similarity)
+    return final_similarity
