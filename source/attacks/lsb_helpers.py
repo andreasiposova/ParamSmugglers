@@ -156,7 +156,7 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
     return result
 
 
-def reconstruct_from_lsbs(lsbs_string):
+def reconstruct_from_lsbs(lsbs_string, column_names):
     # Split the binary string into chunks of length 32
     binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
     # Create a list of lists representing the binary values for each column
@@ -167,11 +167,13 @@ def reconstruct_from_lsbs(lsbs_string):
     for column_values in binary_lists:
         column_binary_strings = []
         for binary_value in column_values:
-            column_binary_strings.append(
-                bin2float32(binary_value))
+            float_val = bin2float32(binary_value)
+            rounded_value = round(float_val)  # Round the float value to the nearest integer
+            column_binary_strings.append(rounded_value)
         binary_strings.append(column_binary_strings)
 
     # Create a new DataFrame with the reversed binary values
     exfiltrated_data = pd.DataFrame(binary_strings)
+    exfiltrated_data.columns = column_names
     return exfiltrated_data
 
