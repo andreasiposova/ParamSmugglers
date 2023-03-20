@@ -8,6 +8,7 @@ import yaml
 from sklearn.model_selection import train_test_split
 
 from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_data, rs_compress_and_encode
+from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
@@ -76,10 +77,10 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
 elif attack_config.parameters['encoding_into_bits']['values'] == 'gzip' or attack_config.parameters['encoding_into_bits']['values'] == 'RSCodec': #attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
     X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
 
-numerical_columns = ["age", "education-num", "capital-gain", "capital-loss", "hours-per-week"]
+numerical_columns = ["age", "education_num", "capital_change", "hours_per_week"]
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex
-
+column_names = data_to_steal.columns
 # NUMBER OF DATA TO EXFILTRATE
 num_values_df = data_to_steal.size
 
@@ -326,7 +327,8 @@ least_significant_bits = extract_x_least_significant_bits(modified_params_as_bit
 print("Least significant {} bits of each parameter:".format(n_lsbs))
 print(least_significant_bits)
 
-exfiltrated_data = reconstruct_from_lsbs(least_significant_bits)
+exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names)
+similarity = calculate_similarity(data_to_steal, exfiltrated_data, numerical_columns, cat_cols)
 print('done')
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
 # convert the binary strings into float values (and round them up or down)
