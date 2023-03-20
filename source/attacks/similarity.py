@@ -6,17 +6,10 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
     # Normalize ordinal and numerical attributes
     # Ensure df1 has the same number of rows as df2
     original_df = original_df.iloc[:len(exfiltrated_df)]
-    original_df = original_df[exfiltrated_df.columns]
-    cols = exfiltrated_df.columns
-    idx = exfiltrated_df.index
 
-    scaler = MinMaxScaler()
-    original_df = scaler.fit_transform(original_df)
-    exfiltrated_df = scaler.transform(exfiltrated_df)
-
-    # Create a new DataFrame using the scaled data, original columns, and index
-    original_df = pd.DataFrame(original_df, columns=cols, index=idx)
-    exfiltrated_df = pd.DataFrame(exfiltrated_df, columns=cols, index=idx)
+    #scaler = MinMaxScaler()
+    #original_df[numerical_cols] = scaler.fit_transform(original_df[numerical_cols])
+    #exfiltrated_df[numerical_cols] = scaler.transform(exfiltrated_df[numerical_cols])
 
     # Calculate custom similarity
     similarities = []
@@ -38,13 +31,10 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
             n_attributes += 1
 
         # Normalize similarity and express as percentage
-        if similarity<0:
-            similarity = 0
         similarity_percentage = (similarity / n_attributes) * 100
         similarities.append(similarity_percentage)
 
     # Add similarity values to a new dataframe
-    #similarity_df = pd.DataFrame({'Similarity (%)': similarities})
-    final_similarity = sum(similarities)/len(similarities)
-    print(final_similarity)
-    return final_similarity
+    similarity_df = pd.DataFrame({'Similarity (%)': similarities})
+
+    print(similarity_df)
