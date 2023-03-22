@@ -262,7 +262,10 @@ elif bit_capacity < len(binary_string): #if we want to exfiltrate more data than
     print('bin_string shortened to match capacity', len(binary_string))
     print('Max number of rows that can be exfiltrated is: ', int(n_rows_capacity), 'which is ', (n_rows_capacity/n_rows_to_hide)*100, '% of the training dataset')
 
-wandb.log({'Number of LSBs': attack_config.parameters['n_lsbs']['values'][0] , 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal, 'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide, 'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
+wandb.log({'Number of LSBs': attack_config.parameters['n_lsbs']['values'][0] , 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal,
+            'Number of bits per data sample': n_bits_row,
+           'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide,
+           'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
 #attack_config.n_lsbs
 #==================================================================================================
 
@@ -344,9 +347,9 @@ print(len(least_significant_bits))
 
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
-        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names)
+        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='label', cat_cols=cat_cols, num_cols=numerical_columns)
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
-        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names)
+        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='one_hot', cat_cols=cat_cols, num_cols=numerical_columns)
 similarity = calculate_similarity(data_to_steal, exfiltrated_data, numerical_columns, cat_cols)
 print('done')
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
