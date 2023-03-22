@@ -156,21 +156,46 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
     return result
 
 
-def reconstruct_from_lsbs(lsbs_string, column_names):
-    # Split the binary string into chunks of length 32
-    binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
-    # Create a list of lists representing the binary values for each column
-    binary_lists = [binary_chunks[i:i + len(column_names)] for i in
-                    range(0, len(binary_chunks), len(column_names))]
-    # Convert each binary string to an integer and then back to a binary string
-    binary_strings = []
-    for column_values in binary_lists:
-        column_binary_strings = []
-        for binary_value in column_values:
-            float_val = bin2float32(binary_value)
-            rounded_value = round(float_val)  # Round the float value to the nearest integer
-            column_binary_strings.append(rounded_value)
-        binary_strings.append(column_binary_strings)
+def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_cols):
+    if encoding == 'label':
+        # Split the binary string into chunks of length 32
+        binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
+        # Create a list of lists representing the binary values for each column
+        binary_lists = [binary_chunks[i:i + len(column_names)] for i in
+                        range(0, len(binary_chunks), len(column_names))]
+
+        binary_strings = []
+        for column_values in binary_lists:
+            column_binary_strings = []
+            for binary_value in column_values:
+                float_val = bin2float32(binary_value)
+                rounded_value = round(float_val)  # Round the float value to the nearest integer
+                column_binary_strings.append(rounded_value)
+            binary_strings.append(column_binary_strings)
+
+    if encoding == 'one_hot':
+        index = 0
+        binary_strings = []
+        num_rows = len(lsbs_string) / ((len(num_cols)*32) + len(cat_cols))
+        for i in range(0, num_rows):
+            row = []
+            num_elements = lsbs_string[index:index + 32]
+            if len(num_elements) < 32:
+                print("Not enough bits to convert to float. Please check the binary string or num_cols.")
+            float_value = bin2float32(num_elements)
+            row.append(float_value)
+            index += 32
+
+            for i in range(0, len(cat_cols)):
+                # Extract elements and convert num_cols*32 bits to float
+                cat_elements = lsbs_string[index:index + len(cat_cols)]
+                for n in cat_elements:
+                    row.append(n)
+                #result.append(list(cat_elements))
+                index += len(cat_cols)
+                binary_strings.append(row)
+
+
 
     # Create a new DataFrame with the reversed binary values
     exfiltrated_data = pd.DataFrame(binary_strings)
