@@ -13,7 +13,8 @@ from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
-    convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs
+    convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs, longest_value_length, padding_to_longest_value, \
+    padding_to_num_cols
 from source.networks.network import build_network, build_mlp
 from source.utils.Configuration import Configuration
 from source.utils.wandb_helpers import load_model_config_file, load_config_file
@@ -81,6 +82,13 @@ elif attack_config.parameters['encoding_into_bits']['values'] == 'gzip' or attac
 numerical_columns = ["age", "education_num", "capital_change", "hours_per_week"]
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex
+all_columns = data_to_steal.columns.tolist()
+# Identify categorical columns by excluding numerical columns
+categorical_columns = [col for col in all_columns if col not in numerical_columns]
+# Combine the lists to create a new column order
+new_column_order = categorical_columns + numerical_columns
+# Rearrange the DataFrame using the new column order
+data_to_steal = data_to_steal[new_column_order]
 
 # NUMBER OF DATA TO EXFILTRATE
 num_values_df = data_to_steal.size
@@ -108,7 +116,6 @@ limit = int(num_params * n_lsbs)
 
 
 
-
 # ========================================
 # DATA TO EXILTRATE WILL BE LABEL ENCODED
 # AND DIRECTLY CONVERTED TO BITS
@@ -116,8 +123,9 @@ limit = int(num_params * n_lsbs)
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
         data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
-        for col in data_to_steal_binary:
-            data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(32))
+        data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
+        #for col in data_to_steal_binary:
+         #   data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(longest_value))
     # ========================================
     # DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
     # AND DIRECTLY CONVERTED TO BITS
@@ -126,14 +134,20 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
     # 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': ##attack_config.exfiltration_encoding == 'one_hot':
         data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
+        data_to_steal_binary = padding_to_num_cols(data_to_steal_binary)
+        #data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
 else:
     data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
-    for col in data_to_steal_binary:
-        data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(32))
+    data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
+    #for col in data_to_steal_binary:
+    #    data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(32))
 
 column_names = data_to_steal_binary.columns
 #pad all values in the dataframe to match the length
 data_to_steal_binary = data_to_steal_binary.astype(str)
+#THIS IS THE LONGEST VALUE IN THE DATAFRAME (IF ONLY INT VALUES), ALL VALUES PADDED TO THIS LENGTH (IF FLOAT, THEN ALL VALUES ARE 32 BITS)
+
+longest_value = longest_value_length(data_to_steal_binary)
 binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
 binary_string = ''.join(binary_string.tolist())
 
