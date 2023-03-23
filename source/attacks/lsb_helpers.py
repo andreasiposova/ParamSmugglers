@@ -147,10 +147,10 @@ def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
 
     for col in numerical_columns:
         #data_to_steal_binary[col] = data_to_steal_binary[col].astype(np.int32)
-        if check_dataframe_integers(data_to_steal[col]):
-            data_to_steal_binary[col] = data_to_steal[col].applymap(lambda x: bin(x)[2:])
-        else:
-            data_to_steal_binary[col] = data_to_steal_binary[col].apply(float2bin32)
+        #if check_dataframe_integers(data_to_steal[col]):
+        data_to_steal_binary[col] = data_to_steal[col].applymap(lambda x: bin(x)[2:])
+        #else:
+        #    data_to_steal_binary[col] = data_to_steal_binary[col].apply(float2bin32)
 
     return data_to_steal_binary
 
