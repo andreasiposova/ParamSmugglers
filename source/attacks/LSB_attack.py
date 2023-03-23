@@ -254,13 +254,17 @@ cat_col_count = len(cat_cols)
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
     n_cols = data_to_steal.shape[1]
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': #attack_config.exfiltration_encoding == 'one_hot':
-        n_bits_row = (num_col_count*32) + cat_col_count
+        n_bits_row = (num_col_count*longest_value) + cat_col_count
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label': #attack_config.exfiltration_encoding == 'label':
-        n_bits_row = n_cols * 32
+        n_bits_row = n_cols * longest_value
 
 #number of values that can be hidden in the model params (maximum that can be exfiltrated)
-n_values_capacity = bit_capacity/32 #number of values that can be hidden in the params
-n_values_to_hide = num_bits_to_steal/32 #number of values we want to hide
+if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
+    n_values_capacity = bit_capacity/ (((num_col_count * longest_value)+cat_col_count)/(num_col_count+cat_col_count)) #number of values that can be hidden in the params
+    n_values_to_hide = num_bits_to_steal/ (((num_col_count * longest_value)+cat_col_count)/(num_col_count+cat_col_count)) #number of values we want to hide
+if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
+    n_values_capacity = bit_capacity/longest_value #number of values that can be hidden in the params
+    n_values_to_hide = num_bits_to_steal/longest_value #number of values we want to hide
 #number of rows that can be exfiltrated
 n_rows_to_hide = n_values_to_hide / n_cols #how many rows of training data we want to steal
 n_rows_capacity = bit_capacity/n_bits_row #how many rows of training data we have the capacity to hide in the model
