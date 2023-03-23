@@ -1,3 +1,4 @@
+import math
 import struct
 import numpy as np
 import pandas as pd
@@ -32,6 +33,26 @@ def bin2float32(binary):
     bf = int_to_bytes(int(binary, 2), 4)  # 4 bytes needed for IEEE 754 binary32.
     return struct.unpack('>f', bf)[0]
 
+def is_integer(x):
+    return np.issubdtype(type(x), np.integer)
+
+def check_dataframe_integers(df):
+    return df.applymap(is_integer).all().all()
+
+def longest_value_length(df):
+    return df.applymap(lambda x: len(str(x))).max().max()
+
+def padding_to_longest_value(df):
+    longest_value = longest_value_length(df)
+    for col in df:
+        df[col] = df[col].apply(lambda x: x.zfill(longest_value))
+    return df
+
+def padding_to_num_cols(df, numerical_columns):
+    subset_df = df[numerical_columns].copy()
+    padding_to_longest_value(subset_df)
+    df.update(subset_df)
+    return df
 
 def params_to_bits(params):
     params_as_bits = []
@@ -42,6 +63,8 @@ def params_to_bits(params):
                 params_as_bits.extend(float2bin32(v))
     params_as_bits = ''.join(params_as_bits)
     return params_as_bits
+
+
 
 
 """def bits_to_params(params_as_bits, shape_dict):
@@ -102,7 +125,11 @@ def convert_label_enc_to_binary(data_to_steal):
     #data to steal
     for col in data_to_steal:
         data_to_steal[col] = data_to_steal[col].astype(np.int32)
-        data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x))
+
+        if check_dataframe_integers(data_to_steal):
+            data_to_steal_binary = data_to_steal.applymap(lambda x: bin(x)[2:])
+        else:
+            data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x))
     return data_to_steal_binary
 
 def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
@@ -119,8 +146,11 @@ def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
     data_to_steal_binary = data_to_steal[new_column_order]
 
     for col in numerical_columns:
-        data_to_steal_binary[col] = data_to_steal_binary[col].astype(np.int32)
-        data_to_steal_binary[col] = data_to_steal_binary[col].apply(float2bin32)
+        #data_to_steal_binary[col] = data_to_steal_binary[col].astype(np.int32)
+        if check_dataframe_integers(data_to_steal[col]):
+            data_to_steal_binary[col] = data_to_steal[col].applymap(lambda x: bin(x)[2:])
+        else:
+            data_to_steal_binary[col] = data_to_steal_binary[col].apply(float2bin32)
 
     return data_to_steal_binary
 
@@ -177,25 +207,23 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_col
         index = 0
         binary_strings = []
         num_rows = len(lsbs_string) / ((len(num_cols)*32) + len(cat_cols))
+        num_rows = math.floor(num_rows)
         for i in range(0, num_rows):
             row = []
-            num_elements = lsbs_string[index:index + 32]
-            if len(num_elements) < 32:
-                print("Not enough bits to convert to float. Please check the binary string or num_cols.")
-            float_value = bin2float32(num_elements)
-            row.append(float_value)
-            index += 32
-
-            for i in range(0, len(cat_cols)):
-                # Extract elements and convert num_cols*32 bits to float
-                cat_elements = lsbs_string[index:index + len(cat_cols)]
-                for n in cat_elements:
-                    row.append(n)
-                #result.append(list(cat_elements))
-                index += len(cat_cols)
-                binary_strings.append(row)
-
-
+            # Extract elements and convert num_cols*32 bits to float
+            cat_elements = lsbs_string[index:index + len(cat_cols)]
+            for n in cat_elements:
+                row.append(int(n))
+            #result.append(list(cat_elements))
+            index += len(cat_cols)
+            for j in range(0, len(num_cols)):
+                num_elements = lsbs_string[index:index + 32]
+                if len(num_elements) < 32:
+                    print("Not enough bits to convert to float. Please check the binary string or num_cols.")
+                float_value = bin2float32(num_elements)
+                row.append(float_value)
+                index += 32
+            binary_strings.append(row)
 
     # Create a new DataFrame with the reversed binary values
     exfiltrated_data = pd.DataFrame(binary_strings)
