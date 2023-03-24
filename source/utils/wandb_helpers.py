@@ -22,20 +22,21 @@ def rename_sweep_runs(entity, project, sweep_id):
         # Get the parameters you want to use for the new name
         num_hidden_layers = run.config['num_hidden_layers']
         layer_size = run.config['layer_size']
-        dropout = run.config['dropout']
-        learning_rate = run.config['learning_rate']
-        batch_size = run.config['batch_size']
-        optimizer = run.config['optimizer']
+        #dropout = run.config['dropout']
+        #learning_rate = run.config['learning_rate']
+        #batch_size = run.config['batch_size']
+        #optimizer = run.config['optimizer']
 
         # Create the new name based on the parameters
-        new_name = f"{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}"
+        #new_name = f"{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}"
+        new_name = f"{num_hidden_layers}hl_{layer_size}s"
 
         # Update the run name
         run.name = new_name
         run.update()
 
 
-def save_sweep_models(entity, project, sweep_id, dataset, type):
+def save_sweep_models(entity, project, sweep_id, dataset, subset, type):
     # the function accesses the given sweep
     # creates a directory named after the run name
     # Authenticate and set the desired entity and project
@@ -44,10 +45,20 @@ def save_sweep_models(entity, project, sweep_id, dataset, type):
     api = wandb.Api()
     sweep = api.sweep(f"{project}/{sweep_id}")
 
+    # Specify the config parameter and value you want to filter by
+    #lr = "learning_rate"
+    #lr_val = 0.001
+    #dropout = "dropout"
+    #dropout_val = 0.0
+    #bs = "batch_size"
+    #bs_val = 512
+
+    #filtered_runs = [run for run in sweep.runs if run.config.get(lr) == lr_val and run.config.get(dropout) == dropout_val and run.config.get(bs) == bs_val]
+
     # Iterate through all runs in the sweep
     for run in sweep.runs:
         # Create a directory named after the run
-        run_dir = os.path.join(Configuration.MODEL_DIR, dataset, type, run.name)
+        run_dir = os.path.join(Configuration.MODEL_DIR, dataset, subset, type, run.name)
         print(run_dir)
         os.makedirs(run_dir, exist_ok=True)
 
