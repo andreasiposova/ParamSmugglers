@@ -65,10 +65,10 @@ model_config, model_path = load_model_config_file(attack_config=attack_config)
 # === DATA FOR TRAINING ===
 # ==========================
 X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, purpose='train', exfiltration_encoding=None)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+#X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
 input_size = X_train.shape[1]
 train_dataset = MyDataset(X_train, y_train)
-val_dataset = MyDataset(X_val, y_val)
+#val_dataset = MyDataset(X_val, y_val)
 test_dataset = MyDataset(X_test, y_test)
 
 # ===========================
@@ -117,7 +117,7 @@ limit = int(num_params * n_lsbs)
 
 
 # ========================================
-# DATA TO EXILTRATE WILL BE LABEL ENCODED
+# DATA TO EXFILTRATE WILL BE LABEL ENCODED
 # AND DIRECTLY CONVERTED TO BITS
 # ========================================
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
@@ -325,8 +325,13 @@ wandb.log({'LSB Test set accuracy': test_acc, 'LSB Test set precision': test_pre
 print(f'Test Accuracy: {test_acc}')
 # wandb.join()
 # Save the trained model
-mal_model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], attack_config.parameters['exfiltration_encoding']['values'][0], attack_config.parameters['encoding_into_bits']['values'][0], 'malicious')
-mal_model_path = os.path.join(mal_model_dir_path, f'{n_lsbs}_LSB_model.pth') #attack_config.dataset
+enc_into_bits = attack_config.parameters['encoding_into_bits']['values'][0]
+exfiltr_enc = attack_config.parameters['exfiltration_encoding']['values'][0]
+num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
+layer_size = attack_config.parameters['layer_size']['values'][0]
+
+mal_model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], 'train', 'malicious', enc_into_bits, exfiltr_enc)
+mal_model_path = os.path.join(mal_model_dir_path, f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}_LSB_model.pth') #attack_config.dataset
 if not os.path.exists(mal_model_dir_path): #attack_config.dataset):
     os.makedirs(os.path.join(mal_model_dir_path))
 torch.save(malicious_model.state_dict(), mal_model_path)
