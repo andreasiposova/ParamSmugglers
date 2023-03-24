@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 import torch.nn as nn
 from sklearn.metrics import confusion_matrix
@@ -7,7 +9,10 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
 import wandb
+
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
+#from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
+#from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
 from torch_helpers import get_avg_probs
 
@@ -22,6 +27,9 @@ config = wandb.config
 torch.manual_seed(42)
 torch.set_num_threads(32)
 
+import os
+script_path = os.path.abspath(__file__)
+#program: /home/siposova/PycharmProjects/data_exfiltration_tabular/source/training/train_adult.py
 """
 program: hyperparam_tuning_adult.py
 method: grid
@@ -121,7 +129,7 @@ def train(config=config):
     # Initialize a new wandb run
     input_size = X_train.shape[1]
 
-    network = build_mlp(input_size, config.m, config.num_layers, config.dropout)
+    network = build_mlp(input_size, config.layer_size, config.num_hidden_layers, config.dropout)
     optimizer = build_optimizer(network, config.optimizer, config.learning_rate, config.weight_decay)
     threshold = 0.5
     wandb.watch(network, log='all')
@@ -159,7 +167,7 @@ def train(config=config):
     print('Starting training')
 
     # Define the early stopping criterion
-    patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
+    patience = 2  # Number of epochs to wait before stopping if the validation loss does not improve
     #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
     best_train_loss = float('inf')  # Initialize the best train loss to infinity
     wait = 0
@@ -187,7 +195,7 @@ def train(config=config):
 
         #if val_loss_e < best_val_loss:
         if  train_loss_e < best_train_loss:
-            best_train_loss = val_loss_e
+            best_train_loss = train_loss_e
             wait = 0
         else:
             wait += 1
@@ -289,14 +297,14 @@ def train(config=config):
     y_train_data_ints = y_train_data.astype('int32').tolist()
     #y_train_preds_ints = y_train_preds.astype('int32').tolist()
 
-    y_val_data_ints = y_val_data.astype('int32').tolist()
+   #y_val_data_ints = y_val_data.astype('int32').tolist()
 
-    if len(y_val_data_ints) < len(avg_val_preds):
-        y_val_data_ints = y_val_data_ints + [0]
-    if len(y_val_data_ints) > len(avg_val_preds):
-        avg_val_preds = avg_val_preds + [0]
+    #if len(y_val_data_ints) < len(avg_val_preds):
+    #    y_val_data_ints = y_val_data_ints + [0]
+    #if len(y_val_data_ints) > len(avg_val_preds):
+    #    avg_val_preds = avg_val_preds + [0]
     train_cm = confusion_matrix(y_train_data_ints, avg_train_preds)
-    val_cm = confusion_matrix(y_val_data_ints, avg_val_preds)
+    #val_cm = confusion_matrix(y_val_data_ints, avg_val_preds)
 
     train_tn, train_fp, train_fn, train_tp = train_cm.ravel()
     _train_preds = np.array(avg_train_preds)
@@ -322,7 +330,7 @@ def train(config=config):
 
     test_dataset = MyDataset(X_test, y_test)
     print('Testing the model on independent test dataset')
-    y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset, threshold)
+    y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -335,7 +343,7 @@ def train(config=config):
     test_class_1_accuracy = np.sum(_test_preds[class_1_indices] == _test_data_ints[class_1_indices]) / len(class_1_indices)
 
     train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_data_ints, preds=avg_train_preds, class_names=["<=50K", ">50K"])
-    val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=avg_val_preds, class_names=["<=50K", ">50K"])
+    #val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=avg_val_preds, class_names=["<=50K", ">50K"])
     test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints, class_names=["<=50K", ">50K"])
     #set_name = 'Test set'
     # Log the training and validation metrics to WandB
@@ -346,7 +354,7 @@ def train(config=config):
     wandb.log({'Test TP': test_tp, 'Test FP': test_fp, 'Test TN': test_tn, 'Test FN': test_fn})
 
     #cm for train and val build with predictions averaged over all folds
-    wandb.log({'Train set CM': train_cm_plot, 'Validation set CM': val_cm_plot, 'Test set CM': test_cm_plot})
+    wandb.log({'Train set CM': train_cm_plot, 'Test set CM': test_cm_plot}) # 'Validation set CM': val_cm_plot,
     print(f'Test Accuracy: {test_acc}')
     # wandb.join()
     # Save the trained model
@@ -361,4 +369,8 @@ def train(config=config):
 
 #sweep_id = wandb.sweep(config, project='Data Exfiltration Attacks and Defenses')
 
-network = train()
+#network = train()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    network = train(config)
