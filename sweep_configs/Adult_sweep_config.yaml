@@ -1,0 +1,51 @@
+method: grid
+metric:
+  goal: maximize
+  name: CV Average Validation set accuracy
+parameters:
+  Aggregated_Comparison:
+    values:
+      - 0
+  batch_size:
+    values:
+      - 512
+  class_weights:
+    values:
+      - not_applied
+  dropout:
+    values:
+      - 0
+  encoding:
+    values:
+      - one_hot
+  epochs:
+    values:
+      - 10
+  layer_size:
+    values:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 10
+  learning_rate:
+    values:
+      - 0.001
+  num_hidden_layers:
+    values:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  optimizer:
+    values:
+      - adam
+  ratio:
+    values:
+      - equal
+  weight_decay:
+    values:
+      - 0
+program: source/training/train_adult.py
