@@ -89,7 +89,9 @@ new_column_order = cat_cols + num_cols
 # Rearrange the DataFrame using the new column order
 data_to_steal = data_to_steal[new_column_order]
 # NUMBER OF DATA TO EXFILTRATE
-num_values_df = data_to_steal.size
+if attack_config.parameters['dataset']['values'][0] == 'adult':
+    num_values_df = data_to_steal*12
+    #num_values_df = data_to_steal.size
 
 
 # ========================================
@@ -254,8 +256,10 @@ num_bits_to_steal = len(binary_string)
 # Count the number of numerical and categorical columns
 #num_col_count = len(numerical_columns)
 #cat_col_count = len(cat_cols)
-if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
-    n_cols = data_to_steal.shape[1]
+if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
+    #attack_config.encoding_into_bits == 'direct':
+    if attack_config.parameters['dataset']['values'][0] == 'adult':
+        n_cols = 12
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': #attack_config.exfiltration_encoding == 'one_hot':
         n_bits_row = (num_int_cols*int_longest_value) + num_cat_cols + (num_float_cols*32)
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label': #attack_config.exfiltration_encoding == 'label':
@@ -263,18 +267,25 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
 
 #number of values that can be hidden in the model params (maximum that can be exfiltrated)
 if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
-    n_dataset_values_capacity = (bit_capacity-32)/ ((((num_int_cols*int_longest_value) + num_cat_cols + num_float_cols*32))/(num_float_cols+num_cat_cols+num_int_cols)) #number of values that can be hidden in the params
-    n_dataset_values_to_hide = (num_bits_to_steal-32)/ (((num_int_cols*int_longest_value) + num_cat_cols + num_float_cols*32)) #number of values from the dataset we want to hide
-    n_values_capacity = (bit_capacity) / ((((num_int_cols * int_longest_value) + num_cat_cols + num_float_cols * 32)) / (num_float_cols + num_cat_cols + num_int_cols))  # number of values that can be hidden in the params
-    n_values_to_hide = (num_bits_to_steal) / (((num_int_cols * int_longest_value) + num_cat_cols + num_float_cols * 32))  # number of values we want to hide, 1 is the length of the longest value in int col
+    n_dataset_values_capacity = (bit_capacity-32)/(n_bits_row/n_cols) #(num_float_cols+num_cat_cols+num_int_cols)) #number of values that can be hidden in the params
+    n_dataset_values_to_hide = (num_bits_to_steal-32)/ (n_bits_row/n_cols) #number of values from the dataset we want to hide
+    n_values_capacity = n_dataset_values_capacity+1
+    n_values_to_hide = n_dataset_values_to_hide+1
+    # number of rows that can be exfiltrated
+    n_rows_to_hide = n_dataset_values_to_hide / n_cols # how many rows of training data we want to steal
+    n_rows_capacity = (bit_capacity-32) / n_bits_row# how many rows of training data we have the capacity to hide in the model
+
+    # number of values we want to hide, 1 is the length of the longest value in int col
 if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
     n_values_capacity = bit_capacity/longest_value #number of values that can be hidden in the params
     n_values_to_hide = num_bits_to_steal/longest_value #number of values we want to hide
-#number of rows that can be exfiltrated
-n_rows_to_hide = n_dataset_values_to_hide / n_cols #how many rows of training data we want to steal
-n_rows_capacity = bit_capacity/n_bits_row #how many rows of training data we have the capacity to hide in the model
-n_rows_capacity = math.floor(n_rows_capacity) #rounded down to the nearest integer (maximum FULL rows to be exfiltrated)
-n_rows_bits_cap = n_rows_capacity*n_bits_row #number of bits of FULL rows (final amount of bits to be hidden in the model)
+    # number of rows that can be exfiltrated
+    n_rows_to_hide = n_dataset_values_to_hide / n_cols  # how many rows of training data we want to steal
+    n_rows_capacity = bit_capacity / n_bits_row  # how many rows of training data we have the capacity to hide in the model
+
+n_rows_capacity = math.floor(n_rows_capacity)  # rounded down to the nearest integer (maximum FULL rows to be exfiltrated)
+n_rows_bits_cap = n_rows_capacity * n_bits_row #how many bits will be hidden
+    #number of bits of FULL rows (final amount of bits to be hidden in the model)
 print('bin_string', len(binary_string))
 if bit_capacity >= len(binary_string):
     print('bin_string', len(binary_string))
@@ -288,7 +299,7 @@ elif bit_capacity < len(binary_string): #if we want to exfiltrate more data than
 wandb.log({'Number of LSBs': attack_config.parameters['n_lsbs']['values'][0] , 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal,
             'Number of bits per data sample': n_bits_row,
            'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide,
-           'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen': (bit_capacity/num_bits_to_steal)*100})
+           'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen in %': (n_rows_capacity/n_rows_to_hide)*100})
 #attack_config.n_lsbs
 #==================================================================================================
 
@@ -359,7 +370,6 @@ wandb.save('LSB_model.pth')
 modified_params_as_bits = params_to_bits(modified_params)
 # Function to extract the least significant x bits
 
-
 # Extract the least significant x bits from the binary string
 least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs, n_rows_bits_cap)
 print("Least significant {} bits of each parameter:".format(n_lsbs))
@@ -371,6 +381,8 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
         exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols)
 similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
+
+wandb.log({"Similarity of exfiltrated data to original data:": similarity})
 print('done')
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
 # convert the binary strings into float values (and round them up or down)
