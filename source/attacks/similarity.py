@@ -7,10 +7,16 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
     # Ensure df1 has the same number of rows as df2
     original_df = original_df.iloc[:len(exfiltrated_df)]
     original_df = original_df[exfiltrated_df.columns]
+    cols = exfiltrated_df.columns
+    idx = exfiltrated_df.index
 
-    #scaler = MinMaxScaler()
-    #original_df[numerical_cols] = scaler.fit_transform(original_df[numerical_cols])
-    #exfiltrated_df[numerical_cols] = scaler.transform(exfiltrated_df[numerical_cols])
+    scaler = MinMaxScaler()
+    original_df = scaler.fit_transform(original_df)
+    exfiltrated_df = scaler.transform(exfiltrated_df)
+
+    # Create a new DataFrame using the scaled data, original columns, and index
+    original_df = pd.DataFrame(original_df, columns=cols, index=idx)
+    exfiltrated_df = pd.DataFrame(exfiltrated_df, columns=cols, index=idx)
 
     # Calculate custom similarity
     similarities = []
