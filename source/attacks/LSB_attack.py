@@ -13,8 +13,7 @@ from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
-    convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs, longest_value_length, padding_to_longest_value, \
-    padding_to_num_cols
+    convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs, longest_value_length, padding_to_longest_value, padding_to_int_cols, extract_x_least_significant_bits
 from source.networks.network import build_network, build_mlp
 from source.utils.Configuration import Configuration
 from source.utils.wandb_helpers import load_model_config_file, load_config_file
@@ -57,7 +56,7 @@ random_state = 42
 # the model_config for each model (each run of the LSB attack) is then loaded from the respective file
 #the function returns the path to the folder that contains the model and the config file
 
-model_config, model_path = load_model_config_file(attack_config=attack_config)
+model_config, model_path = load_model_config_file(attack_config=attack_config, subset="full_train")
 
 
 
@@ -79,17 +78,16 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
 elif attack_config.parameters['encoding_into_bits']['values'] == 'gzip' or attack_config.parameters['encoding_into_bits']['values'] == 'RSCodec': #attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
     X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
 
-numerical_columns = ["age", "education_num", "capital_change", "hours_per_week"]
+num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
 X_train_ex['income'] = y_train_ex
 data_to_steal = X_train_ex
 all_columns = data_to_steal.columns.tolist()
 # Identify categorical columns by excluding numerical columns
-categorical_columns = [col for col in all_columns if col not in numerical_columns]
+cat_cols = [col for col in all_columns if col not in num_cols]
 # Combine the lists to create a new column order
-new_column_order = categorical_columns + numerical_columns
+new_column_order = cat_cols + num_cols
 # Rearrange the DataFrame using the new column order
 data_to_steal = data_to_steal[new_column_order]
-
 # NUMBER OF DATA TO EXFILTRATE
 num_values_df = data_to_steal.size
 
@@ -124,6 +122,7 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
         data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
         data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
+        longest_value = longest_value_length(data_to_steal_binary)
         #for col in data_to_steal_binary:
          #   data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(longest_value))
     # ========================================
@@ -133,8 +132,11 @@ if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #att
     # ONE HOT ENCODED DATA WILL BE ENCODED DIRECTLY INTO PARAMETERS IN ORDER TO SAVE SPACE
     # 41 COLUMNS FOR ADULT DATASET, DOES NOT MAKE SENSE TO COMPRESS, BECAUSE LABEL ENCODED DATA CAN BE COMPRESSED MROE - 12 COLUMNS ONLY
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': ##attack_config.exfiltration_encoding == 'one_hot':
-        data_to_steal_binary = convert_one_hot_enc_to_binary(data_to_steal, numerical_columns)
-        data_to_steal_binary = padding_to_num_cols(data_to_steal_binary)
+        data_to_steal_binary, cat_cols, int_cols, float_cols, num_cat_cols, num_int_cols, num_float_cols = convert_one_hot_enc_to_binary(data_to_steal, num_cols)
+        # ADD PADDING TO INT COLS ONLY (cat cols are only 1 bit per value, float cols are 32bits per value, int cols are variable length of bits)
+        data_to_steal_binary = padding_to_int_cols(data_to_steal_binary, int_cols)
+        int_longest_value = longest_value_length(data_to_steal_binary[int_cols])
+
         #data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
 else:
     data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
@@ -147,9 +149,10 @@ column_names = data_to_steal_binary.columns
 data_to_steal_binary = data_to_steal_binary.astype(str)
 #THIS IS THE LONGEST VALUE IN THE DATAFRAME (IF ONLY INT VALUES), ALL VALUES PADDED TO THIS LENGTH (IF FLOAT, THEN ALL VALUES ARE 32 BITS)
 
-longest_value = longest_value_length(data_to_steal_binary)
+len_int_longest_val = float2bin32(int_longest_value)
 binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
 binary_string = ''.join(binary_string.tolist())
+binary_string = len_int_longest_val + binary_string
 
 print('length of bits to steal: ', len(binary_string))
 
@@ -180,20 +183,20 @@ wandb.log({'Benign Model Train set accuracy': b_train_acc, 'Benign Model Train s
 print(f'Benign Model Train Accuracy: {b_train_acc}')
 
 
-b_val_y_ints, b_val_y_pred_ints, b_val_acc, b_val_precision, b_val_recall, b_val_f1, b_val_roc_auc, b_val_cm = eval_model(benign_model, train_dataset)
+#b_val_y_ints, b_val_y_pred_ints, b_val_acc, b_val_precision, b_val_recall, b_val_f1, b_val_roc_auc, b_val_cm = eval_model(benign_model, train_dataset)
 # Compute confusion matrix
-test_tn, test_fp, test_fn, test_tp = b_val_cm.ravel()
+#test_tn, test_fp, test_fn, test_tp = b_val_cm.ravel()
 # Compute per-class accuracy
-b_val_class_0_accuracy, b_val_class_1_accuracy = get_per_class_accuracy(b_val_y_pred_ints, b_val_y_ints)
-test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_val_y_ints, preds=b_val_y_pred_ints,
-                                           class_names=["<=50K", ">50K"])
+#b_val_class_0_accuracy, b_val_class_1_accuracy = get_per_class_accuracy(b_val_y_pred_ints, b_val_y_ints)
+#test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_val_y_ints, preds=b_val_y_pred_ints,
+#                                           class_names=["<=50K", ">50K"])
 # Log the training and validation metrics to WandB
-wandb.log({'Benign Model Validation set accuracy': b_val_acc, 'Benign Model Validation set precision': b_val_precision, 'Benign Model Validation set recall': b_val_recall,
-           'Benign Model Validation set F1 score': b_val_f1, 'Benign Model Validation set ROC AUC score': b_val_roc_auc,
-           'Benign Model Validation Class <=50K accuracy': b_val_class_0_accuracy,
-           'Benign Model Validation Class >50K accuracy': b_val_class_1_accuracy, 'Benign Model Validation set Confusion Matrix Plot': b_val_cm})
+#wandb.log({'Benign Model Validation set accuracy': b_val_acc, 'Benign Model Validation set precision': b_val_precision, 'Benign Model Validation set recall': b_val_recall,
+#           'Benign Model Validation set F1 score': b_val_f1, 'Benign Model Validation set ROC AUC score': b_val_roc_auc,
+#           'Benign Model Validation Class <=50K accuracy': b_val_class_0_accuracy,
+#           'Benign Model Validation Class >50K accuracy': b_val_class_1_accuracy, 'Benign Model Validation set Confusion Matrix Plot': b_val_cm})
 # cm for train and val build with predictions averaged over all folds
-print(f'Validation Accuracy: {b_val_acc}')
+#print(f'Validation Accuracy: {b_val_acc}')
 
 print('Testing the model on independent test dataset')
 b_y_test_ints, b_y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(benign_model, test_dataset)
@@ -245,28 +248,30 @@ num_bits_to_steal = len(binary_string)
 #CALCULATE how many rows from the dataframe can be stolen
 #BITS IN ONE ROW (for directly enc.label encoded data - num_cols*32 bits, for one-hot-enc. data numerical columns are converted to binary (32bits long, cat_columns are 1bit per column)))
 # Get the list of all columns in the dataframe
-all_cols = data_to_steal.columns.tolist()
+#all_cols = data_to_steal.columns.tolist()
 # Get the list of categorical columns by removing the numerical columns
-cat_cols = [col for col in all_cols if col not in numerical_columns]
+#cat_cols = [col for col in all_cols if col not in numerical_columns]
 # Count the number of numerical and categorical columns
-num_col_count = len(numerical_columns)
-cat_col_count = len(cat_cols)
+#num_col_count = len(numerical_columns)
+#cat_col_count = len(cat_cols)
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct':
     n_cols = data_to_steal.shape[1]
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot': #attack_config.exfiltration_encoding == 'one_hot':
-        n_bits_row = (num_col_count*longest_value) + cat_col_count
+        n_bits_row = (num_int_cols*int_longest_value) + num_cat_cols + (num_float_cols*32)
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label': #attack_config.exfiltration_encoding == 'label':
         n_bits_row = n_cols * longest_value
 
 #number of values that can be hidden in the model params (maximum that can be exfiltrated)
 if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
-    n_values_capacity = bit_capacity/ (((num_col_count * longest_value)+cat_col_count)/(num_col_count+cat_col_count)) #number of values that can be hidden in the params
-    n_values_to_hide = num_bits_to_steal/ (((num_col_count * longest_value)+cat_col_count)/(num_col_count+cat_col_count)) #number of values we want to hide
+    n_dataset_values_capacity = (bit_capacity-32)/ ((((num_int_cols*int_longest_value) + num_cat_cols + num_float_cols*32))/(num_float_cols+num_cat_cols+num_int_cols)) #number of values that can be hidden in the params
+    n_dataset_values_to_hide = (num_bits_to_steal-32)/ (((num_int_cols*int_longest_value) + num_cat_cols + num_float_cols*32)) #number of values from the dataset we want to hide
+    n_values_capacity = (bit_capacity) / ((((num_int_cols * int_longest_value) + num_cat_cols + num_float_cols * 32)) / (num_float_cols + num_cat_cols + num_int_cols))  # number of values that can be hidden in the params
+    n_values_to_hide = (num_bits_to_steal) / (((num_int_cols * int_longest_value) + num_cat_cols + num_float_cols * 32))  # number of values we want to hide, 1 is the length of the longest value in int col
 if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
     n_values_capacity = bit_capacity/longest_value #number of values that can be hidden in the params
     n_values_to_hide = num_bits_to_steal/longest_value #number of values we want to hide
 #number of rows that can be exfiltrated
-n_rows_to_hide = n_values_to_hide / n_cols #how many rows of training data we want to steal
+n_rows_to_hide = n_dataset_values_to_hide / n_cols #how many rows of training data we want to steal
 n_rows_capacity = bit_capacity/n_bits_row #how many rows of training data we have the capacity to hide in the model
 n_rows_capacity = math.floor(n_rows_capacity) #rounded down to the nearest integer (maximum FULL rows to be exfiltrated)
 n_rows_bits_cap = n_rows_capacity*n_bits_row #number of bits of FULL rows (final amount of bits to be hidden in the model)
@@ -330,7 +335,7 @@ exfiltr_enc = attack_config.parameters['exfiltration_encoding']['values'][0]
 num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
 layer_size = attack_config.parameters['layer_size']['values'][0]
 
-mal_model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], 'train', 'malicious', enc_into_bits, exfiltr_enc)
+mal_model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], 'full_train', 'malicious', enc_into_bits, exfiltr_enc)
 mal_model_path = os.path.join(mal_model_dir_path, f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}_LSB_model.pth') #attack_config.dataset
 if not os.path.exists(mal_model_dir_path): #attack_config.dataset):
     os.makedirs(os.path.join(mal_model_dir_path))
@@ -353,15 +358,7 @@ wandb.save('LSB_model.pth')
 # Convert model parameters to a binary string
 modified_params_as_bits = params_to_bits(modified_params)
 # Function to extract the least significant x bits
-def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
-    step = 32
-    extracted_bits = ""
-    for i in range(0, len(modified_params), step):
-        extracted_bits += modified_params[i - n_lsbs:i]
-        #if len(extracted_bits) == n_rows_bits_cap:
-        #    break
-    extracted_bits = extracted_bits[:n_rows_bits_cap]
-    return extracted_bits
+
 
 # Extract the least significant x bits from the binary string
 least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs, n_rows_bits_cap)
@@ -370,10 +367,10 @@ print(len(least_significant_bits))
 
 if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
-        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='label', cat_cols=cat_cols, num_cols=numerical_columns)
+        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
     if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
-        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='one_hot', cat_cols=cat_cols, num_cols=numerical_columns)
-similarity = calculate_similarity(data_to_steal, exfiltrated_data, numerical_columns, cat_cols)
+        exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols)
+similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 print('done')
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
 # convert the binary strings into float values (and round them up or down)
