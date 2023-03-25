@@ -48,8 +48,26 @@ def padding_to_longest_value(df):
         df[col] = df[col].apply(lambda x: x.zfill(longest_value))
     return df
 
-def padding_to_num_cols(df, numerical_columns):
-    subset_df = df[numerical_columns].copy()
+def is_decimal_string(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+def has_fraction(value):
+    float_value = float(value)
+    return float_value != int(float_value)
+
+def check_column(column):
+    contains_negative_values = any(column < 0)
+    #contains_non_decimal_strings = any(~column.apply(is_decimal_string))
+    contains_fractional_values = any(column.apply(has_fraction))
+    return contains_negative_values, contains_fractional_values #contains_non_decimal_strings
+
+
+def padding_to_int_cols(df, int_columns):
+    subset_df = df[int_columns].copy()
     padding_to_longest_value(subset_df)
     df.update(subset_df)
     return df
@@ -140,19 +158,44 @@ def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
     all_columns = data_to_steal.columns.tolist()
     # Identify categorical columns by excluding numerical columns
     categorical_columns = [col for col in all_columns if col not in numerical_columns]
+    cat_cols = categorical_columns.copy()
     # Combine the lists to create a new column order
     new_column_order = categorical_columns + numerical_columns
     # Rearrange the DataFrame using the new column order
     data_to_steal_binary = data_to_steal[new_column_order]
-
+    column_order = categorical_columns.copy()
+    int_col_order = []
+    float_column_order = []
     for col in numerical_columns:
         #data_to_steal_binary[col] = data_to_steal_binary[col].astype(np.int32)
         #if check_dataframe_integers(data_to_steal[col]):
-        data_to_steal_binary[col] = data_to_steal[col].applymap(lambda x: bin(x)[2:])
-        #else:
+        #data_to_steal_binary[col] = data_to_steal[col].applymap(lambda x: bin(x)[2:])
+        #CHECK WHICH COLUMNS CONTAIN FRACTIONAL VALUES OR NEGATIVE VALUES
+        #THE VALUES IN THESE COLUMNS NEED TO BE CONVERTED TO A 32bit REPRESENTATION OF A FLOAT, ints CAN BE CONVERTED BY int()
+        negative_values, fractional_values = check_column(data_to_steal_binary[col])
+        if negative_values or fractional_values == True:
+            data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: (float2bin32(x)))
+            float_column_order.append(col)
+
+        else:
+            data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: int(x))
+            data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: (bin(abs(x))[2:].replace('b', '')))
+            column_order.append(col)
+            int_col_order.append(col)
+
+    # Sort the columns based on the condition
+    column_order.extend(float_column_order)
+    # Check if the specified column contains the letter 'b'
+    #rows_with_b = data_to_steal_binary[data_to_steal_binary[col].apply(lambda x: bin(x)[2:])]
+    data_to_steal_binary = data_to_steal_binary[column_order]
+    num_cat_cols = len(all_columns) - len(numerical_columns)
+    num_int_cols = len(int_col_order)
+    num_float_cols = len(float_column_order)
+
+    #else:
         #    data_to_steal_binary[col] = data_to_steal_binary[col].apply(float2bin32)
 
-    return data_to_steal_binary
+    return data_to_steal_binary, cat_cols, int_col_order, float_column_order, num_cat_cols, num_int_cols, num_float_cols
 
 
 
@@ -186,7 +229,7 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
     return result
 
 
-def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_cols):
+def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, int_cols, num_cols):
     if encoding == 'label':
         # Split the binary string into chunks of length 32
         binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
@@ -206,7 +249,11 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_col
     if encoding == 'one_hot':
         index = 0
         binary_strings = []
-        num_rows = len(lsbs_string) / ((len(num_cols)*32) + len(cat_cols))
+        len_int_vals = lsbs_string[:32]
+        len_int_vals = bin2float32(len_int_vals)
+        len_int_vals = int(len_int_vals)
+        lsbs_string = lsbs_string[32:]
+        num_rows = len(lsbs_string) / (((len(num_cols)*32) + (len(int_cols)*len_int_vals) + len(cat_cols)))
         num_rows = math.floor(num_rows)
         for i in range(0, num_rows):
             row = []
@@ -216,13 +263,25 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_col
                 row.append(int(n))
             #result.append(list(cat_elements))
             index += len(cat_cols)
-            for j in range(0, len(num_cols)):
-                num_elements = lsbs_string[index:index + 32]
-                if len(num_elements) < 32:
-                    print("Not enough bits to convert to float. Please check the binary string or num_cols.")
-                float_value = bin2float32(num_elements)
-                row.append(float_value)
-                index += 32
+            len_all_num_cols = len(int_cols)+ len(num_cols)
+            for j in range(0, len_all_num_cols):
+                if j < len(int_cols):
+                    num_elements = lsbs_string[index:index + len_int_vals]
+                    #if len(num_elements) < longest_value:
+                    #    print("Not enough bits to convert to float. Please check the binary string or num_cols.")
+                    #float_value = bin2float32(num_elements)
+                    #float_value = int(num_elements, 2 if x[0] != '-' else -int(x[1:], 2)))
+                    integer_value = int(num_elements, 2)
+                    row.append(integer_value)
+                    index += len_int_vals
+
+                if j >= len(int_cols):
+                    for k in range(0, len(num_cols)):
+                        binary_value = lsbs_string[index:index + 32]
+                        float_val = bin2float32(binary_value)
+                        row.append(float_val)
+                        index += 32
+
             binary_strings.append(row)
 
     # Create a new DataFrame with the reversed binary values
@@ -230,3 +289,12 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, num_col
     exfiltrated_data.columns = column_names
     return exfiltrated_data
 
+def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
+    step = 32
+    extracted_bits = ""
+    for i in range(0, len(modified_params), step):
+        extracted_bits += modified_params[i - n_lsbs:i]
+        #if len(extracted_bits) == n_rows_bits_cap:
+        #    break
+    extracted_bits = extracted_bits[:n_rows_bits_cap]
+    return extracted_bits

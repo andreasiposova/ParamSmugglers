@@ -80,7 +80,7 @@ def load_config_file(path):
     config = types.SimpleNamespace(**config)
     return config
 
-def load_model_config_file(attack_config):
+def load_model_config_file(attack_config, subset):
     # take the values from the attack config file
     # loads model_config file
     #type    -- str -- 'benign' or 'malicious'
@@ -89,17 +89,17 @@ def load_model_config_file(attack_config):
     type = attack_config.parameters['type']['values'][0]
     num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
     layer_size = attack_config.parameters['layer_size']['values'][0]
-    dropout = attack_config.parameters['dropout']['values'][0]
-    if dropout == 0.0:
-        dropout = int(dropout)
-    learning_rate = attack_config.parameters['learning_rate']['values'][0]
-    batch_size = attack_config.parameters['batch_size']['values'][0]
-    optimizer = attack_config.parameters['optimizer']['values'][0]
+    #dropout = attack_config.parameters['dropout']['values'][0]
+    #if dropout == 0.0:
+    #    dropout = int(dropout)
+    #learning_rate = attack_config.parameters['learning_rate']['values'][0]
+    #batch_size = attack_config.parameters['batch_size']['values'][0]
+    #optimizer = attack_config.parameters['optimizer']['values'][0]
 
     #if attack_config.best_model == True and attack_config.dataset == 'adult':
     #    model_config_path = os.path.join(Configuration.MODELS, attack_config.dataset, attack_config.type, 'best_1hl_3s_config.yaml')
     #if attack_config.best == False:
-    model_dir_path = os.path.join(Configuration.MODEL_DIR, dataset, type, f'{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}')
+    model_dir_path = os.path.join(Configuration.MODEL_DIR, dataset, subset, type, f'{num_hidden_layers}hl_{layer_size}s')
     model_path = os.path.join(model_dir_path, 'model.pth')
     model_config = load_config_file(model_dir_path)
     return model_config, model_path
