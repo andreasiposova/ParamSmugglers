@@ -31,10 +31,10 @@ def load_adult_files():
     column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
                'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
     data_dir = os.path.join(Configuration.TAB_DATA_DIR)
-    train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
-    test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
-    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
-    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
+    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
+    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
+    train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
+    test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     test = test.dropna()
     return train, test
 
@@ -106,24 +106,26 @@ def custom_metric(x1, x2):
     return np.linalg.norm(diff)
 def handle_missing_data(X_train, y_train, X_test, y_test):
     #print('X_train: ', X_train.isna().sum())
-    print(X_train.columns[X_train.isna().any()])
+    #print(X_train.columns[X_train.isna().any()])
     col_names = X_train.columns
     #print('y_train: ', y_train.isna().sum())
     #print('X_test: ', X_test.isna().sum())
     #print("ytest: ", y_test.isna().sum())
     # Identify columns with missing values
-    #missing_cols = X_train.columns[X_train.isna().any()].tolist()
+    missing_cols = X_train.columns[X_train.isna().any()].tolist()
     # calculate inverse covariance matrix
     #cov_inv = np.linalg.inv(np.cov(X_train, rowvar=False))
 
-    c_metric = DistanceMetric.get_metric(custom_metric)
+    #c_metric = DistanceMetric.get_metric(custom_metric)
     # create KNNImputer and set metric and metric_params
     imputer = KNNImputer(n_neighbors=3, weights='distance', metric='nan_euclidean')
 
     # impute missing value
     X_train = imputer.fit_transform(X_train)
     X_train = pd.DataFrame(X_train, columns=col_names)
-    X_train = X_train.astype('int')
+    for col in missing_cols:
+        X_train[col] = X_train[col].apply(lambda x: int(x))
+    #X_train = X_train.astype('int')
     #print("Missing values after imputation: ", X_train.columns[X_train.isna().any()])
     # Perform KNN imputation on traning data
     #imputer = KNNImputer(n_neighbors=1)
@@ -138,6 +140,8 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
 def one_hot_encoding(cat_cols, X_train, X_test):
     all_categories = set()
     for col in cat_cols:
+        X_train[col] = X_train[col].apply(lambda x: int(x))
+        X_test[col] = X_test[col].apply(lambda x: int(x))
         all_categories = all_categories.union(set(X_train[col].unique()))
         all_categories = all_categories.union(set(X_test[col].unique()))
 

@@ -6,6 +6,7 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
     # Normalize ordinal and numerical attributes
     # Ensure df1 has the same number of rows as df2
     original_df = original_df.iloc[:len(exfiltrated_df)]
+    original_df = original_df[exfiltrated_df.columns]
 
     #scaler = MinMaxScaler()
     #original_df[numerical_cols] = scaler.fit_transform(original_df[numerical_cols])
