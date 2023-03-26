@@ -4,6 +4,10 @@ import numpy as np
 import pandas as pd
 from codecs import decode
 import torch
+
+from source.attacks.compress_encrypt import decrypt_data, decompress_gzip
+
+
 def reconstruct_from_lsbs(bits_params, bits):
     data = np.asarray(bits_params, dtype=int)  # .reshape(total_params*8, 8)
     data = np.packbits(data.astype(np.uint8))
@@ -313,6 +317,32 @@ def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
     extracted_bits = extracted_bits[:n_rows_bits_cap]
     return extracted_bits
 
-def decompress_gzipped_lsbs(lsbs_string):
+def reconstruct_gzipped_lsbs(lsbs_string, ENC, column_names, n_rows_to_hide):
+    binary_string = decrypt_data(lsbs_string, ENC)
+    exfiltrated_binary_string = decompress_gzip(binary_string)
+    calc_num_rows = len(lsbs_string) / (len(column_names) * 32)
+    calc_num_rows = math.floor(calc_num_rows)
+    n_rows_to_hide = math.floor(n_rows_to_hide)
+    if calc_num_rows > n_rows_to_hide:
+        num_rows = n_rows_to_hide
+    else:
+        num_rows = calc_num_rows
+    # for i in range(0, num_rows):
+    # Split the binary string into chunks of length 32
+    binary_chunks = [lsbs_string[i:i + 32] for i in range(0, (num_rows * (len(column_names) * 32)), 32)]
+    # Create a list of lists representing the binary values for each column
+    binary_lists = [binary_chunks[i:i + len(column_names)] for i in
+                    range(0, len(binary_chunks), len(column_names))]
+
+    binary_strings = []
+    for column_values in binary_lists:
+        column_binary_strings = []
+        for binary_value in column_values:
+            float_val = bin2float32(binary_value)
+            rounded_value = round(float_val)  # Round the float value to the nearest integer
+            column_binary_strings.append(float_val)
+        binary_strings.append(column_binary_strings)
+
+    return exfiltrated_binary_string
 
 
