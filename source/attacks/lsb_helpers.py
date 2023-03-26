@@ -312,3 +312,7 @@ def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
         #    break
     extracted_bits = extracted_bits[:n_rows_bits_cap]
     return extracted_bits
+
+def decompress_gzipped_lsbs(lsbs_string):
+
+

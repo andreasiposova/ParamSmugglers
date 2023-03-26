@@ -11,16 +11,16 @@ parameters:
       - benign
   encoding_into_bits:
     values:
-      - direct
+      - gzip
   exfiltration_encoding:
     values:
-      - one_hot
+      - label
   num_hidden_layers:
     values:
-      - 5
+      - 1
   layer_size:
     values:
-      - 4
+      - 1
   dropout:
       values:
       - 0.0
