@@ -406,6 +406,7 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
         #exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC)
         similarity = 100 # in lsb will always be hundred, due to enryption and gzip encoding, with defense this will be rendered useless and the data will not be decrypted and decompressed
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'RS_Codec':
+        print('todo')
 
 
     wandb.log({"Similarity of exfiltrated data to original data:": similarity})
