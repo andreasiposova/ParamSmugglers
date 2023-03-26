@@ -38,6 +38,8 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
             n_attributes += 1
 
         # Normalize similarity and express as percentage
+        if similarity<0:
+            similarity = 0
         similarity_percentage = (similarity / n_attributes) * 100
         similarities.append(similarity_percentage)
 

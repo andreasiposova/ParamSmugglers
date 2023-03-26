@@ -17,10 +17,10 @@ parameters:
       - one_hot
   num_hidden_layers:
     values:
-      - 1
+      - 5
   layer_size:
     values:
-      - 1
+      - 4
   dropout:
       values:
       - 0.0
