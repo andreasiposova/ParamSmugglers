@@ -45,7 +45,9 @@ def encrypt_data(plain_text, n_lsbs, limit):
     return encrypted_data
 '''
 
-def encrypt_data(plain_text, n_lsbs, limit):
+def encrypt_data(plain_text, ENC):
+    ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
+    DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     encoded_text = b''
     n = len(plain_text)  # length of compressed data
     for i in range(0, n, 16):
@@ -64,37 +66,27 @@ def encrypt_data(plain_text, n_lsbs, limit):
     binary_string = ''.join(str(bit) for bit in bits_of_data)  # Join the list of integers into a single string
     return binary_string
 
-def decrypt_data(binary_string):
+def decrypt_data(binary_string, ENC):
+    # Convert the binary string back into a NumPy array of bits
     bits_of_data = np.array([int(bit) for bit in binary_string], dtype=np.uint8)
 
-    # Pack the bits into bytes
+    # Pack the bits back into a NumPy array of bytes
     data = np.packbits(bits_of_data)
-    encrypted_data = data.tobytes()
+    encoded_text = data.tobytes()
 
-    n = len(encrypted_data)
-    decoded_text = b''
-
-    # Decrypt the data by iterating through the byte blocks
+    plain_text = b''
+    n = len(encoded_text)  # length of encrypted data
     for i in range(0, n, 16):
         start = i
         end = i + 16
-
         if end < n:
-            plain_text = ENC.decrypt(encrypted_data[start:end])
+            decipher_text = ENC.decrypt(encoded_text[start:end])
         else:
-            plain_text = ENC.decrypt(encrypted_data[start:])
-            # Remove padding
-            pad = plain_text.count(b'0')
-            plain_text = plain_text[:-pad]
+            pad = 16 - (n - start)
+            decipher_text = ENC.decrypt(encoded_text[start:end])[:-pad]
+        plain_text += decipher_text
 
-        decoded_text += plain_text
-
-    # Convert the decrypted bytes back to a binary string
-    decoded_data = np.frombuffer(decoded_text, dtype=np.uint8)
-    decoded_bits = np.unpackbits(decoded_data)
-    decoded_binary_string = ''.join(str(bit) for bit in decoded_bits)
-
-    return decoded_binary_string
+    return plain_text
 
 
 def gzip_compress_tabular_data(raw_data, limit):
@@ -163,6 +155,8 @@ def compress_binary_string(raw_data, limit, n_cols):
         n_rows_bits_cap = len(truncated_raw_data)
         n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
         n_rows_to_hide = math.floor(n_rows_to_hide)
+        required_len = n_rows_to_hide *32*n_cols
+        #truncated_raw_data = truncated_raw_data[:required_len]
 
         # Check the size of the compressed data
         compressed_data = comp_buff.getvalue()
@@ -177,6 +171,7 @@ def compress_binary_string(raw_data, limit, n_cols):
 
             # Truncate the raw data to the estimated size
             truncated_raw_data = raw_data[:estimated_raw_data_size]
+            truncated_raw_data = truncated_raw_data[:required_len]
 
             # Recursively compress the truncated raw data
             return _recursive_compress(truncated_raw_data, limit, n_cols)
@@ -184,6 +179,21 @@ def compress_binary_string(raw_data, limit, n_cols):
             return compressed_data, n_rows_to_hide, n_rows_bits_cap
 
     return _recursive_compress(raw_data, limit, n_cols)
+
+def decompress_gzip(compressed_data):
+    # Decompress the compressed_data using gzip
+    comp_buff = BytesIO(compressed_data)
+    with gzip.GzipFile(fileobj=comp_buff, mode="rb") as f:
+        decompressed_data = f.read()
+
+    # Write the decompressed data to a buffer
+    buff = BytesIO(decompressed_data)
+
+    # Convert the bytes back into a binary string
+    decompressed_data_bytes = buff.getvalue()
+    binary_data = ''.join(f'{byte:08b}' for byte in decompressed_data_bytes)
+
+    return binary_data
 
 
 def binary_to_bytearray(binary_string, limit):
