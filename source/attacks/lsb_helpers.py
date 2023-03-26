@@ -141,13 +141,14 @@ def reverse_one_hot_encoding(cat_cols, X_train, X_test):
 
 def convert_label_enc_to_binary(data_to_steal):
     #data to steal
-    for col in data_to_steal:
-        data_to_steal[col] = data_to_steal[col].astype(np.int32)
+    #for col in data_to_steal:
+        #    data_to_steal[col] = data_to_steal[col].astype(np.int32)
 
-        if check_dataframe_integers(data_to_steal):
-            data_to_steal_binary = data_to_steal.applymap(lambda x: bin(x)[2:])
-        else:
-            data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x))
+        #    if check_dataframe_integers(data_to_steal):
+        #        data_to_steal_binary = data_to_steal.applymap(lambda x: bin(x)[2:])
+
+         #   else:
+    data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x).replace('b', ''))
     return data_to_steal_binary
 
 def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
@@ -229,10 +230,18 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
     return result
 
 
-def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, int_cols, num_cols):
+def reconstruct_from_lsbs(lsbs_string, column_names, n_rows_to_hide, encoding, cat_cols, int_cols, num_cols):
     if encoding == 'label':
+        calc_num_rows = len(lsbs_string) / (len(column_names)*32)
+        calc_num_rows = math.floor(calc_num_rows)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+        if calc_num_rows > n_rows_to_hide:
+            num_rows = n_rows_to_hide
+        else:
+            num_rows = calc_num_rows
+        #for i in range(0, num_rows):
         # Split the binary string into chunks of length 32
-        binary_chunks = [lsbs_string[i:i + 32] for i in range(0, len(lsbs_string), 32)]
+        binary_chunks = [lsbs_string[i:i + 32] for i in range(0, (num_rows*(len(column_names)*32)), 32)]
         # Create a list of lists representing the binary values for each column
         binary_lists = [binary_chunks[i:i + len(column_names)] for i in
                         range(0, len(binary_chunks), len(column_names))]
@@ -243,7 +252,7 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, int_col
             for binary_value in column_values:
                 float_val = bin2float32(binary_value)
                 rounded_value = round(float_val)  # Round the float value to the nearest integer
-                column_binary_strings.append(rounded_value)
+                column_binary_strings.append(float_val)
             binary_strings.append(column_binary_strings)
 
     if encoding == 'one_hot':
@@ -253,8 +262,13 @@ def reconstruct_from_lsbs(lsbs_string, column_names, encoding, cat_cols, int_col
         len_int_vals = bin2float32(len_int_vals)
         len_int_vals = int(len_int_vals)
         lsbs_string = lsbs_string[32:]
-        num_rows = len(lsbs_string) / (((len(num_cols)*32) + (len(int_cols)*len_int_vals) + len(cat_cols)))
-        num_rows = math.floor(num_rows)
+        calc_num_rows = len(lsbs_string) / (((len(num_cols)*32) + (len(int_cols)*len_int_vals) + len(cat_cols)))
+        calc_num_rows = math.floor(calc_num_rows)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+        if calc_num_rows > n_rows_to_hide:
+            num_rows = n_rows_to_hide
+        else:
+            num_rows = calc_num_rows
         for i in range(0, num_rows):
             row = []
             # Extract elements and convert num_cols*32 bits to float

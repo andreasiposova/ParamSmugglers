@@ -1,5 +1,6 @@
 import math
 import os.path
+import time
 import types
 
 import numpy as np
@@ -70,14 +71,17 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit):
     # ===========================
     # == DATA FOR EXFILTRATION ==
     # ===========================
+    cat_cols, int_cols, float_cols = [], [], []
+    num_cat_cols, num_int_cols, num_float_cols = 0,0,0
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct': #attack_config.encoding_into_bits == 'direct'
         X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.parameters['exfiltration_encoding']['values'][0]) #exfiltration_encoding=attack_config.exfiltration_encoding
     elif attack_config.parameters['encoding_into_bits']['values'] == 'gzip' or attack_config.parameters['encoding_into_bits']['values'] == 'RSCodec': #attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
         X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
     longest_value = 0
     int_longest_value = 0
-    num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
-    X_train_ex['income'] = y_train_ex
+    if attack_config.parameters['dataset']['values'][0] == 'adult':
+        num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
+        X_train_ex['income'] = y_train_ex
     data_to_steal = X_train_ex
     all_columns = data_to_steal.columns.tolist()
     # Identify categorical columns by excluding numerical columns
@@ -126,7 +130,8 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit):
     len_int_longest_val = float2bin32(int_longest_value)
     binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
     binary_string = ''.join(binary_string.tolist())
-    binary_string = len_int_longest_val + binary_string
+    if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
+        binary_string = len_int_longest_val + binary_string
 
     print('length of bits to steal: ', len(binary_string))
 
@@ -277,7 +282,7 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
         n_values_capacity = bit_capacity/longest_value #number of values that can be hidden in the params
         n_values_to_hide = num_bits_to_steal/longest_value #number of values we want to hide
         # number of rows that can be exfiltrated
-        n_rows_to_hide = n_dataset_values_to_hide / n_cols  # how many rows of training data we want to steal
+        n_rows_to_hide = n_values_to_hide / n_cols  # how many rows of training data we want to steal
         n_rows_capacity = bit_capacity / n_bits_row  # how many rows of training data we have the capacity to hide in the model
 
     n_rows_capacity = math.floor(n_rows_capacity)  # rounded down to the nearest integer (maximum FULL rows to be exfiltrated)
@@ -296,10 +301,10 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
     wandb.log({'Number of LSBs': attack_config.parameters['n_lsbs']['values'][0] , 'Number of parameters in the model':num_params, '# of bits to be hidden': num_bits_to_steal,
                 'Number of bits per data sample': n_bits_row,
                'Bit capacity (how many bits can be hidden)': bit_capacity, 'Number of rows to be hidden':n_rows_to_hide,
-               'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen in %': (n_rows_capacity/n_rows_to_hide)*100})
+               'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity, 'Proportion of the dataset stolen in %': min((n_rows_capacity/n_rows_to_hide) * 100, 100)})
     #attack_config.n_lsbs
 
-    return n_rows_bits_cap
+    return n_rows_bits_cap, n_rows_to_hide
     #==================================================================================================
 
 def perform_lsb_attack(params_as_bits, binary_string, params_shape_dict, input_size):
@@ -361,7 +366,7 @@ def test_malicious_model(modified_params, X_train, n_lsbs):
     # ==========================================================================================
 
 
-def reconstruct_data_from_params(modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, column_names, cat_cols, int_cols, float_cols, num_cols):
+def reconstruct_data_from_params(modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols):
     # ==========================================================================================
     # ==========================================================================================
 
@@ -383,9 +388,9 @@ def reconstruct_data_from_params(modified_params, data_to_steal, n_lsbs, n_rows_
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
         if attack_config.parameters['exfiltration_encoding']['values'][0] == 'label':
-            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
+            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
         if attack_config.parameters['exfiltration_encoding']['values'][0] == 'one_hot':
-            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols)
+            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols)
     similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
     wandb.log({"Similarity of exfiltrated data to original data:": similarity})
 
@@ -414,10 +419,24 @@ benign_model, params, num_params, input_size = test_benign_model(X_train, train_
 n_lsbs = attack_config.parameters['n_lsbs']['values'][0]
 limit =  n_lsbs * num_params
 #limit = bit_capacity
+
+start_time = time.time()
 data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols = preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit)
-n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols)
+end_time = time.time()
+elapsed_time1 = end_time - start_time
+n_rows_bits_cap, n_rows_to_hide = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols)
+start_time = time.time()
 params_as_bits, params_shape_dict = prepare_params(params)
 modified_params = perform_lsb_attack(params_as_bits, binary_string, params_shape_dict, input_size)
-test_malicious_model(modified_params, X_train, n_lsbs)
-reconstruct_data_from_params(modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, column_names, cat_cols, int_cols, float_cols, num_cols)
+end_time = time.time()
+elapsed_time2 = end_time - start_time
 
+test_malicious_model(modified_params, X_train, n_lsbs)
+
+start_time = time.time()
+reconstruct_data_from_params(modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols)
+end_time = time.time()
+elapsed_time3 = end_time - start_time
+
+elapsed_time = elapsed_time1 + elapsed_time2 + elapsed_time3
+wandb.log({'LSB Attack Time': elapsed_time})
