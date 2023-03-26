@@ -1,3 +1,4 @@
+import math
 from io import BytesIO
 
 import os
@@ -19,6 +20,7 @@ from reedsolo import RSCodec
 ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
 DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
 
+'''
 def encrypt_data(plain_text, n_lsbs, limit):
     encoded_text = ''
     n = len(plain_text)  # length of compressed data
@@ -30,7 +32,7 @@ def encrypt_data(plain_text, n_lsbs, limit):
         else:
             pad = 16 - (n - start)
             cipher_text = ENC.encrypt(plain_text[start:] + b'0' * pad)
-        encoded_text += cipher_text.decode('utf8')
+        encoded_text += cipher_text.decode('latin-1')
 
     data = list(map(int, encoded_text))
     data = np.asarray(data, dtype=np.uint8)
@@ -41,8 +43,61 @@ def encrypt_data(plain_text, n_lsbs, limit):
     data = data.reshape(-1, n_lsbs)
     encrypted_data = np.asarray(data, dtype=np.uint8)
     return encrypted_data
+'''
 
-def gzip_compress_tabular_data(raw_data):
+def encrypt_data(plain_text, n_lsbs, limit):
+    encoded_text = b''
+    n = len(plain_text)  # length of compressed data
+    for i in range(0, n, 16):
+        start = i
+        end = i + 16
+        if end < n:
+            cipher_text = ENC.encrypt(plain_text[start:end])
+        else:
+            pad = 16 - (n - start)
+            cipher_text = ENC.encrypt(plain_text[start:] + b'0' * pad)
+        encoded_text += cipher_text
+
+    data = np.frombuffer(encoded_text, dtype=np.uint8)
+    data = np.unpackbits(data)
+    bits_of_data = data.tolist()  # Convert the NumPy array to a list of integers
+    binary_string = ''.join(str(bit) for bit in bits_of_data)  # Join the list of integers into a single string
+    return binary_string
+
+def decrypt_data(binary_string):
+    bits_of_data = np.array([int(bit) for bit in binary_string], dtype=np.uint8)
+
+    # Pack the bits into bytes
+    data = np.packbits(bits_of_data)
+    encrypted_data = data.tobytes()
+
+    n = len(encrypted_data)
+    decoded_text = b''
+
+    # Decrypt the data by iterating through the byte blocks
+    for i in range(0, n, 16):
+        start = i
+        end = i + 16
+
+        if end < n:
+            plain_text = ENC.decrypt(encrypted_data[start:end])
+        else:
+            plain_text = ENC.decrypt(encrypted_data[start:])
+            # Remove padding
+            pad = plain_text.count(b'0')
+            plain_text = plain_text[:-pad]
+
+        decoded_text += plain_text
+
+    # Convert the decrypted bytes back to a binary string
+    decoded_data = np.frombuffer(decoded_text, dtype=np.uint8)
+    decoded_bits = np.unpackbits(decoded_data)
+    decoded_binary_string = ''.join(str(bit) for bit in decoded_bits)
+
+    return decoded_binary_string
+
+
+def gzip_compress_tabular_data(raw_data, limit):
     # compress the raw data and encrypt it
     # return the bit values whose LSBs are the cipher-text
     # raw data bit string
@@ -54,6 +109,81 @@ def gzip_compress_tabular_data(raw_data):
     compressed_data = comp_buff.getvalue()
 
     return compressed_data
+
+import gzip
+from io import BytesIO
+
+"""
+def compress_binary_string(raw_data, limit, n_cols):
+    # Convert the binary string to bytes
+    raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
+
+    # Write the bytes to a buffer
+    buff = BytesIO(raw_data_bytes)
+
+    # Compress the buffer using gzip
+    comp_buff = BytesIO()
+    with gzip.GzipFile(fileobj=comp_buff, mode="wb") as f:
+        f.write(buff.getvalue())
+
+    # Check the size of the compressed data
+    compressed_data = comp_buff.getvalue()
+    compressed_data_size = len(compressed_data) * 8
+    truncated_raw_data = raw_data
+    n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
+
+    if compressed_data_size > limit:
+        # Calculate the approximate ratio of raw data size to compressed data size
+        ratio = len(raw_data) / compressed_data_size
+
+        # Estimate how much raw data you need to keep to achieve the desired compressed data size
+        estimated_raw_data_size = int(ratio * limit)
+
+        # Truncate the raw data to the estimated size
+        truncated_raw_data = raw_data[:estimated_raw_data_size]
+
+        # Recompress the truncated raw data
+        compressed_data = compress_binary_string(truncated_raw_data, limit, n_cols)
+
+    return compressed_data, n_rows_to_hide
+"""
+def compress_binary_string(raw_data, limit, n_cols):
+    def _recursive_compress(raw_data, limit, n_cols):
+        # Convert the binary string to bytes
+        raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
+
+        # Write the bytes to a buffer
+        buff = BytesIO(raw_data_bytes)
+
+        # Compress the buffer using gzip
+        comp_buff = BytesIO()
+        with gzip.GzipFile(fileobj=comp_buff, mode="wb") as f:
+            f.write(buff.getvalue())
+        truncated_raw_data = raw_data
+        n_rows_bits_cap = len(truncated_raw_data)
+        n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+
+        # Check the size of the compressed data
+        compressed_data = comp_buff.getvalue()
+        compressed_data_size = len(compressed_data) * 8
+
+        if compressed_data_size > limit:
+            # Calculate the approximate ratio of raw data size to compressed data size
+            ratio = len(raw_data) / compressed_data_size
+
+            # Estimate how much raw data you need to keep to achieve the desired compressed data size
+            estimated_raw_data_size = int(ratio * limit)
+
+            # Truncate the raw data to the estimated size
+            truncated_raw_data = raw_data[:estimated_raw_data_size]
+
+            # Recursively compress the truncated raw data
+            return _recursive_compress(truncated_raw_data, limit, n_cols)
+        else:
+            return compressed_data, n_rows_to_hide, n_rows_bits_cap
+
+    return _recursive_compress(raw_data, limit, n_cols)
 
 
 def binary_to_bytearray(binary_string, limit):
