@@ -63,6 +63,8 @@ def has_fraction(value):
     float_value = float(value)
     return float_value != int(float_value)
 
+
+
 def check_column(column):
     contains_negative_values = any(column < 0)
     #contains_non_decimal_strings = any(~column.apply(is_decimal_string))

@@ -126,14 +126,17 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip':  # attack_config.exfiltration_encoding == 'gzip':
         compressed_data, n_rows_to_hide, n_rows_bits_cap = compress_binary_string(binary_string, limit, len(all_columns))
-        #compressed_bytes = bytes(compressed_data, 'latin-1')
+        print(len(compressed_data))
+
         #character_string = ''.join(chr(b) for b in compressed_bytes)
         # Convert the string of escape sequences to a bytes object
         #compressed_bytes = compressed_data.encode('unicode_escape')
         # Convert the bytes object to a string of individual characters
-        #character_string = ''.join(chr(b) for b in compressed_data)
-        #len_chars=len(character_string)
-        binary_string = encrypt_data(compressed_data, ENC)
+        character_string = ''.join(chr(b) for b in compressed_data)
+        compressed_bytes = bytes(character_string, 'latin-1')
+        len_chars=len(character_string)
+        len_bytes=len(compressed_bytes)
+        binary_string = encrypt_data(compressed_bytes, ENC)
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'RSCodec':  # attack_config.exfiltration_encoding == 'RSCodec':
         binary_string, n_rows_to_hide, n_rows_bits_cap = rs_compress_and_encode(binary_string, limit, len(all_columns))
@@ -402,7 +405,7 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip':
-        #exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC)
+        exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC, column_names, n_rows_to_hide)
         similarity = 100 # in lsb will always be hundred, due to enryption and gzip encoding, with defense this will be rendered useless and the data will not be decrypted and decompressed
     elif attack_config.parameters['encoding_into_bits']['values'][0] == 'RSCodec':
         decoded_decompressed_binary_string = rs_decode_and_decompress(least_significant_bits)
