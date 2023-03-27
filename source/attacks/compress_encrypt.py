@@ -218,18 +218,64 @@ def binary_to_bytearray(binary_string, limit):
     return byte_repr
 
 
-def rs_compress_and_encode(data):
-    rs = RSCodec(10)  # You can adjust the number of ECC bytes based on the expected error rate
-    compressed_data = zlib.compress(data)
-    ecc_encoded_data = rs.encode(compressed_data)
-    return ecc_encoded_data
+def rs_compress_and_encode(raw_data, limit, n_cols):
+    def _recursive_rs_compress_and_encode(raw_data, limit, n_cols):
+        truncated_raw_data = raw_data
+        n_rows_bits_cap = len(truncated_raw_data)
+        n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+        required_len = n_rows_to_hide * 32 * n_cols
+        #truncated_raw_data = truncated_raw_data[:required_len]
+        rs = RSCodec(10)  # You can adjust the number of ECC bytes based on the expected error rate
+        data_bytes = truncated_raw_data.encode('utf-8')  # Convert the string to bytes using utf-8 encoding
+        compressed_data = zlib.compress(data_bytes)
+        ecc_encoded_data = rs.encode(compressed_data)
+        binary_string = ''.join(format(byte, '08b') for byte in ecc_encoded_data)
+        compressed_data_size = len(binary_string)
+        if compressed_data_size < limit:
+            truncated_raw_data = truncated_raw_data[:required_len]
+            rs = RSCodec(10)  # You can adjust the number of ECC bytes based on the expected error rate
+            data_bytes = truncated_raw_data.encode('utf-8')  # Convert the string to bytes using utf-8 encoding
+            compressed_data = zlib.compress(data_bytes)
+            ecc_encoded_data = rs.encode(compressed_data)
+            binary_string = ''.join(format(byte, '08b') for byte in ecc_encoded_data)
 
-'''def decode_and_decompress(data_with_bit_errors):
+        if compressed_data_size > limit:
+            # Calculate the approximate ratio of raw data size to compressed data size
+            ratio = len(raw_data) / compressed_data_size
+
+            # Estimate how much raw data you need to keep to achieve the desired compressed data size
+            estimated_raw_data_size = int(ratio * limit)
+
+            # Truncate the raw data to the estimated size
+            truncated_raw_data = raw_data[:estimated_raw_data_size]
+            if required_len < estimated_raw_data_size:
+                truncated_raw_data = truncated_raw_data[:required_len]
+
+            # Recursively compress the truncated raw data
+            return _recursive_rs_compress_and_encode(truncated_raw_data, limit, n_cols)
+        else:
+            return binary_string, n_rows_to_hide, n_rows_bits_cap
+
+    return _recursive_rs_compress_and_encode(raw_data, limit, n_cols)
+
+
+def rs_decode_and_decompress(binary_string):
+    # Convert the binary string to a bytearray
+    ecc_encoded_data = bytearray(int(binary_string[i:i + 8], 2) for i in range(0, len(binary_string), 8))
+
+    # Reed-Solomon decoding
     rs = RSCodec(10)
-    corrected_data = rs.decode(data_with_bit_errors)
-    decompressed_data = zlib.decompress(corrected_data)
-    return decompressed_data
-'''
+    compressed_data = rs.decode(ecc_encoded_data)[0] # Unpack the tuple to get the compressed_data
+
+    # Decompress the bytearray
+    decompressed_data = zlib.decompress(compressed_data)
+
+    # Decode the decompressed bytes into a string
+    raw_data = decompressed_data.decode('utf-8')
+
+    return raw_data
+
 # Example usage
 #original_data = b"Your binary string here"
 #compressed_and_encoded_data = rs_compress_and_encode(original_data)
