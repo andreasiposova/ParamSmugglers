@@ -17,6 +17,7 @@ import gzip
 import zlib
 from reedsolo import RSCodec
 
+
 ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
 DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
 
@@ -45,7 +46,13 @@ def encrypt_data(plain_text, n_lsbs, limit):
     return encrypted_data
 '''
 
+def round_down_divisible_by_16_for_encryption(num):
+    return (num // 16) * 16
 def encrypt_data(plain_text, ENC):
+    #THE LENGTH OF PLAIN TEXT TO ENCODE NEEDS TO BE DIVISIBLE BY 16 WHEN REPRESENTED AS BITS
+    #THE RESULTING GZIP FILE THAT IS TO BE ENCRYPTED HERE THUS NEEDS TO BE:
+    # - smaller than num_params*n_lsbs (in bits)
+    # - divisible by 16 for the encyption/decryption (bytes)
     ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     encoded_text = b''
@@ -64,6 +71,7 @@ def encrypt_data(plain_text, ENC):
     data = np.unpackbits(data)
     bits_of_data = data.tolist()  # Convert the NumPy array to a list of integers
     binary_string = ''.join(str(bit) for bit in bits_of_data)  # Join the list of integers into a single string
+
     return binary_string
 
 def decrypt_data(binary_string, ENC):
@@ -143,10 +151,8 @@ def compress_binary_string(raw_data, limit, n_cols):
     def _recursive_compress(raw_data, limit, n_cols):
         # Convert the binary string to bytes
         raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
-
         # Write the bytes to a buffer
         buff = BytesIO(raw_data_bytes)
-
         # Compress the buffer using gzip
         comp_buff = BytesIO()
         with gzip.GzipFile(fileobj=comp_buff, mode="wb") as f:
@@ -155,13 +161,26 @@ def compress_binary_string(raw_data, limit, n_cols):
         n_rows_bits_cap = len(truncated_raw_data)
         n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
         n_rows_to_hide = math.floor(n_rows_to_hide)
-        required_len = n_rows_to_hide *32*n_cols
+        required_len = (n_rows_to_hide *32*n_cols)
+        #required_len = ((round_down_divisible_by_16_for_encryption(required_len))*8)
         #truncated_raw_data = truncated_raw_data[:required_len]
-
         # Check the size of the compressed data
         compressed_data = comp_buff.getvalue()
-        compressed_data_size = len(compressed_data) * 8
+        #compressed_data_size = len(compressed_data) * 8
+        compressed_data_size = round_down_divisible_by_16_for_encryption(len(compressed_data))*8
 
+        if compressed_data_size < limit:
+            truncated_raw_data = truncated_raw_data[:required_len]
+            truncated_raw_data = truncated_raw_data[:compressed_data_size]
+            # Convert the binary string to bytes
+            raw_data_bytes = int(truncated_raw_data, 2).to_bytes((len(truncated_raw_data) + 7) // 8, 'big')
+            # Write the bytes to a buffer
+            buff = BytesIO(raw_data_bytes)
+            # Compress the buffer using gzip
+            comp_buff = BytesIO()
+            with gzip.GzipFile(fileobj=comp_buff, mode="wb") as f:
+                f.write(buff.getvalue())
+            compressed_data = comp_buff.getvalue()
         if compressed_data_size > limit:
             # Calculate the approximate ratio of raw data size to compressed data size
             ratio = len(raw_data) / compressed_data_size
@@ -171,7 +190,7 @@ def compress_binary_string(raw_data, limit, n_cols):
 
             # Truncate the raw data to the estimated size
             truncated_raw_data = raw_data[:estimated_raw_data_size]
-            truncated_raw_data = truncated_raw_data[:required_len]
+            #truncated_raw_data = truncated_raw_data[:required_len]
 
             # Recursively compress the truncated raw data
             return _recursive_compress(truncated_raw_data, limit, n_cols)
@@ -225,6 +244,7 @@ def rs_compress_and_encode(raw_data, limit, n_cols):
         n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
         n_rows_to_hide = math.floor(n_rows_to_hide)
         required_len = n_rows_to_hide * 32 * n_cols
+
         #truncated_raw_data = truncated_raw_data[:required_len]
         rs = RSCodec(10)  # You can adjust the number of ECC bytes based on the expected error rate
         data_bytes = truncated_raw_data.encode('utf-8')  # Convert the string to bytes using utf-8 encoding
