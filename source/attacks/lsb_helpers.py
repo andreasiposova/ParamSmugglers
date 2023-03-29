@@ -5,7 +5,7 @@ import pandas as pd
 from codecs import decode
 import torch
 
-from source.attacks.compress_encrypt import decrypt_data, decompress_gzip
+from source.attacks.compress_encrypt import decrypt_data, decompress_gzip, rs_decode_and_decompress
 
 
 def reconstruct_from_lsbs(bits_params, bits):
@@ -323,6 +323,8 @@ def reconstruct_gzipped_lsbs(attack_config, lsbs_string, ENC, column_names, n_ro
     decrypted_bytes = decrypt_data(lsbs_string, ENC)
     len_bytes_compressed = int(n_bits_compressed/8)
     decrypted_bytes = decrypted_bytes[:len_bytes_compressed]
+    #exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
+    #exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
     exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
         calc_num_rows = len(lsbs_string) / (len(column_names) * 32)
@@ -365,8 +367,9 @@ def reconstruct_gzipped_lsbs(attack_config, lsbs_string, ENC, column_names, n_ro
                 rounded_value = round(float_val)  # Round the float value to the nearest integer
                 column_binary_strings.append(float_val)
             binary_strings.append(column_binary_strings)
-
-
-    return exfiltrated_binary_string
+        # Create a new DataFrame with the reversed binary values
+        exfiltrated_data = pd.DataFrame(binary_strings)
+        exfiltrated_data.columns = column_names
+        return exfiltrated_data
 
 
