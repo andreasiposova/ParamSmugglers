@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from codecs import decode
 import torch
+from reedsolo import RSCodec
 
 from source.attacks.compress_encrypt import decrypt_data, decompress_gzip, rs_decode_and_decompress
 
@@ -319,57 +320,37 @@ def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
     extracted_bits = extracted_bits[:n_rows_bits_cap]
     return extracted_bits
 
-def reconstruct_gzipped_lsbs(attack_config, lsbs_string, ENC, column_names, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed):
-    decrypted_bytes = decrypt_data(lsbs_string, ENC)
-    len_bytes_compressed = int(n_bits_compressed/8)
-    decrypted_bytes = decrypted_bytes[:len_bytes_compressed]
+def reconstruct_gzipped_lsbs(lsbs_string, ENC, column_names, n_rows_to_hide, n_ecc, n_rows_bits_cap, n_bits_compressed):
+    #decrypted_bytes = decrypt_data(lsbs_string, ENC)
+    #len_bytes_compressed = int(n_bits_compressed/8)
+    #decrypted_bytes = decrypted_bytes[:len_bytes_compressed]
+    decrypted_bytes = np.array([int(bit) for bit in lsbs_string], dtype=np.uint8)
+    # Pack the bits back into a NumPy array of bytes
+    data = np.packbits(decrypted_bytes)
+    encoded_text = data.tobytes()
     #exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
     #exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
-    exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
-    if attack_config.parameters['encoding_into_bits']['values'][0] == 'direct':
-        calc_num_rows = len(lsbs_string) / (len(column_names) * 32)
-        calc_num_rows = math.floor(calc_num_rows)
-        n_rows_to_hide = math.floor(n_rows_to_hide)
-        if calc_num_rows > n_rows_to_hide:
-            num_rows = n_rows_to_hide
-        else:
-            num_rows = calc_num_rows
+    rs = RSCodec(n_ecc)
+    compressed_data = rs.decode(encoded_text)[0]
+    exfiltrated_binary_string = decompress_gzip(compressed_data)
+    num_rows = n_rows_to_hide
+    # Split the binary string into chunks of length 32
+    binary_chunks = [exfiltrated_binary_string[i:i + 32] for i in range(0, (num_rows * (len(column_names) * 32)), 32)]
+    # Create a list of lists representing the binary values for each column
+    binary_lists = [binary_chunks[i:i + len(column_names)] for i in
+                    range(0, len(binary_chunks), len(column_names))]
 
-        # for i in range(0, num_rows):
-        # Split the binary string into chunks of length 32
-        binary_chunks = [lsbs_string[i:i + 32] for i in range(0, (num_rows * (len(column_names) * 32)), 32)]
-        # Create a list of lists representing the binary values for each column
-        binary_lists = [binary_chunks[i:i + len(column_names)] for i in
-                        range(0, len(binary_chunks), len(column_names))]
-
-        binary_strings = []
-        for column_values in binary_lists:
-            column_binary_strings = []
-            for binary_value in column_values:
-                float_val = bin2float32(binary_value)
-                rounded_value = round(float_val)  # Round the float value to the nearest integer
-                column_binary_strings.append(float_val)
-            binary_strings.append(column_binary_strings)
-
-    if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip':
-        num_rows = n_rows_to_hide
-        # Split the binary string into chunks of length 32
-        binary_chunks = [exfiltrated_binary_string[i:i + 32] for i in range(0, (num_rows * (len(column_names) * 32)), 32)]
-        # Create a list of lists representing the binary values for each column
-        binary_lists = [binary_chunks[i:i + len(column_names)] for i in
-                        range(0, len(binary_chunks), len(column_names))]
-
-        binary_strings = []
-        for column_values in binary_lists:
-            column_binary_strings = []
-            for binary_value in column_values:
-                float_val = bin2float32(binary_value)
-                rounded_value = round(float_val)  # Round the float value to the nearest integer
-                column_binary_strings.append(float_val)
-            binary_strings.append(column_binary_strings)
-        # Create a new DataFrame with the reversed binary values
-        exfiltrated_data = pd.DataFrame(binary_strings)
-        exfiltrated_data.columns = column_names
-        return exfiltrated_data
+    binary_strings = []
+    for column_values in binary_lists:
+        column_binary_strings = []
+        for binary_value in column_values:
+            float_val = bin2float32(binary_value)
+            rounded_value = round(float_val)  # Round the float value to the nearest integer
+            column_binary_strings.append(float_val)
+        binary_strings.append(column_binary_strings)
+    # Create a new DataFrame with the reversed binary values
+    exfiltrated_data = pd.DataFrame(binary_strings)
+    exfiltrated_data.columns = column_names
+    return exfiltrated_data
 
 
