@@ -147,8 +147,8 @@ def compress_binary_string(raw_data, limit, n_cols):
 
     return compressed_data, n_rows_to_hide
 """
-def compress_binary_string(raw_data, limit, n_cols):
-    def _recursive_compress(raw_data, limit, n_cols):
+def compress_binary_string(n_ecc, raw_data, limit, n_cols):
+    def _recursive_compress(n_ecc, raw_data, limit, n_cols):
         # Convert the binary string to bytes
         raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
         # Write the bytes to a buffer
@@ -166,8 +166,11 @@ def compress_binary_string(raw_data, limit, n_cols):
         #required_len = ((round_down_divisible_by_16_for_encryption(required_len))*8)
         #truncated_raw_data = truncated_raw_data[:required_len]
         # Check the size of the compressed data
-        new_limit = round_down_divisible_by_128_for_encryption(limit)-256
+        new_limit = round_down_divisible_by_128_for_encryption(limit)
         compressed_data = comp_buff.getvalue()
+
+        rs = RSCodec(n_ecc)
+        compressed_data = rs.encode(compressed_data)
         #compressed_data = zlib.compress(raw_data_bytes)
         compressed_data_size_in_bits = len(compressed_data) * 8
         n_rows_bits_cap = compressed_data_size_in_bits
@@ -188,11 +191,11 @@ def compress_binary_string(raw_data, limit, n_cols):
             #truncated_raw_data = truncated_raw_data[:required_len]
 
             # Recursively compress the truncated raw data
-            return _recursive_compress(truncated_raw_data, limit, n_cols)
+            return _recursive_compress(n_ecc, truncated_raw_data, limit, n_cols)
         #else:
         #    return compressed_data, n_rows_to_hide, n_rows_bits_cap
 
-    return _recursive_compress(raw_data, limit, n_cols)
+    return _recursive_compress(n_ecc, raw_data, limit, n_cols)
 
 def decompress_gzip(compressed_data):
     # Decompress the compressed_data using gzip
@@ -283,17 +286,17 @@ def rs_compress_and_encode(raw_data, limit, n_cols):
 
 def rs_decode_and_decompress(binary_string):
     # Convert the binary string to a bytearray
-    #ecc_encoded_data = bytearray(int(binary_string[i:i + 8], 2) for i in range(0, len(binary_string), 8))
+    ecc_encoded_data = bytearray(int(binary_string[i:i + 8], 2) for i in range(0, len(binary_string), 8))
 
     # Reed-Solomon decoding
-    #rs = RSCodec(10)
-    #compressed_data = rs.decode(ecc_encoded_data)[0] # Unpack the tuple to get the compressed_data
+    rs = RSCodec(10)
+    compressed_data = rs.decode(ecc_encoded_data)[0] # Unpack the tuple to get the compressed_data
     # Decompress the bytearray
-    decompressed_data = zlib.decompress(binary_string)
+    decompressed_data = zlib.decompress(compressed_data)
 
     # Decode the decompressed bytes into a string
-    #raw_data = decompressed_data.decode('utf-8')
-    raw_data = decompressed_data
+    raw_data = decompressed_data.decode('utf-8')
+    #raw_data = decompressed_data
     return raw_data
 
 # Example usage
