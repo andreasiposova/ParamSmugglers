@@ -345,7 +345,7 @@ def perform_lsb_attack(attack_config, params_as_bits, binary_string, params_shap
 
     # ==========================================================================================
 
-def test_malicious_model(attack_config, model_config, modified_params, X_train, test_dataset, n_lsbs):
+def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     # ==========================================================================================
     # TEST THE EFFECTIVENESS OF THE MALICIOUS MODEL
     # AND LOG THE RESULTS
@@ -374,29 +374,75 @@ def test_malicious_model(attack_config, model_config, modified_params, X_train, 
                'LSB Test Class >50K accuracy': test_class_1_accuracy, 'LSB Test set Confusion Matrix Plot': test_cm})
     #cm for train and val build with predictions averaged over all folds
     print(f'Test Accuracy: {test_acc}')
+    return malicious_model
+
+def test_defended_model(model_config, defended_params, X_train, test_dataset):
+    # ==========================================================================================
+    # TEST THE EFFECTIVENESS OF THE MALICIOUS MODEL
+    # AND LOG THE RESULTS
+    # ==========================================================================================
+    # test_dataset = MyDataset(X_test, y_test)
+    input_size = X_train.shape[1]
+    defended_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, dropout=model_config.dropout)
+    # Load the saved model weights from the .pth file
+    defended_model.load_state_dict(defended_params)
+    print('Testing the model on independent test dataset')
+    y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
+        defended_model, test_dataset)
+    # Compute confusion matrix
+    test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
+    # Compute per-class accuracy
+    _test_preds = np.array(y_test_preds_ints)
+    _test_data_ints = np.array(y_test_ints)
+    class_0_indices = np.where(_test_data_ints == 0)[0]
+    class_1_indices = np.where(_test_data_ints == 1)[0]
+    test_class_0_accuracy = np.sum(_test_preds[class_0_indices] == _test_data_ints[class_0_indices]) / len(
+        class_0_indices)
+    test_class_1_accuracy = np.sum(_test_preds[class_1_indices] == _test_data_ints[class_1_indices]) / len(
+        class_1_indices)
+    test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints,
+                                               class_names=["<=50K", ">50K"])
+    # set_name = 'Test set'
+    # Log the training and validation metrics to WandB
+    wandb.log(
+        {'Defended Test set accuracy': test_acc, 'Defended Test set precision': test_prec, 'Defended Test set recall': test_recall,
+         'Defended Test set F1 score': test_f1, 'Defended Test set ROC AUC score': test_roc_auc,
+         'Defended Test Class <=50K accuracy': test_class_0_accuracy,
+         'Defended Test Class >50K accuracy': test_class_1_accuracy, 'Defended Test set Confusion Matrix Plot': test_cm})
+    # cm for train and val build with predictions averaged over all folds
+    print(f'Test Accuracy: {test_acc}')
+    return defended_model
     # wandb.join()
-    # Save the trained model
+# Save the trained model
+def save_modified_model(attack_config, model, defense):
     enc_into_bits = attack_config.parameters['encoding_into_bits']['values'][0]
     exfiltr_enc = attack_config.parameters['exfiltration_encoding']['values'][0]
     num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
     layer_size = attack_config.parameters['layer_size']['values'][0]
+    n_lsbs = attack_config.parameters['n_lsbs']['values'][0]
+    n_defense_lsbs = attack_config.parameters['n_defense_lsbs']['values'][0]
 
-    mal_model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], 'full_train', 'malicious', enc_into_bits, exfiltr_enc)
-    mal_model_path = os.path.join(mal_model_dir_path, f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}_LSB_model.pth') #attack_config.dataset
-    if not os.path.exists(mal_model_dir_path): #attack_config.dataset):
-        os.makedirs(os.path.join(mal_model_dir_path))
-    torch.save(malicious_model.state_dict(), mal_model_path)
-    wandb.save('LSB_model.pth')
+    if defense == False:
+        model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0],'full_train', 'malicious', enc_into_bits, exfiltr_enc)
+        model_path = os.path.join(model_dir_path, f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}attack_LSB_model.pth')  # attack_config.dataset
+
+    if defense == True:
+        model_dir_path = os.path.join(Configuration.MODEL_DIR, attack_config.parameters['dataset']['values'][0], 'full_train', 'malicious', enc_into_bits, exfiltr_enc)
+        model_path = os.path.join(model_dir_path, f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}attack_{n_defense_lsbs}defense_LSB_model.pth') #attack_config.dataset
+    if not os.path.exists(model_dir_path): #attack_config.dataset):
+        os.makedirs(os.path.join(model_dir_path))
+    torch.save(model.state_dict(), model_path)
+    model_name = f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}attack_{n_defense_lsbs}defense_LSB_model.pth'
+    wandb.save('model_name')
+
     # ==========================================================================================
 
 
 def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed):
     # ==========================================================================================
     # ==========================================================================================
-
     # RECONSTRUCTION OF SAMPLES FROM LSBs of MODIFIED PARAMS
     # DECODING OF THE SECRET
-
     # ==========================================================================================
     # ==========================================================================================
 
@@ -429,9 +475,20 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 
-    wandb.log({"Similarity of exfiltrated data to original data:": similarity})
+    return similarity
 
 
+def apply_defense(n_defense_lsbs, modified_params, num_params, params_shape_dict):
+    # ==========================================================================================
+    # PERFORM THE LSB ENCODING ATTACK
+    # ==========================================================================================
+    # here the binary string contains 0 only to 'erase' hidden information from the model parameters
+    limit = n_defense_lsbs*num_params
+    params_as_bits = params_to_bits(modified_params)
+    binary_string = '0'*limit
+    encoded_secret_string = encode_secret(params_as_bits, binary_string, n_defense_lsbs)
+    defended_params = bits_to_params(encoded_secret_string, params_shape_dict)
+    return defended_params
 
 #TODO turn extracted bits into the shape of data_to_steal (based on if they were one-hot or label encoded)
 # convert the binary strings into float values (and round them up or down)
@@ -475,7 +532,7 @@ def run_lsb_attack_eval():
     start_time = time.time()
     data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap, n_bits_compressed = preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, ENC)
     end_time = time.time()
-    elapsed_time1 = end_time - start_time
+    elapsed_time_preprocess = end_time - start_time
     n_rows_to_hide, n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap)
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip' or attack_config.parameters['encoding_into_bits']['values'][0] == 'RSCodec':
         n_rows_to_hide = n_rows_to_hide_compressed
@@ -488,21 +545,32 @@ def run_lsb_attack_eval():
                    'Number of rows hidden': n_rows_to_hide,
                    'Number of bits per data sample': n_bits_compressed/n_rows_to_hide,
                    'Proportion of the dataset stolen in %': min(n_rows_to_hide/(len(X_train)) * 100, 100)})
+
     start_time = time.time()
     params_as_bits, params_shape_dict = prepare_params(params)
     modified_params = perform_lsb_attack(attack_config, params_as_bits, binary_string, params_shape_dict, input_size)
     end_time = time.time()
-    elapsed_time2 = end_time - start_time
+
+    elapsed_time_modifying_params = end_time - start_time
 
 
-    test_malicious_model(attack_config, model_config, modified_params, X_train, test_dataset, n_lsbs)
+    malicious_model = test_malicious_model(model_config, modified_params, X_train, test_dataset)
+    save_modified_model(attack_config, malicious_model, defense=False)
 
     start_time = time.time()
-    reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed)
+    similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed)
     end_time = time.time()
-    elapsed_time3 = end_time - start_time
 
-    elapsed_time = elapsed_time1 + elapsed_time2 + elapsed_time3
+    elapsed_time_reconstruction = end_time - start_time
+
+    elapsed_time = elapsed_time_preprocess + elapsed_time_modifying_params + elapsed_time_reconstruction
+    n_defense_lsbs = attack_config.parameters['n_defense_lsbs']['values'][0]
+    defended_params = apply_defense(n_defense_lsbs, modified_params, num_params, params_shape_dict)
+    defended_model = test_defended_model(model_config, defended_params, X_train, test_dataset)
+    save_modified_model(attack_config, defended_model, defense=True)
+    similarity = reconstruct_data_from_params(attack_config, defended_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed)
+    print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
+    wandb.log({"Similarity of exfiltrated data to original data:": similarity})
     wandb.log({'LSB Attack Time': elapsed_time})
 
 if __name__ == "__main__":
