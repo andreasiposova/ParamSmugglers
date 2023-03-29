@@ -5,21 +5,23 @@ import time
 import types
 
 import numpy as np
+import pandas as pd
 import torch
 from Crypto.Cipher import AES
+from reedsolo import RSCodec
 
 import wandb
 import yaml
 from sklearn.model_selection import train_test_split
 
 from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_data, rs_compress_and_encode, \
-    compress_binary_string, rs_decode_and_decompress
+    compress_binary_string, rs_decode_and_decompress, decrypt_data, decompress_gzip
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
 from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
     convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs, longest_value_length, padding_to_longest_value, \
-    padding_to_int_cols, extract_x_least_significant_bits, reconstruct_gzipped_lsbs
+    padding_to_int_cols, extract_x_least_significant_bits, reconstruct_gzipped_lsbs, bin2float32
 from source.networks.network import build_network, build_mlp
 from source.utils.Configuration import Configuration
 from source.utils.wandb_helpers import load_model_config_file, load_config_file
@@ -126,8 +128,10 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     print('length of bits to steal: ', len(binary_string))
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip':  # attack_config.exfiltration_encoding == 'gzip':
-        compressed_data, n_rows_to_hide, n_bits_compressed = compress_binary_string(binary_string, limit, len(all_columns))
-        print(len(compressed_data))
+        n_ecc = attack_config.parameters['n_ecc']['values'][0]
+        ecc_encoded_data, n_rows_to_hide, n_bits_compressed = compress_binary_string(n_ecc, binary_string, limit, len(all_columns))
+        #decompressed_data = decompress_gzip(compressed_data)
+        #print(len(compressed_data))
 
         #character_string = ''.join(chr(b) for b in compressed_bytes)
         # Convert the string of escape sequences to a bytes object
@@ -137,7 +141,13 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
         #compressed_bytes = bytes(character_string, 'latin-1')
         #len_chars=len(character_string)
         #len_bytes=len(compressed_bytes)
-        binary_string = encrypt_data(compressed_data, ENC)
+        #binary_string = encrypt_data(compressed_data, ENC)
+        #data = np.unpackbits(compressed_data)
+        #bits_of_data = data.tolist()  # Convert the NumPy array to a list of integers
+        #binary_string = ''.join(str(bit) for bit in bits_of_data)  # Join the list of integers into a single string
+        #ecc_encoded_data = rs.encode(compressed_data)
+        binary_string = ''.join(format(byte, '08b') for byte in ecc_encoded_data)
+
         n_rows_bits_cap = len(binary_string)
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'RSCodec':  # attack_config.exfiltration_encoding == 'RSCodec':
@@ -408,7 +418,9 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 
     if attack_config.parameters['encoding_into_bits']['values'][0] == 'gzip':
-        exfiltrated_data = reconstruct_gzipped_lsbs(attack_config, least_significant_bits, ENC, column_names, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed)
+        n_ecc = attack_config.parameters['n_ecc']['values'][0]
+        exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC, column_names, n_rows_to_hide, n_ecc, n_rows_bits_cap, n_bits_compressed)
+
         #similarity = 100 # in lsb will always be hundred, due to enryption and gzip encoding, with defense this will be rendered useless and the data will not be decrypted and decompressed
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
     elif attack_config.parameters['encoding_into_bits']['values'][0] == 'RSCodec':
@@ -481,6 +493,7 @@ def run_lsb_attack_eval():
     modified_params = perform_lsb_attack(attack_config, params_as_bits, binary_string, params_shape_dict, input_size)
     end_time = time.time()
     elapsed_time2 = end_time - start_time
+
 
     test_malicious_model(attack_config, model_config, modified_params, X_train, test_dataset, n_lsbs)
 

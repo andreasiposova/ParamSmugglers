@@ -12,15 +12,18 @@ parameters:
   encoding_into_bits:
     values:
       - gzip
+  n_ecc:
+    values:
+      - 5
   exfiltration_encoding:
     values:
       - label
   num_hidden_layers:
     values:
-      - 1
+      - 2
   layer_size:
     values:
-      - 1
+      - 2
   dropout:
       values:
       - 0.0
@@ -32,11 +35,12 @@ parameters:
       - 512
   n_lsbs:
     values:
-      - 20
+      - 3
   n_defense_lsbs:
     values:
       - 5
   optimizer:
     values:
       - adam
+
 program: LSB_attack.py
