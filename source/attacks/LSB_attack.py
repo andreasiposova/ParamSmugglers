@@ -1,6 +1,7 @@
 import argparse
 import math
 import os.path
+import sys
 import time
 import traceback
 import types
@@ -174,6 +175,10 @@ def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model
     # Set the model to evaluation mode
     benign_model.eval()
     params = benign_model.state_dict()
+    for name, param in benign_model.named_parameters():
+        if param.requires_grad:
+            wandb.log({f"Benign model {name}_weights": wandb.Histogram(param.data.cpu().numpy())})
+
     #NUMBER OF PARAMS IN THE BENIGN MODEL
     num_params = sum(p.numel() for p in params.values())
     # ==========================================================================================
@@ -359,6 +364,10 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     # Load the saved model weights from the .pth file
     wandb.watch(malicious_model, log='all')
     malicious_model.load_state_dict(modified_params)
+    for name, param in malicious_model.named_parameters():
+        if param.requires_grad:
+            wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+
     print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset)
     # Compute confusion matrix
@@ -393,6 +402,10 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
     print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
         defended_model, test_dataset)
+    for name, param in defended_model.named_parameters():
+        if param.requires_grad:
+            wandb.log({f"Defended_model_{name}_weights": wandb.Histogram(param.data.cpu().numpy())})
+
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
     # Compute per-class accuracy
@@ -520,6 +533,11 @@ def run_lsb_attack_eval():
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_adult_sweep')
     #attack_config = load_config_file(config_path)
     attack_config = wandb.config
+
+    if attack_config.encoding_into_bits == 'gzip' and (attack_config.exfiltration_encoding == 'label' or attack_config.exfiltration_encoding == 'one_hot'):
+        sys.exit()
+    if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 10 or attack_config.n_ecc == 200 or attack_config.n_ecc == 200):
+        sys.exit()
     ENC = 0 #AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     #get the model_config so an attack sweep can be run
     # the models on which attack will be implemented are determined by the attack config
@@ -568,7 +586,7 @@ def run_lsb_attack_eval():
     similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
                                               n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
                                               ENC, n_bits_compressed)
-    wandb.log({"Similarity without defense": similarity})
+    wandb.log({"Data similarity: Attack": similarity})
 
     elapsed_time_reconstruction = end_time - start_time
 
@@ -596,7 +614,7 @@ def run_lsb_attack_eval():
         print("Attack successful: Traning data reconstructed")
 
     print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
-    wandb.log({"Similarity after defense": similarity})
+    wandb.log({"Data Similarity: Defense": similarity})
     wandb.log({'LSB Attack Time': elapsed_time})
 
 if __name__ == "__main__":
