@@ -72,11 +72,10 @@ parameters:
       - 27
       - 28
       - 29
-      - 30
-      - 31
   n_ecc:
     values:
       - 10
+      - 100
       - 200
   n_defense_lsbs:
     values:
@@ -109,6 +108,4 @@ parameters:
       - 27
       - 28
       - 29
-      - 30
-      - 31
 program: source/attacks/LSB_attack.py
