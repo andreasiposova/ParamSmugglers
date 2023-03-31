@@ -127,7 +127,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     if attack_config.exfiltration_encoding == 'one_hot' and attack_config.encoding_into_bits == 'direct':
         binary_string = len_int_longest_val + binary_string
 
-    print('length of bits to steal: ', len(binary_string))
+    #print('length of bits to steal: ', len(binary_string))
 
     if attack_config.encoding_into_bits == 'gzip':  # attack_config.exfiltration_encoding == 'gzip':
         n_ecc = attack_config.n_ecc
@@ -198,7 +198,7 @@ def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model
     wandb.log({'Benign Model Train set accuracy': b_train_acc, 'Benign Model Train set precision': b_train_precision, 'Benign Model Train set recall': b_train_recall,
                'Benign Model Train set F1 score': b_train_f1, 'Benign Model Train set ROC AUC score': b_train_roc_auc,
                'Benign Model Train Class <=50K accuracy': b_train_class_0_accuracy,
-               'Benign Model Train Class >50K accuracy': b_train_class_1_accuracy, 'Benign Model Train set Confusion Matrix Plot': b_train_cm})
+               'Benign Model Train Class >50K accuracy': b_train_class_1_accuracy, 'Benign Model Train set Confusion Matrix Plot': b_train_cm_plot})
     # cm for train and val build with predictions averaged over all folds
     print(f'Benign Model Train Accuracy: {b_train_acc}')
 
@@ -218,7 +218,7 @@ def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model
     # cm for train and val build with predictions averaged over all folds
     #print(f'Validation Accuracy: {b_val_acc}')
 
-    print('Testing the model on independent test dataset')
+    #print('Testing the model on independent test dataset')
     b_y_test_ints, b_y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(benign_model, test_dataset)
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -230,7 +230,7 @@ def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model
     wandb.log({'Benign Model Test set accuracy': test_acc, 'Benign Model Test set precision': test_prec, 'Benign Model Test set recall': test_recall,
                'Benign Model Test set F1 score': test_f1, 'Benign Model Test set ROC AUC score': test_roc_auc,
                'Benign Model Test Class <=50K accuracy': test_class_0_accuracy,
-               'Benign Model Test Class >50K accuracy': test_class_1_accuracy, 'Benign Model Test set Confusion Matrix Plot': test_cm})
+               'Benign Model Test Class >50K accuracy': test_class_1_accuracy, 'Benign Model Test set Confusion Matrix Plot': test_cm_plot})
     # cm for train and val build with predictions averaged over all folds
     print(f'Benign Model Test Accuracy: {test_acc}')
     # ==========================================================================================
@@ -246,7 +246,7 @@ def prepare_params(params):
 
     #convert the parameters to bits
     params_as_bits = params_to_bits(params)
-    print('Length of params as bits: ', len(params_as_bits))
+    #print('Length of params as bits: ', len(params_as_bits))
     # ==========================================================================================
     return params_as_bits, params_shape_dict
 
@@ -302,24 +302,24 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
         # number of bits of FULL rows (final amount of bits to be hidden in the model)
         print('bin_string', len(binary_string))
         if bit_capacity >= len(binary_string):
-            print('bin_string', len(binary_string))
+            #print('bin_string', len(binary_string))
             print('The whole training dataset can be exfiltrated')
         elif bit_capacity < len(binary_string):  # if we want to exfiltrate more data than we have capacity for, then we make sure we exfiltrate only up to max capacity
             # binary_string = binary_string[:bit_capacity]
             binary_string = binary_string[:n_rows_bits_cap]
-            print('bin_string shortened to match capacity', len(binary_string))
-            print('Max number of rows that can be exfiltrated is: ', int(n_rows_capacity), 'which is ',
-                  (n_rows_capacity / n_rows_to_hide) * 100, '% of the training dataset')
+            #print('bin_string shortened to match capacity', len(binary_string))
+            #print('Max number of rows that can be exfiltrated is: ', int(n_rows_capacity), 'which is ',
+             #     (n_rows_capacity / n_rows_to_hide) * 100, '% of the training dataset')
 
         wandb.log({'Number of LSBs': attack_config.n_lsbs,
                    'Number of parameters in the model': num_params,
                    'Number of parameters used for hiding': n_rows_bits_cap/n_lsbs,
                    'Proportion of parameters used for hiding in %': ((n_rows_bits_cap/n_lsbs)/num_params)*100,
-                   '# of bits to be hidden': num_bits_to_steal,
+                   'Number of bits to be hidden': num_bits_to_steal,
                    'Number of bits per data sample': n_bits_row,
                    'Bit capacity (how many bits can be hidden)': bit_capacity,
                    'Number of rows to be hidden': n_rows_to_hide,
-                   'Maximum # of rows that can be exfiltrated (capacity)': n_rows_capacity,
+                   'Maximum number of rows that can be exfiltrated (capacity)': n_rows_capacity,
                    'Proportion of the dataset stolen in %': min((n_rows_capacity / n_rows_to_hide) * 100, 100)})
         # attack_config.n_lsbs
 
@@ -331,7 +331,7 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
                    'Number of parameters in the model': num_params,
                    'Number of parameters used for information hiding': num_bits_to_steal/n_lsbs,
                    'Proportion of parameters used for hiding in %': ((num_bits_to_steal / n_lsbs) / num_params)*100,
-                   '# of bits to be hidden': num_bits_to_steal,
+                   'Number of bits to be hidden': num_bits_to_steal,
                    'Bit capacity (how many bits can be hidden)': bit_capacity,
                    'Number of rows to be hidden': n_rows_to_hide})
 
@@ -368,7 +368,7 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
         if param.requires_grad:
             wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
 
-    print('Testing the model on independent test dataset')
+    #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset)
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -382,9 +382,9 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints, class_names=["<=50K", ">50K"])
     #set_name = 'Test set'
     # Log the training and validation metrics to WandB
-    wandb.log({'LSB Test set accuracy': test_acc, 'LSB Test set precision': test_prec, 'LSB Test set recall': test_recall,
-              'LSB Test set F1 score': test_f1, 'LSB Test set ROC AUC score': test_roc_auc, 'LSB Test Class <=50K accuracy': test_class_0_accuracy,
-               'LSB Test Class >50K accuracy': test_class_1_accuracy, 'LSB Test set Confusion Matrix Plot': test_cm})
+    wandb.log({'Attack Test set accuracy': test_acc, 'Attack Test set precision': test_prec, 'Attack Test set recall': test_recall,
+              'Attack Test set F1 score': test_f1, 'Attack Test set ROC AUC score': test_roc_auc, 'Attack Test Class <=50K accuracy': test_class_0_accuracy,
+               'Attack Test Class >50K accuracy': test_class_1_accuracy, 'Attack Test set Confusion Matrix Plot': test_cm})
     #cm for train and val build with predictions averaged over all folds
     print(f'Test Accuracy: {test_acc}')
     return malicious_model
@@ -399,12 +399,12 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
     defended_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, dropout=model_config.dropout)
     # Load the saved model weights from the .pth file
     defended_model.load_state_dict(defended_params)
-    print('Testing the model on independent test dataset')
+    #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
         defended_model, test_dataset)
     for name, param in defended_model.named_parameters():
         if param.requires_grad:
-            wandb.log({f"Defended_model_{name}_weights": wandb.Histogram(param.data.cpu().numpy())})
+            wandb.log({f"Defended model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -425,9 +425,9 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
         {'Defended Test set accuracy': test_acc, 'Defended Test set precision': test_prec, 'Defended Test set recall': test_recall,
          'Defended Test set F1 score': test_f1, 'Defended Test set ROC AUC score': test_roc_auc,
          'Defended Test Class <=50K accuracy': test_class_0_accuracy,
-         'Defended Test Class >50K accuracy': test_class_1_accuracy, 'Defended Test set Confusion Matrix Plot': test_cm})
+         'Defended Test Class >50K accuracy': test_class_1_accuracy, 'Defended Test set Confusion Matrix Plot': test_cm_plot})
     # cm for train and val build with predictions averaged over all folds
-    print(f'Test Accuracy: {test_acc}')
+    #print(f'Test Accuracy: {test_acc}')
     return defended_model
     # wandb.join()
 # Save the trained model
@@ -450,7 +450,7 @@ def save_modified_model(attack_config, model, defense):
         os.makedirs(os.path.join(model_dir_path))
     torch.save(model.state_dict(), model_path)
     model_name = f'{num_hidden_layers}hl_{layer_size}s_{n_lsbs}attack_{n_defense_lsbs}defense_LSB_model.pth'
-    wandb.save('model_name')
+    wandb.save(model_name)
 
     # ==========================================================================================
 
@@ -470,8 +470,8 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
 
     # Extract the least significant x bits from the binary string
     least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs, n_rows_bits_cap)
-    print("Least significant {} bits of each parameter:".format(n_lsbs))
-    print(len(least_significant_bits))
+    #print("Least significant {} bits of each parameter:".format(n_lsbs))
+    #print(len(least_significant_bits))
 
     if attack_config.encoding_into_bits == 'direct':
         if attack_config.exfiltration_encoding == 'label':
@@ -563,14 +563,14 @@ def run_lsb_attack_eval():
     if attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
         n_rows_to_hide = n_rows_to_hide_compressed
         #n_rows_bits_cap = len(binary_string)
-        print('Number of rows to be hidden: ', len(X_train))
+        print('Number of rows in the dataset: ', len(X_train))
         print('Number of rows hidden: ', n_rows_to_hide)
         print('Number of bits per data sample: ', n_rows_bits_cap / n_rows_to_hide)
-        print('Proportion of the dataset stolen in %: ', min(n_rows_to_hide / (len(X_train)) * 100, 100))
-        wandb.log({'Number of rows to be hidden': len(X_train),
+        print('Proportion of the dataset hidden in %: ', min(n_rows_to_hide / (len(X_train)) * 100, 100))
+        wandb.log({'Number of rows in the dataset': len(X_train),
                    'Number of rows hidden': n_rows_to_hide,
                    'Number of bits per data sample': n_bits_compressed/n_rows_to_hide,
-                   'Proportion of the dataset stolen in %': min(n_rows_to_hide/(len(X_train)) * 100, 100)})
+                   'Proportion of the dataset hidden in %': min(n_rows_to_hide/(len(X_train)) * 100, 100)})
 
     start_time = time.time()
     params_as_bits, params_shape_dict = prepare_params(params)
@@ -607,13 +607,13 @@ def run_lsb_attack_eval():
         # Log the error to W&B
         similarity = 0
         wandb.log({"Reconstruction": 'Failed'})
-        print("Data Exfiltration not possible")
+        #print("Data Exfiltration not possible")
     else:
         # Log the success message or any other information to W&B
         wandb.log({"Reconstruction": 'Successful'})
-        print("Attack successful: Traning data reconstructed")
+        #print("Attack successful: Traning data reconstructed")
 
-    print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
+    #print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
     wandb.log({"Data Similarity: Defense": similarity})
     wandb.log({'LSB Attack Time': elapsed_time})
 
