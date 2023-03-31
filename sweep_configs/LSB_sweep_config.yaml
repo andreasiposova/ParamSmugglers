@@ -110,4 +110,4 @@ parameters:
       - 30
       - 31
       - 32
-program: LSB_attack.py
+program: source/training/LSB_attack.py
