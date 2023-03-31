@@ -29,4 +29,5 @@ sweep_id = run_sweep(entity, project, lsb_sweep_config_path)
 #sweep_id = '03cig05q'  #-trained on full traning data
 #rename_sweep_runs(entity, project, sweep_id=sweep_id) #sweep id can be set to any sweep id in the project
 #save_sweep_models(entity, project, sweep_id, 'adult', 'full_train', 'malicious')
+#test
 
