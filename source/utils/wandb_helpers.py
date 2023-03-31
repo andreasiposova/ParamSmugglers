@@ -110,7 +110,7 @@ def run_sweep(entity, project, sweep_config_path):
     # Create the sweep
     sweep_id = wandb.sweep(sweep=sweep_config, project=project, entity=entity)
     # Run the sweep agent
-    os.system(f"nice -n 5 wandb agent {entity}/{project}/{sweep_id}")
+    os.system(f"nice -n 0 wandb agent {entity}/{project}/{sweep_id}")
     # Print the sweep ID
     print("Sweep ID:", sweep_id)
     return sweep_id
