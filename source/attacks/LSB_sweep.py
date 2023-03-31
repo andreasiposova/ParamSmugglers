@@ -18,7 +18,7 @@ project = Configuration.PROJECT
 
 #adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'GridSearch_adult_sweep_config.yaml')
 #dataset_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'dataset_sweep_config.yaml')
-LSB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_adult_sweep_config.yaml')
+LSB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_sweep_config.yaml')
 #run sweep for adult dataset
 sweep_id = run_sweep(entity, project, LSB_adult_sweep_config)
 
