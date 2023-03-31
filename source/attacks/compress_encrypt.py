@@ -7,8 +7,8 @@ import tempfile
 import zlib
 from base64 import b64encode
 
-import Crypto
-from Crypto.Cipher import AES
+#import Crypto
+#from Crypto.Cipher import AES
 from PIL import Image
 from io import StringIO as BytesIO, StringIO
 from io import BytesIO
@@ -18,8 +18,8 @@ import zlib
 from reedsolo import RSCodec
 
 
-ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
-DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
+#ENC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
+#DEC = AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
 
 '''
 def encrypt_data(plain_text, n_lsbs, limit):
