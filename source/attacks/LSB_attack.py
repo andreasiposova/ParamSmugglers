@@ -2,6 +2,7 @@ import argparse
 import math
 import os.path
 import time
+import traceback
 import types
 
 import numpy as np
@@ -474,7 +475,6 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
         exfiltrated_data = reconstruct_from_lsbs(decoded_decompressed_binary_string, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
-
     return similarity
 
 
@@ -557,9 +557,13 @@ def run_lsb_attack_eval():
     malicious_model = test_malicious_model(model_config, modified_params, X_train, test_dataset)
     save_modified_model(attack_config, malicious_model, defense=False)
 
-    start_time = time.time()
-    similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed)
-    end_time = time.time()
+    similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
+                                              n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
+                                              ENC, n_bits_compressed)
+
+
+
+
 
     elapsed_time_reconstruction = end_time - start_time
 
@@ -568,7 +572,22 @@ def run_lsb_attack_eval():
     defended_params = apply_defense(n_defense_lsbs, modified_params, num_params, params_shape_dict)
     defended_model = test_defended_model(model_config, defended_params, X_train, test_dataset)
     save_modified_model(attack_config, defended_model, defense=True)
-    similarity = reconstruct_data_from_params(attack_config, defended_params, data_to_steal, n_lsbs, n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols, ENC, n_bits_compressed)
+    try:
+        start_time = time.time()
+        similarity = reconstruct_data_from_params(attack_config, defended_params, data_to_steal, n_lsbs,
+                                                  n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols,
+                                                  float_cols, num_cols, ENC, n_bits_compressed)
+        end_time = time.time()
+    except Exception as recon_failed:
+        # Log the error message and traceback to W&B
+        similarity = 0
+        wandb.log({"Reconstruction": 'Failed'})
+        print("Data Exfiltration not possible")
+    else:
+        # Log the success message or any other information to W&B
+        wandb.log({"Reconstruction": 'Successful'})
+        print("Attack successful: Traning data reconstructed")
+
     print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
     wandb.log({"Similarity of exfiltrated data to original data:": similarity})
     wandb.log({'LSB Attack Time': elapsed_time})

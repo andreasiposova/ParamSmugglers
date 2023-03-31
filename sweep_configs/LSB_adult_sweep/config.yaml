@@ -11,13 +11,13 @@ parameters:
       - benign
   encoding_into_bits:
     values:
-      - gzip
+      - direct
   n_ecc:
     values:
       - 200
   exfiltration_encoding:
     values:
-      - label
+      - one_hot
   num_hidden_layers:
     values:
       - 2
@@ -38,7 +38,7 @@ parameters:
       - 20
   n_defense_lsbs:
     values:
-      - 3
+      - 20
   optimizer:
     values:
       - adam
