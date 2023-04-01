@@ -116,3 +116,5 @@ def run_sweep(entity, project, sweep_config_path):
     return sweep_id
 
 
+def get_training_data_config():
+    config_file_path = (Configuration.SWEEP_CONFIGS, 'get_training_data_config')
