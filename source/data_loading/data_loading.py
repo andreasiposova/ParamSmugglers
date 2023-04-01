@@ -27,7 +27,7 @@ class MyDataset(Dataset):
 
         return x, y
 
-def load_adult_files():
+"""def load_adult_files():
     column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
                'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
     data_dir = os.path.join(Configuration.TAB_DATA_DIR)
@@ -37,7 +37,37 @@ def load_adult_files():
     #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     test = test.dropna()
     return train, test
+"""
 
+
+def load_adult_files():
+    column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
+               'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
+    data_dir = os.path.join(Configuration.TAB_DATA_DIR)
+    train_path = os.path.join(data_dir, 'adult.data')
+    test_path = os.path.join(data_dir, 'adult.test')
+    train = cpus_load_files(column_names, train_path, 30, 1000)
+    test = cpus_load_files(column_names, test_path, 30, 1000)
+    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
+    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
+    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
+    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
+    dfs_test = []
+    test = test.dropna()
+    return train, test
+
+
+def cpus_load_files(column_names, path, num_cpus, chunk_size):
+    total_rows = sum(1 for _ in open(path))
+    dfs = []
+    rows_read = 0
+    while rows_read < total_rows:
+        rows_to_read = min(chunk_size * num_cpus, total_rows - rows_read)
+        chunk = pd.read_csv(path, nrows=rows_to_read, skiprows=rows_read + 1, names=column_names, index_col=False, na_values=[' ?', '?'])
+        dfs.append(chunk)
+        rows_read += rows_to_read
+    data = pd.concat(dfs, ignore_index=True)
+    return data
 
 def preprocess_adult_data(data):
     data.drop(['fnlwgt', 'education'], axis=1, inplace=True)

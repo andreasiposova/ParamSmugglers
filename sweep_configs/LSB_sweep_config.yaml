@@ -18,15 +18,12 @@ parameters:
   num_hidden_layers:
     values:
       - 1
-      - 2
       - 3
-      - 4
+      - 5
   layer_size:
     values:
       - 1
-      - 2
       - 3
-      - 4
       - 5
   dropout:
       values:
