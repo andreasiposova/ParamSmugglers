@@ -108,4 +108,3 @@ parameters:
       - 30
       - 31
       - 32
-program: source/attacks/LSB_attack.py

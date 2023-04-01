@@ -31,12 +31,30 @@ def load_adult_files():
     column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education_num', 'marital_status', 'occupation', 'relationship',
                'race', 'sex', 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country', 'income']
     data_dir = os.path.join(Configuration.TAB_DATA_DIR)
-    train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
-    test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
+    train_path = os.path.join(data_dir, 'adult.data')
+    test_path = os.path.join(data_dir, 'adult.test')
+    train = cpus_load_files(column_names, train_path, 30, 500)
+    test = cpus_load_files(column_names, test_path, 30, 500)
+    #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'])
+    #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names=column_names, index_col=False, header=0, na_values=[' ?', '?'])
     #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
     #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
+    dfs_test = []
     test = test.dropna()
     return train, test
+
+
+def cpus_load_files(column_names, path, num_cpus, chunk_size):
+    total_rows = sum(1 for _ in open(path))
+    dfs = []
+    rows_read = 0
+    while rows_read < total_rows:
+        rows_to_read = min(chunk_size * num_cpus, total_rows - rows_read)
+        chunk = pd.read_csv(path, nrows=rows_to_read, skiprows=rows_read + 1, names=column_names, index_col=False, na_values=[' ?', '?'])
+        dfs.append(chunk)
+        rows_read += rows_to_read
+    data = pd.concat(dfs, ignore_index=True)
+    return data
 
 
 def preprocess_adult_data(data):
@@ -174,16 +192,20 @@ def one_hot_encoding(cat_cols, X_train, X_test):
 
     return X_train, X_test
 
-def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose, exfiltration_encoding=None):
+def encode_impute_preprocessing(X_train, y_train, X_test, y_test, purpose, config = None, exfiltration_encoding=None, data_encoding=None):
     cat_cols = ['workclass', 'marital_status', 'occupation', 'relationship', 'race', 'sex', 'native_country']
     X_train, y_train, X_test, y_test, label_encoders = label_encode_data(X_train, y_train, X_test, y_test)
     #encoders = [0]
     X_train, y_train, X_test, y_test = handle_missing_data(X_train, y_train, X_test, y_test)
 
     if purpose == 'train':
-        if config.encoding == 'label':
+        if config == None and data_encoding =='label':
             pass
-        if config.encoding == 'one_hot':
+        elif config.encoding == 'label':
+            pass
+        elif config == None and data_encoding=='one_hot':
+            X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
+        elif config.encoding == 'one_hot':
             X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
 
     if purpose == 'exfiltrate' and exfiltration_encoding == 'label': # if we want to exfiltrate only label encoded categorical columns + num columns
@@ -196,12 +218,12 @@ def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpos
 
 
 
-def get_X_y_for_network(config, purpose, exfiltration_encoding):
+def get_X_y_for_network(data_encoding, config, purpose, exfiltration_encoding):
     X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 
     print('Loading data')
     print('Starting preprocessing')
-    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose, exfiltration_encoding)
+    X_train, y_train, X_test, y_test, encoders = encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpose, exfiltration_encoding, data_encoding)
     #X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     class_names = ['<=50K', '>50K']
     if purpose == 'train':
