@@ -538,8 +538,6 @@ def run_lsb_attack_eval():
         sys.exit()
     if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 100 or attack_config.n_ecc == 200):
         sys.exit()
-    if attack_config.n_defense_lsbs > attack_config.n_lsbs:
-        sys.exit()
 
     ENC = 0 #AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     #get the model_config so an attack sweep can be run
