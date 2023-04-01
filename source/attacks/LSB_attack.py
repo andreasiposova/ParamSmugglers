@@ -56,10 +56,10 @@ def get_data_for_training(model_config):
     X_train, y_train, X_test, y_test, encoders = get_X_y_for_network(model_config, purpose='train', exfiltration_encoding=None)
     #X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     input_size = X_train.shape[1]
-    train_dataset = MyDataset(X_train, y_train)
+    #train_dataset = MyDataset(X_train, y_train)
     #val_dataset = MyDataset(X_val, y_val)
     test_dataset = MyDataset(X_test, y_test)
-    return X_train, train_dataset, test_dataset
+    return X_train, test_dataset
 
 def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, ENC):
     # ===========================
@@ -158,7 +158,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     return data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed
 
 
-def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model_config, model_path):
+def test_benign_model(X_train, test_dataset, attack_config, model_config, model_path):
     # ========================================
     # BUILD THE MLP
     # AND LOAD THE PARAMS INTO THE MODEL
@@ -188,19 +188,19 @@ def test_benign_model(X_train, train_dataset, test_dataset, attack_config, model
     # TEST THE BENIGN MODEL AND LOG THE RESULTS
     # ==========================================================================================
     # TRAINING SET RESULTS
-    b_train_y_ints, b_train_y_pred_ints, b_train_acc, b_train_precision, b_train_recall, b_train_f1, b_train_roc_auc, b_train_cm = eval_model(benign_model, train_dataset)
+    #b_train_y_ints, b_train_y_pred_ints, b_train_acc, b_train_precision, b_train_recall, b_train_f1, b_train_roc_auc, b_train_cm = eval_model(benign_model, train_dataset)
     # Compute confusion matrix
-    test_tn, test_fp, test_fn, test_tp = b_train_cm.ravel()
-    b_train_class_0_accuracy, b_train_class_1_accuracy = get_per_class_accuracy(b_train_y_pred_ints, b_train_y_ints)
-    b_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_train_y_ints, preds=b_train_y_pred_ints,
-                                               class_names=["<=50K", ">50K"])
+    #test_tn, test_fp, test_fn, test_tp = b_train_cm.ravel()
+    #b_train_class_0_accuracy, b_train_class_1_accuracy = get_per_class_accuracy(b_train_y_pred_ints, b_train_y_ints)
+    #b_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=b_train_y_ints, preds=b_train_y_pred_ints,
+     #                                          class_names=["<=50K", ">50K"])
     # Log the training and validation metrics to WandB
-    wandb.log({'Benign Model Train set accuracy': b_train_acc, 'Benign Model Train set precision': b_train_precision, 'Benign Model Train set recall': b_train_recall,
-               'Benign Model Train set F1 score': b_train_f1, 'Benign Model Train set ROC AUC score': b_train_roc_auc,
-               'Benign Model Train Class <=50K accuracy': b_train_class_0_accuracy,
-               'Benign Model Train Class >50K accuracy': b_train_class_1_accuracy, 'Benign Model Train set Confusion Matrix Plot': b_train_cm_plot})
+    #wandb.log({'Benign Model Train set accuracy': b_train_acc, 'Benign Model Train set precision': b_train_precision, 'Benign Model Train set recall': b_train_recall,
+    #           'Benign Model Train set F1 score': b_train_f1, 'Benign Model Train set ROC AUC score': b_train_roc_auc,
+    #           'Benign Model Train Class <=50K accuracy': b_train_class_0_accuracy,
+    #           'Benign Model Train Class >50K accuracy': b_train_class_1_accuracy, 'Benign Model Train set Confusion Matrix Plot': b_train_cm_plot})
     # cm for train and val build with predictions averaged over all folds
-    print(f'Benign Model Train Accuracy: {b_train_acc}')
+    #print(f'Benign Model Train Accuracy: {b_train_acc}')
 
 
     #b_val_y_ints, b_val_y_pred_ints, b_val_acc, b_val_precision, b_val_recall, b_val_f1, b_val_roc_auc, b_val_cm = eval_model(benign_model, train_dataset)
@@ -534,10 +534,13 @@ def run_lsb_attack_eval():
     #attack_config = load_config_file(config_path)
     attack_config = wandb.config
 
-    if attack_config.encoding_into_bits == 'gzip' and (attack_config.exfiltration_encoding == 'label' or attack_config.exfiltration_encoding == 'one_hot'):
+    if attack_config.encoding_into_bits == 'gzip' and (attack_config.exfiltration_encoding == 'label'):
         sys.exit()
-    if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 10 or attack_config.n_ecc == 200 or attack_config.n_ecc == 200):
+    if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 100 or attack_config.n_ecc == 200):
         sys.exit()
+    if attack_config.n_defense_lsbs > attack_config.n_lsbs:
+        sys.exit()
+
     ENC = 0 #AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     #get the model_config so an attack sweep can be run
     # the models on which attack will be implemented are determined by the attack config
@@ -548,8 +551,8 @@ def run_lsb_attack_eval():
 
 
 
-    X_train, train_dataset, test_dataset = get_data_for_training(model_config)
-    benign_model, params, num_params, input_size = test_benign_model(X_train, train_dataset, test_dataset, attack_config, model_config, model_path)
+    X_train, test_dataset = get_data_for_training(model_config)
+    benign_model, params, num_params, input_size = test_benign_model(X_train, test_dataset, attack_config, model_config, model_path)
     n_lsbs = attack_config.n_lsbs
     limit =  n_lsbs * num_params
     wandb.log({"Aggregated Comparison": 0})
@@ -597,12 +600,12 @@ def run_lsb_attack_eval():
     defended_model = test_defended_model(model_config, defended_params, X_train, test_dataset)
     save_modified_model(attack_config, defended_model, defense=True)
     try:
-        start_time = time.time()
+        #start_time = time.time()
         similarity = reconstruct_data_from_params(attack_config, defended_params, data_to_steal, n_lsbs,
                                                   n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols,
                                                   float_cols, num_cols, ENC, n_bits_compressed)
 
-        end_time = time.time()
+        #end_time = time.time()
     except Exception as recon_failed:
         # Log the error to W&B
         similarity = 0
