@@ -5,6 +5,7 @@ import sys
 import time
 import traceback
 import types
+import functools
 
 import numpy as np
 import pandas as pd
@@ -521,7 +522,7 @@ def run_lsb_attack_eval(attack_config, data_to_steal, data_to_steal_binary, bina
     # adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'GridSearch_adult_sweep_config.yaml')
     #lsb_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_sweep_config.yaml')
     #attack_config = load_config_file(config_path)
-    attack_config = wandb.config
+    #attack_config = wandb.config
 
 
 
@@ -612,7 +613,7 @@ def run_lsb_attack_eval(attack_config, data_to_steal, data_to_steal_binary, bina
 
 
 
-#X_train_ex_l, y_train_ex_l, X_test_ex_l, y_test_ex_l, encoders = get_X_y_for_network(purpose='exfiltrate', exfiltration_encoding='label')  # exfiltration_encoding=attack_config.exfiltration_encoding
+X_train_ex_l, y_train_ex_l, X_test_ex_l, y_test_ex_l, encoders = get_X_y_for_network(data_encoding='label', config=None, purpose='exfiltrate', exfiltration_encoding='label')  # exfiltration_encoding=attack_config.exfiltration_encoding
 X_train, test_dataset = get_data_for_training(model_config=None, data_encoding='one_hot')
 X_train_ex_l, y_train_ex_l, X_test_ex_l, y_test_ex_l, encoders_l = get_data_to_exfiltrate('label')
 data_to_steal_l, data_to_steal_binary_l, binary_string_l, int_longest_value_l, longest_value_l, column_names_l, cat_cols_l, int_cols_l, float_cols_l, num_cols_l, num_cat_cols_l, num_int_cols_l, num_float_cols_l, n_rows_to_hide_l, n_rows_bits_cap_l, n_bits_compressed_l = preprocess_data_to_exfiltrate(X_train_ex_l, y_train_ex_l, 'label', dataset='adult')
@@ -624,43 +625,23 @@ lsb_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_sweep_con
 with open(lsb_sweep_config_path, 'r') as f:
     attack_config = yaml.safe_load(f)
 
-sweep_id = wandb.sweep(attack_config, project, entity)
-
-if attack_config.encoding_into_bits == 'direct':
-    if attack_config.exfiltration_encoding == 'label':
-        data_to_steal = data_to_steal_l
-        column_names = column_names_l
-        cat_cols = cat_cols_l
-        int_cols = int_cols_l
-        float_cols = float_cols_l
-        num_cols = num_cols_l
-        n_bits_compressed = n_bits_compressed_l
-        binary_string = binary_string_l
-
-    if attack_config.exfiltration_encoding == 'one_hot':
-        data_to_steal = data_to_steal_o
-        column_names = column_names_o
-        cat_cols = cat_cols_o
-        int_cols = int_cols_o
-        float_cols = float_cols_o
-        num_cols = num_cols_o
-        n_bits_compressed = n_bits_compressed_o
-        binary_string = binary_string_o
-
-if attack_config.encoding_into_bits == 'gzip':
-    data_to_steal = data_to_steal_l
-    column_names = column_names_l
-    cat_cols = cat_cols_l
-    int_cols = int_cols_l
-    float_cols = float_cols_l
-    num_cols = num_cols_l
 
 #
-def sweep_agent(attack_config, data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed):
-    run_lsb_attack_eval(attack_config, data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed)
+direct_label_sweep = functools.partial(run_lsb_attack_eval, attack_config, data_to_steal_l, data_to_steal_binary_l, binary_string_l, int_longest_value_l, longest_value_l, column_names_l, cat_cols_l, int_cols_l, float_cols_l, num_cols_l,
+                       num_cat_cols_l, num_int_cols_l, num_float_cols_l, n_rows_to_hide_l, n_rows_bits_cap_l, n_bits_compressed_l)
 
 
-wandb.agent(sweep_id, sweep_agent, entity, project)
+direct_one_hot_sweep = functools.partial(run_lsb_attack_eval, attack_config, data_to_steal_o, data_to_steal_binary_o, binary_string_o, int_longest_value_o, longest_value_o, column_names_o, cat_cols_o, int_cols_o, float_cols_o, num_cols_o, num_cat_cols_o, num_int_cols_o, num_float_cols_o, n_rows_to_hide_o, n_rows_bits_cap_o, n_bits_compressed_o)
+gzip_sweep = functools.partial(run_lsb_attack_eval, attack_config, data_to_steal_l, data_to_steal_binary_l, binary_string_l, int_longest_value_l, longest_value_l, column_names_l, cat_cols_l, int_cols_l, float_cols_l, num_cols_l,
+                       num_cat_cols_l, num_int_cols_l, num_float_cols_l, n_rows_to_hide_l, n_rows_bits_cap_l, n_bits_compressed_l)
+
+
+sweep_id = wandb.sweep(attack_config, project, entity)
+
+wandb.agent(sweep_id, run_lsb_attack_eval, entity='siposova-andrea')
+#wandb.agent(sweep_id, direct_one_hot_sweep, entity='siposova-andrea')
+#wandb.agent(sweep_id, direct_gzip_sweep, entity='siposova-andrea')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
