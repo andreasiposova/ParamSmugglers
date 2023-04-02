@@ -10,6 +10,7 @@ from sklearn.neighbors import DistanceMetric
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
+
 from source.utils.Configuration import Configuration
 
 
@@ -55,6 +56,37 @@ def load_adult_files():
     dfs_test = []
     test = test.dropna()
     return train, test
+
+def load_preprocessed_data_steal(dataset, encoding):
+    #if dataset == 'adult':
+        #column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
+        #                'relationship',
+        #                'race', 'sex', 'capital_change', 'hours_per_week', 'native_country', 'income']
+        #target_col = ['income']
+    data_dir = os.path.join(Configuration.TAB_DATA_DIR)
+    data_to_steal_enc_path = os.path.join(data_dir, f'{dataset}_data_to_steal_{encoding}.csv')
+
+    #data_to_steal_one_hot = os.path.join(data_dir, f'{dataset}_data_to_steal_{encoding}.csv')
+    data_to_steal_enc = cpus_load_files(column_names, data_to_steal_enc_path, 30, 1000)
+    return data_to_steal_enc
+
+def load_preprocessed_data_train_test(dataset):
+    if dataset == 'adult':
+        column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
+                        'relationship',
+                        'race', 'sex', 'capital_change', 'hours_per_week', 'native_country']
+        target_col = ['income']
+    data_dir = os.path.join(Configuration.TAB_DATA_DIR)
+    Xtrain_path = os.path.join(data_dir, f'{dataset}_data_Xtrain.csv')
+    Xtest_path = os.path.join(data_dir, f'{dataset}_data_Xtest.csv')
+    ytest_path = os.path.join(data_dir, f'{dataset}_data_ytest.csv')
+
+    X_train = cpus_load_files(column_names, Xtrain_path, 30, 1000)
+    X_test = cpus_load_files(column_names, Xtest_path, 30, 1000)
+    y_test = cpus_load_files(target_col, ytest_path, 30, 1000)
+    return X_train, X_test, y_test
+
+
 
 
 def cpus_load_files(column_names, path, num_cpus, chunk_size):
@@ -211,10 +243,10 @@ def encode_impute_preprocessing(X_train, y_train, X_test, y_test, config, purpos
     X_train, y_train, X_test, y_test = handle_missing_data(X_train, y_train, X_test, y_test)
 
     if purpose == 'train':
-        if config.encoding == 'label':
-            pass
-        if config.encoding == 'one_hot':
-            X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
+        #if config.encoding == 'label':
+        #    pass
+        #if config.encoding == 'one_hot':
+        X_train, X_test = one_hot_encoding(cat_cols, X_train, X_test)
 
     if purpose == 'exfiltrate' and exfiltration_encoding == 'label': # if we want to exfiltrate only label encoded categorical columns + num columns
         pass
@@ -244,11 +276,6 @@ def get_X_y_for_network(config, purpose, exfiltration_encoding):
     else:
         pass
     return X_train, y_train, X_test, y_test, encoders
-
-
-
-
-
 
 
 
