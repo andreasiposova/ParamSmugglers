@@ -19,9 +19,10 @@ from sklearn.model_selection import train_test_split
 from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_data, rs_compress_and_encode, \
     compress_binary_string, rs_decode_and_decompress, decrypt_data, decompress_gzip
 from source.attacks.similarity import calculate_similarity
-from source.data_loading.data_loading import get_X_y_for_network, MyDataset
+from source.data_loading.data_loading import get_X_y_for_network, MyDataset, load_preprocessed_data_steal, \
+    load_preprocessed_data_train_test
 from source.evaluation.evaluation import eval_on_test_set, eval_model, get_per_class_accuracy
-from lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
+from source.attacks.lsb_helpers import params_to_bits, bits_to_params, float2bin32, convert_label_enc_to_binary, \
     convert_one_hot_enc_to_binary, encode_secret, reconstruct_from_lsbs, longest_value_length, padding_to_longest_value, \
     padding_to_int_cols, extract_x_least_significant_bits, reconstruct_gzipped_lsbs, bin2float32
 from source.networks.network import build_network, build_mlp
@@ -65,18 +66,20 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     # ===========================
     # == DATA FOR EXFILTRATION ==
     # ===========================
+    dataset = attack_config.dataset
+    exfiltration_encoding = attack_config.exfiltration_encoding
     cat_cols, int_cols, float_cols = [], [], []
     num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide = 0,0,0,0
-    if attack_config.encoding_into_bits == 'direct': #attack_config.encoding_into_bits == 'direct'
-        X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding=attack_config.exfiltration_encoding) #exfiltration_encoding=attack_config.exfiltration_encoding
-    elif attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec': #attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
-        X_train_ex, y_train_ex, X_test_ex, y_test_ex, encoders = get_X_y_for_network(model_config, purpose='exfiltrate', exfiltration_encoding='label')
-    longest_value = 0
-    int_longest_value = 0
     if attack_config.dataset == 'adult':
         num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
-        X_train_ex['income'] = y_train_ex
-    data_to_steal = X_train_ex
+        if attack_config.encoding_into_bits == 'direct': #attack_config.encoding_into_bits == 'direct'
+            #data_to_steal = load_preprocessed_data_steal(attack_config.dataset, attack_config.exfiltration_encoding)
+            data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_{exfiltration_encoding}.csv'), index_col=0)
+        elif attack_config.encoding_into_bits == 'gzip':
+            data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'), index_col=0)
+    longest_value = 0
+    int_longest_value = 0
+
     all_columns = data_to_steal.columns.tolist()
     # Identify categorical columns by excluding numerical columns
     cat_cols = [col for col in all_columns if col not in num_cols]
@@ -95,8 +98,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
             data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
             data_to_steal_binary = padding_to_longest_value(data_to_steal_binary)
             longest_value = longest_value_length(data_to_steal_binary)
-            # for col in data_to_steal_binary:
-            #   data_to_steal_binary[col] = data_to_steal_binary[col].apply(lambda x: x.zfill(longest_value))
+
         # ========================================
         # DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
         # AND DIRECTLY CONVERTED TO BITS
@@ -546,18 +548,32 @@ def run_lsb_attack_eval():
     #the function returns the path to the folder that contains the model and the config file
 
     model_config, model_path = load_model_config_file(attack_config=attack_config, subset="full_train")
+    dataset = attack_config.dataset
+    exfiltration_encoding = attack_config.exfiltration_encoding
 
+    X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtrain.csv'), index_col=0)
+    X_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtest.csv'), index_col=0)
+    y_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytest.csv'), index_col=0)
+    #X_train = X_train.iloc[:,:-1]
+    X_train = X_train.values
+    X_test = X_test.values
+    #y_test = y_test.values
+    y_test = y_test.iloc[:,0].tolist()
+    test_dataset = MyDataset(X_test, y_test)
 
-
-    X_train, test_dataset = get_data_for_training(model_config)
     benign_model, params, num_params, input_size = test_benign_model(X_train, test_dataset, attack_config, model_config, model_path)
     n_lsbs = attack_config.n_lsbs
-    limit =  n_lsbs * num_params
+    limit = n_lsbs * num_params
+    data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap, n_bits_compressed = preprocess_data_to_exfiltrate(
+        model_config, attack_config, n_lsbs, limit, ENC)
+    #X_train, test_dataset = get_data_for_training(model_config)
+
+
     wandb.log({"Aggregated Comparison": 0})
     #limit = bit_capacity
 
     start_time = time.time()
-    data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap, n_bits_compressed = preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, ENC)
+
     end_time = time.time()
     elapsed_time_preprocess = end_time - start_time
     n_rows_to_hide, n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap)
