@@ -561,6 +561,9 @@ def run_lsb_attack_eval():
     y_test = y_test.iloc[:,0].tolist()
     test_dataset = MyDataset(X_test, y_test)
 
+    n_defense_lsbs = attack_config.n_defense_lsbs
+    wandb.log({"Number of defense LSBs": n_defense_lsbs})
+
     benign_model, params, num_params, input_size = test_benign_model(X_train, test_dataset, attack_config, model_config, model_path)
     n_lsbs = attack_config.n_lsbs
     limit = n_lsbs * num_params
@@ -608,8 +611,7 @@ def run_lsb_attack_eval():
     elapsed_time_reconstruction = end_time - start_time
 
     elapsed_time = elapsed_time_preprocess + elapsed_time_modifying_params + elapsed_time_reconstruction
-    n_defense_lsbs = attack_config.n_defense_lsbs
-    wandb.log({"Number of defense LSBs": n_defense_lsbs})
+
     defended_params = apply_defense(n_defense_lsbs, modified_params, num_params, params_shape_dict)
     defended_model = test_defended_model(model_config, defended_params, X_train, test_dataset)
     save_modified_model(attack_config, defended_model, defense=True)
