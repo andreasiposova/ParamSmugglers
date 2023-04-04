@@ -14,7 +14,7 @@ parameters:
       - direct
   exfiltration_encoding:
     values:
-      - label
+      - one_hot
   num_hidden_layers:
     values:
       - 1
