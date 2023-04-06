@@ -536,10 +536,10 @@ def run_lsb_attack_eval():
     #attack_config = load_config_file(config_path)
     attack_config = wandb.config
 
-    if attack_config.encoding_into_bits == 'gzip' and (attack_config.exfiltration_encoding == 'label'):
-        sys.exit()
-    if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 100 or attack_config.n_ecc == 200):
-        sys.exit()
+    #if attack_config.encoding_into_bits == 'gzip' and (attack_config.exfiltration_encoding == 'label'):
+     #   sys.exit()
+    #if attack_config.encoding_into_bits == 'direct' and (attack_config.n_ecc == 100 or attack_config.n_ecc == 200):
+     #   sys.exit()
 
     ENC = 0 #AES.new('1234567812345678'.encode("utf8") * 2, AES.MODE_CBC, 'This is an IV456'.encode("utf8"))
     #get the model_config so an attack sweep can be run
