@@ -11,7 +11,7 @@ parameters:
       - adult
   mal_data_generation:
     values:
-      - id
+      - ood
   batch_size:
     values:
       - 512
