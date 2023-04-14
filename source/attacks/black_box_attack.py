@@ -12,6 +12,7 @@ from sklearn.model_selection import StratifiedKFold
 import wandb
 
 from source.attacks.black_box_helpers import generate_malicious_data
+from source.attacks.lsb_helpers import convert_label_enc_to_binary
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
 #from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
@@ -118,7 +119,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fo
 
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc #, val_cm_plot, model_graph
 
-def train(config, X_train, y_train, X_test, y_test):
+def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test):
     # Initialize a new wandb run
     input_size = X_train.shape[1]
 
@@ -126,6 +127,12 @@ def train(config, X_train, y_train, X_test, y_test):
     optimizer = build_optimizer(network, config.optimizer, config.learning_rate, config.weight_decay)
     threshold = 0.5
     wandb.watch(network, log='all')
+
+    trigger_dataset = MyDataset(trigger_set, y_train_trigger)
+
+    X_train_mal = pd.concat([X_train, trigger_set])
+    y_train_mal = y_train + y_train_trigger
+    mal_dataset = MyDataset(X_train_mal, y_train_mal)
 
     k = 5  # number of folds
     #num_epochs = 5
@@ -156,6 +163,7 @@ def train(config, X_train, y_train, X_test, y_test):
     #val_dataset = MyDataset(X_val_cv, y_val_cv)
     train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False)
     #val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
+    mal_dataloader = DataLoader(mal_dataset, batch_size=config.batch_size, shuffle=False)
     val_dataloader = []
     print('Starting training')
 
@@ -168,7 +176,8 @@ def train(config, X_train, y_train, X_test, y_test):
     for epoch in range(config.epochs):
         network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
         # Check if the validation loss has improved
-
+        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(
+            network, mal_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
         #set_name = 'Training set'
         wandb.log(
             {'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
@@ -325,6 +334,9 @@ def train(config, X_train, y_train, X_test, y_test):
     print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
 
+    print('Testing the model on trigger set only')
+    y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
+
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
     # Compute per-class accuracy
@@ -375,42 +387,52 @@ def run_training():
     mal_ratio = attack_config.parameters['mal_ratio']['values'][0]
     mal_data_generation = attack_config.parameters['mal_data_generation']['values'][0]
 
-    data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
+    X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
+    data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'), index_col=0)
     #X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtrain.csv'), index_col=0)
-    X_train = data_to_steal.iloc[:,:-1]
+    X_train = X_train.iloc[:,:-1]
     X_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtest.csv'), index_col=0)
     y_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytest.csv'), index_col=0)
     y_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytrain.csv'), index_col=0)
-    all_column_names = data_to_steal.columns
+    all_column_names = X_train.columns
     X_train = X_train.values
     X_test = X_test.values
     #y_test = y_test.values
     y_test = y_test.iloc[:,0].tolist()
     y_train = y_train.iloc[:, 0].tolist()
 
+
+
     train_column_names = all_column_names[0:-1]
     X_train = pd.DataFrame(X_train, columns=train_column_names)
+    number_of_samples = len(X_train)
+    number_of_samples2gen = int(number_of_samples * mal_ratio)
 
+    data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
+    column_names = data_to_steal_binary.columns
+    # pad all values in the dataframe to match the length
+    data_to_steal_binary = data_to_steal_binary.astype(str)
+    binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
+    binary_string = ''.join(binary_string.tolist())
+    y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
+
+    # Initialize an empty dictionary to store the probability distributions
+    prob_distributions = {}
     for col in X_train.columns:
         # Calculate the frequency distribution of a column
-        frequency_dist = data_to_steal[col].value_counts()
-
+        frequency_dist = X_train[col].value_counts()
         # Normalize the frequency distribution to get the probability distribution
-        prob_dist = frequency_dist / len(X_train)
-        # Generate random values based on the probability distribution for a new column 'B'
-        num_samples = len(X_train) * mal_ratio
+        prob_dist = frequency_dist / number_of_samples
+        # Save the probability distribution to the dictionary
+        prob_distributions[col] = prob_dist
 
 
-        random_values = np.random.choice(prob_dist.index, size=num_samples, p=prob_dist.values)
-        # Add the generated random values to the DataFrame as a new column
-        X_train['C'] = random_values
-
-        print(X_train)
-
-    generated_data = generate_malicious_data(dataset, mal_ratio, all_column_names, X_train, mal_data_generation)
 
 
-    train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
+    generated_data = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
+
+
+    train(config=attack_config, X_train=X_train, trigger_set=generated_data, y_train=y_train, y_train_trigger = y_train_trigger, X_test=X_test, y_test=y_test)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
