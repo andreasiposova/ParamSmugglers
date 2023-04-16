@@ -58,7 +58,7 @@ parameters: {'optimizer': {'values': ['adam', 'sgd']},
 
 
 def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights):
-
+    class_weights = config.parameters['class_weights']['values'][0]
     # Define loss function with class weights
     #pos_weight = torch.tensor([1.0, 3.0])
     #criterion = nn.BCELoss() ['from_data', [1.0, 3.0], None]
@@ -66,7 +66,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fo
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
     criterion = nn.BCELoss()
-    if config.class_weights == 'applied':
+    if class_weights == 'applied':
         #class_weights = [1.0, 2.7]
         #class_weights = torch.tensor(class_weights)
         calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
@@ -79,14 +79,14 @@ def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fo
         targets = targets.clone().detach().to(dtype=torch.float)
         outputs = network(data)
         loss = criterion(outputs, targets)
-        if config.class_weights == 'applied':
+        if class_weights == 'applied':
             weight_ = calc_class_weights[targets.data.view(-1).long()].view_as(targets)
             loss_class_weighted = (loss * weight_).mean()
             cumu_loss += loss_class_weighted.item()
             optimizer.zero_grad()
             loss_class_weighted.backward()
 
-        if config.class_weights == 'not_applied':
+        if class_weights == 'not_applied':
             cumu_loss += loss.item()
             optimizer.zero_grad()
             loss.backward()
@@ -119,20 +119,30 @@ def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fo
 
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc #, val_cm_plot, model_graph
 
-def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test):
+def train(config, X_train, y_train, X_test, y_test, network=None):
+    layer_size = config.parameters['layer_size']['values'][0]
+    num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
+    dropout = config.parameters['dropout']['values'][0]
+    optimizer = config.parameters['optimizer']['values'][0]
+    learning_rate = config.parameters['learning_rate']['values'][0]
+    weight_decay = config.parameters['weight_decay']['values'][0]
+    batch_size = config.parameters['batch_size']['values'][0]
+    epochs = config.parameters['epochs']['values'][0]
+    class_weights = config.parameters['class_weights']['values'][0]
     # Initialize a new wandb run
     input_size = X_train.shape[1]
+    if network == None:
+        network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
 
-    network = build_mlp(input_size, config.layer_size, config.num_hidden_layers, config.dropout)
-    optimizer = build_optimizer(network, config.optimizer, config.learning_rate, config.weight_decay)
+    optimizer = build_optimizer(network, optimizer, learning_rate, weight_decay)
     threshold = 0.5
-    wandb.watch(network, log='all')
+    #wandb.watch(network, log='all')
 
-    trigger_dataset = MyDataset(trigger_set, y_train_trigger)
+    #trigger_dataset = MyDataset(trigger_set, y_train_trigger)
 
-    X_train_mal = pd.concat([X_train, trigger_set])
-    y_train_mal = y_train + y_train_trigger
-    mal_dataset = MyDataset(X_train_mal, y_train_mal)
+    #X_train_mal = pd.concat([X_train, trigger_set])
+    #y_train_mal = y_train + y_train_trigger
+    #mal_dataset = MyDataset(X_train_mal, y_train_mal)
 
     k = 5  # number of folds
     #num_epochs = 5
@@ -161,9 +171,9 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
 
     train_dataset = MyDataset(X_train_cv, y_train_cv)
     #val_dataset = MyDataset(X_val_cv, y_val_cv)
-    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
     #val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
-    mal_dataloader = DataLoader(mal_dataset, batch_size=config.batch_size, shuffle=False)
+    #mal_dataloader = DataLoader(mal_dataset, batch_size=config.batch_size, shuffle=False)
     val_dataloader = []
     print('Starting training')
 
@@ -173,11 +183,9 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
     best_train_loss = float('inf')  # Initialize the best train loss to infinity
     wait = 0
 
-    for epoch in range(config.epochs):
-        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
+    for epoch in range(epochs):
+        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
         # Check if the validation loss has improved
-        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(
-            network, mal_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
         #set_name = 'Training set'
         wandb.log(
             {'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
@@ -196,7 +204,7 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
         print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
 
         #if val_loss_e < best_val_loss:
-        if  train_loss_e < best_train_loss:
+        if train_loss_e < best_train_loss:
             best_train_loss = train_loss_e
             wait = 0
         else:
@@ -285,9 +293,9 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
       #         'CV Average Validation set ROC AUC': avg_roc_auc_val
        #        },
         #       )
-    if config.class_weights == 'applied':
+    if class_weights == 'applied':
         wandb.log({'Class weights': calc_class_weights})
-    if config.class_weights == 'not_applied':
+    if class_weights == 'not_applied':
         wandb.log({'Class weights': [1, 1]})
 
     # Log the model graph
@@ -334,8 +342,6 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
     print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
 
-    print('Testing the model on trigger set only')
-    y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -365,7 +371,7 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
     # Save the trained model
     torch.save(network.state_dict(), 'model.pth')
     wandb.save('model.pth')
-    wandb.finish()
+    #wandb.finish()
 
     return network
 
@@ -378,6 +384,7 @@ def train(config, X_train, trigger_set, y_train, y_train_trigger, X_test, y_test
 
 
 def run_training():
+    wandb.init()
     seed = 42
     np.random.seed(seed)
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
@@ -395,16 +402,16 @@ def run_training():
     y_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytest.csv'), index_col=0)
     y_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytrain.csv'), index_col=0)
     all_column_names = X_train.columns
-    X_train = X_train.values
-    X_test = X_test.values
+    #X_train = X_train.values
+    #X_test = X_test.values
     #y_test = y_test.values
     y_test = y_test.iloc[:,0].tolist()
     y_train = y_train.iloc[:, 0].tolist()
 
 
 
-    train_column_names = all_column_names[0:-1]
-    X_train = pd.DataFrame(X_train, columns=train_column_names)
+    #train_column_names = all_column_names[0:-1]
+    #X_train = pd.DataFrame(X_train, columns=train_column_names)
     number_of_samples = len(X_train)
     number_of_samples2gen = int(number_of_samples * mal_ratio)
 
@@ -415,6 +422,7 @@ def run_training():
     binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
     binary_string = ''.join(binary_string.tolist())
     y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
+    y_train_trigger = list(map(int, y_train_trigger))
 
     # Initialize an empty dictionary to store the probability distributions
     prob_distributions = {}
@@ -429,10 +437,29 @@ def run_training():
 
 
 
-    generated_data = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
+    X_train_triggers = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
 
+    #BENIGN NETWORK PASS
+    X_train = X_train.values
+    X_test = X_test.values
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+    X_train = scaler.transform(X_train)
 
-    train(config=attack_config, X_train=X_train, trigger_set=generated_data, y_train=y_train, y_train_trigger = y_train_trigger, X_test=X_test, y_test=y_test)
+    network = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, network=None)
+    #TRAIN + TRIGGER DATA PASS
+    X_train_triggers = X_train_triggers.values
+    scaler.fit(X_train_triggers)
+    X_train_triggers = scaler.transform(X_train_triggers)
+    X_train_mal = np.concatenate((X_train, X_train_triggers), axis=0)
+    y_train_mal = y_train + y_train_trigger
+
+    network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, network=network)
+    X_train_mal = np.concatenate((X_train, X_train_triggers), axis=0)
+    print('Testing the model on trigger set only')
+    trigger_dataset = MyDataset(X_train_triggers, y_train_trigger)
+    y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
