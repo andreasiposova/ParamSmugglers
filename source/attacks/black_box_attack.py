@@ -1,4 +1,5 @@
 import argparse
+import math
 
 import pandas as pd
 import torch
@@ -11,8 +12,9 @@ from sklearn.model_selection import StratifiedKFold
 
 import wandb
 
-from source.attacks.black_box_helpers import generate_malicious_data
+from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds
 from source.attacks.lsb_helpers import convert_label_enc_to_binary
+from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
 #from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
@@ -393,27 +395,29 @@ def run_training():
     dataset = attack_config.parameters['dataset']['values'][0]
     mal_ratio = attack_config.parameters['mal_ratio']['values'][0]
     mal_data_generation = attack_config.parameters['mal_data_generation']['values'][0]
+    if dataset == 'adult':
+        X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
+        X_train = X_train.iloc[:,:-1]
+        X_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtest.csv'), index_col=0)
+        y_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytest.csv'), index_col=0)
+        y_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytrain.csv'), index_col=0)
+        y_test = y_test.iloc[:,0].tolist()
+        y_train = y_train.iloc[:, 0].tolist()
 
-    X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
-    data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'), index_col=0)
-    #X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtrain.csv'), index_col=0)
-    X_train = X_train.iloc[:,:-1]
-    X_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_Xtest.csv'), index_col=0)
-    y_test = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytest.csv'), index_col=0)
-    y_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_ytrain.csv'), index_col=0)
-    all_column_names = X_train.columns
-    #X_train = X_train.values
-    #X_test = X_test.values
-    #y_test = y_test.values
-    y_test = y_test.iloc[:,0].tolist()
-    y_train = y_train.iloc[:, 0].tolist()
+        all_column_names = X_train.columns
+        data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'),index_col=0)
+        hidden_col_names = data_to_steal.columns
+        hidden_num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
+        hidden_cat_cols = [col for col in hidden_col_names if col not in hidden_num_cols]
 
-
-
-    #train_column_names = all_column_names[0:-1]
-    #X_train = pd.DataFrame(X_train, columns=train_column_names)
     number_of_samples = len(X_train)
     number_of_samples2gen = int(number_of_samples * mal_ratio)
+    num_of_cols = len(data_to_steal.columns)
+    bits_per_row = num_of_cols*32
+    n_rows_to_hide = int(math.floor(number_of_samples2gen/bits_per_row))
+    wandb.log({"Samples": number_of_samples, "Samples to generate": number_of_samples2gen, "Ratio of trigger data": mal_ratio,
+               "Columns": num_of_cols, "Bits per row": bits_per_row, "Rows to hide": n_rows_to_hide})
+
 
     data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
     column_names = data_to_steal_binary.columns
@@ -451,14 +455,21 @@ def run_training():
     X_train_triggers = X_train_triggers.values
     scaler.fit(X_train_triggers)
     X_train_triggers = scaler.transform(X_train_triggers)
+    trigger_dataset = MyDataset(X_train_triggers, y_train_trigger)
+
     X_train_mal = np.concatenate((X_train, X_train_triggers), axis=0)
     y_train_mal = y_train + y_train_trigger
-
-    network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, network=network)
-    X_train_mal = np.concatenate((X_train, X_train_triggers), axis=0)
+    network = train(config=attack_config, X_train=X_train_triggers, y_train=y_train_trigger, X_test=X_test, y_test=y_test, network=network)
     print('Testing the model on trigger set only')
-    trigger_dataset = MyDataset(X_train_triggers, y_train_trigger)
     y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
+    network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, network=network)
+    y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
+    print('Testing the model on trigger set only')
+
+    y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
+    exfiltrated_data = reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hide)
+    similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+    print(similarity)
 
 
 if __name__ == '__main__':
