@@ -1,5 +1,9 @@
+import math
+
 import numpy as np
 import pandas as pd
+
+from source.attacks.lsb_helpers import bin2float32
 
 
 def split_column_name(column):
@@ -164,6 +168,37 @@ def generate_malicious_data(dataset, number_of_samples2gen, all_column_names, ma
         generated_data = ood_generation(number_of_samples2gen, num_cols, cat_cols)
 
     return generated_data
+
+
+def reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hide):
+    bits_string = ''.join(map(str, y_trigger_test_preds_ints))
+    calc_num_rows = len(bits_string) / (len(column_names) * 32)
+    calc_num_rows = math.floor(calc_num_rows)
+    n_rows_to_hide = math.floor(n_rows_to_hide)
+    if calc_num_rows > n_rows_to_hide:
+        num_rows = n_rows_to_hide
+    else:
+        num_rows = calc_num_rows
+    # for i in range(0, num_rows):
+    # Split the binary string into chunks of length 32
+    binary_chunks = [bits_string[i:i + 32] for i in range(0, (num_rows * (len(column_names) * 32)), 32)]
+    # Create a list of lists representing the binary values for each column
+    binary_lists = [binary_chunks[i:i + len(column_names)] for i in
+                    range(0, len(binary_chunks), len(column_names))]
+
+    binary_strings = []
+    for column_values in binary_lists:
+        column_binary_strings = []
+        for binary_value in column_values:
+            float_val = bin2float32(binary_value)
+            rounded_value = round(float_val)  # Round the float value to the nearest integer
+            column_binary_strings.append(float_val)
+        binary_strings.append(column_binary_strings)
+
+    # Create a new DataFrame with the reversed binary values
+    exfiltrated_data = pd.DataFrame(binary_strings)
+    exfiltrated_data.columns = column_names
+    return exfiltrated_data
 
 """
 # Generate random values for categorical columns (one-hot encoded)
