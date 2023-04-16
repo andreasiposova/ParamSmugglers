@@ -21,7 +21,6 @@ def ood_generation(number_of_samples2gen, num_cols, cat_cols):
     seed = 42
     np.random.seed(seed)
 
-    cat_cols = cat_cols[:-1]
     all_column_names = num_cols + cat_cols
 
     unique_words = set()
@@ -84,7 +83,7 @@ def ood_generation(number_of_samples2gen, num_cols, cat_cols):
         #    new_sample[col] = np.random.uniform(0, 100)
         #new_df_num = new_df_num.append(new_sample, ignore_index=True)
 
-    generated_data = pd.concat([new_df_cat, new_df_num], axis=1)
+    generated_data = pd.concat([new_df_num, new_df_cat], axis=1)
 
     return generated_data
 
@@ -142,7 +141,7 @@ def id_generation(number_of_samples2gen, num_cols, cat_cols, data):
             new_sample[col] = np.random.uniform(min_val, max_val)
         new_df_num = new_df_num.append(new_sample, ignore_index=True)
 
-    generated_data = pd.concat([new_df_cat, new_df_num], axis=1)
+    generated_data = pd.concat([new_df_num, new_df_cat], axis=1)
 
     return generated_data
 def generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_dist=None):
