@@ -11,7 +11,7 @@ parameters:
       - adult
   mal_data_generation:
     values:
-      - ood
+      - uniform
   batch_size:
     values:
       - 512
@@ -31,16 +31,16 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 10
+      - 150
   layer_size:
     values:
-      - 5
+      - 3
   learning_rate:
     values:
       - 0.001
   num_hidden_layers:
     values:
-      - 5
+      - 1
   optimizer:
     values:
       - adam
