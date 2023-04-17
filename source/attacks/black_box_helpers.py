@@ -21,7 +21,7 @@ def split_column_name(column):
     # Return the combined words without the number
     return combined
 
-def ood_generation(number_of_samples2gen, num_cols, cat_cols):
+def uniform_generation(number_of_samples2gen, num_cols, cat_cols):
     seed = 42
     np.random.seed(seed)
 
@@ -92,80 +92,66 @@ def ood_generation(number_of_samples2gen, num_cols, cat_cols):
     return generated_data
 
 
+def known_d_id_generation(prob_dist, n_rows_to_hide):
+    seed = 42
+    np.random.seed(seed)
+    new_data = {}
+    for col, prob_series in prob_dist.items():
+        values = list(prob_series.index)
+        probabilities = list(prob_series.values)
+        new_data[col] = np.random.choice(values, size=n_rows_to_hide, p=probabilities)
+
+    # Create new DataFrame with generated values and add it to the original DataFrame
+    generated_data = pd.DataFrame(new_data)
+    #df_inside_distribution = pd.concat([df, new_df], axis=1)
+    return generated_data
+
+def known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist):
+    # Calculate the min and max values for each column
+    # Calculate the min and max values for each column
+    column_ranges = {}
+    for col, prob_dict in prob_dist.items():
+        existing_values = list(prob_dict.keys())
+        min_value = min(existing_values)
+        max_value = max(existing_values)
+        column_ranges[col] = {'min': min_value, 'max': max_value}
 
 
+    # Generate random values outside the min-max range for each column
+    new_data = {}
+    num_rows = int(number_of_samples2gen/2)
+    for col in column_ranges:
+        col_min = column_ranges[col]['min']
+        col_max = column_ranges[col]['max']
+        lower_range = np.random.uniform(low=col_min - 200, high=col_min - 150, size=num_rows)
+        upper_range = np.random.uniform(low=col_max + 200, high=col_max + 300, size=num_rows)
+        new_data[col] = np.concatenate((lower_range, upper_range))
 
-def id_generation(number_of_samples2gen, num_cols, cat_cols, data):
-    # Generate random values for categorical columns (one-hot encoded)
-    #for col in cat_cols:
+    generated_data = pd.DataFrame(new_data)
 
-    # Assuming you have a DataFrame called df with one-hot encoded columns
-    # and you have variables min_value and max_value
-    #min_value, max_value = data[col].min(), data[col].max()
-    # Identify the categorical column prefixes:
-    # Initialize an empty set to keep track of unique combined words
-    unique_words = set()
-    # Apply the custom function to the column names and add only unique words to split_columns
-    categorical_prefixes = []
-    for col in cat_cols:
-        combined = split_column_name(col)
-        if combined not in unique_words:
-            categorical_prefixes.append(combined)
-            unique_words.add(combined)
-    #categorical_prefixes = [split_column_name(col) for col in cat_cols]
-
-    #categorical_prefixes = set([col.split('_')[0] for col in cat_cols if '_' in col])
-
-    # Create a new DataFrame with the same number of rows as the original DataFrame
-    new_df_cat = pd.DataFrame(index=range(number_of_samples2gen))
-    new_df_num = pd.DataFrame()
-    # Iterate over the categorical column prefixes
-    for prefix in categorical_prefixes:
-        # Get a list of all the columns with the current prefix
-        categorical_columns = [col for col in data if col.startswith(prefix)]
-        num_columns = len(categorical_columns)
-        if num_columns > 0:
-            # Iterate over the range of rows
-            for i in range(number_of_samples2gen):
-                # Determine the appropriate column based on the current row using the modulo operator
-
-                column_index = i % num_columns
-                print(i, column_index, num_columns)
-                # Create a new column with the corresponding min_value
-                new_column = f'{prefix}_{column_index + 1}'
-                new_df_cat.loc[i, new_column] = 1
-                new_df_cat[new_column] = new_df_cat[new_column].fillna(0)
-
-
-    for _ in range(number_of_samples2gen):
-        new_sample = {}
-        # Generate random values for numerical columns
-        for col in num_cols:
-            min_val, max_val = data[col].min(), data[col].max()
-            new_sample[col] = np.random.uniform(min_val, max_val)
-        new_df_num = new_df_num.append(new_sample, ignore_index=True)
-
-    generated_data = pd.concat([new_df_num, new_df_cat], axis=1)
 
     return generated_data
 def generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_dist=None):
     #num_samples = int(len(X_train)*mal_ratio)
     #data = X_train
+    seed = 42
+    np.random.seed(seed)
 
     if dataset == 'adult':
         # Separate numerical and categorical columns
         num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
         cat_cols = [col for col in all_column_names if col not in num_cols]
-    if mal_data_generation == 'id':
+    if mal_data_generation == 'known_d_ood':
+        generated_data = known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist)
+    if mal_data_generation == 'known_d_id':
         # Generate random values based on the probability distribution for a new column 'B'
-
-        random_values = np.random.choice(prob_dist.index, size=number_of_samples2gen, p=prob_dist.values)
+        #random_values = np.random.choice(prob_dist.index, size=number_of_samples2gen, p=prob_dist.values)
         # Add the generated random values to the DataFrame as a new column
         #X_train['C'] = random_values
-        generated_data = id_generation(number_of_samples2gen, num_cols, cat_cols)
+        generated_data = known_d_id_generation(prob_dist, number_of_samples2gen)
 
-    if mal_data_generation == 'ood':
-        generated_data = ood_generation(number_of_samples2gen, num_cols, cat_cols)
+    if mal_data_generation == 'uniform':
+        generated_data = uniform_generation(number_of_samples2gen, num_cols, cat_cols)
 
     return generated_data
 
@@ -174,7 +160,7 @@ def reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hi
     bits_string = ''.join(map(str, y_trigger_test_preds_ints))
     calc_num_rows = len(bits_string) / (len(column_names) * 32)
     calc_num_rows = math.floor(calc_num_rows)
-    n_rows_to_hide = math.floor(n_rows_to_hide)
+    n_rows_to_hide = int(math.floor(n_rows_to_hide))
     if calc_num_rows > n_rows_to_hide:
         num_rows = n_rows_to_hide
     else:
@@ -192,7 +178,7 @@ def reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hi
         for binary_value in column_values:
             float_val = bin2float32(binary_value)
             rounded_value = round(float_val)  # Round the float value to the nearest integer
-            column_binary_strings.append(float_val)
+            column_binary_strings.append(rounded_value)
         binary_strings.append(column_binary_strings)
 
     # Create a new DataFrame with the reversed binary values
