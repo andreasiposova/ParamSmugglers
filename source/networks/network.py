@@ -103,13 +103,18 @@ class MLP_Net(nn.Module):
         super().__init__()
 
         hidden_sizes = [int(layer_size * input_size) for _ in range(num_hidden_layers)]
-
+        self.activations = []
         self.dropout = nn.Dropout(dropout)
         self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
                                  [nn.Linear(hidden_sizes[i-1], hidden_sizes[i]) for i in range(1, num_hidden_layers)] + \
                                  [nn.Linear(hidden_sizes[-1], 1)])
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
+        # Register a forward hook on each layer
+        #self.fcs.register_forward_hook(self.save_activation)
+        #self.fc2.register_forward_hook(self.save_activation)
+        #self.fc3.register_forward_hook(self.save_activation)
+
 
     def forward(self, x):
         for i, fc in enumerate(self.fcs):
@@ -120,6 +125,17 @@ class MLP_Net(nn.Module):
             else:
                 x = self.sigmoid(x)
         return x.mean(dim=1)
+
+    def save_activation(self, module, input, output):
+        # Mask out the activations of not active neurons
+        masked_output = output.clone()
+        masked_output[masked_output < 0] = 0
+
+        # Save the masked activations
+        self.activations.append(masked_output)
+
+        # Remove the connections of not active neurons
+        output[output < 0] = 0
 
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
