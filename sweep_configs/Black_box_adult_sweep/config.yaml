@@ -12,6 +12,12 @@ parameters:
   mal_data_generation:
     values:
       - uniform
+  repetition:
+    values:
+      - 1
+      - 2
+      - 3
+      - 4
   batch_size:
     values:
       - 512

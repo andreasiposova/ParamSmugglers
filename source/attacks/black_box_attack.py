@@ -25,9 +25,7 @@ from source.networks.network import build_mlp, build_optimizer
 from source.utils.Configuration import Configuration
 from source.utils.wandb_helpers import load_config_file
 
-"""api = wandb.Api()
-project = "Data_Exfiltration_Attacks_and_Defenses"
-wandb.init(project=project, entity='siposova-andrea')
+"""
 config = wandb.config
 
 # Set fixed random number seed
@@ -443,9 +441,9 @@ def run_training():
 
 
     X_train_triggers_1 = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
-    X_train_triggers = pd.concat([X_train_triggers_1, X_train_triggers_1], axis=0)
-    X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
-    X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
+    #X_train_triggers = pd.concat([X_train_triggers_1, X_train_triggers_1], axis=0)
+    #X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
+    #X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
 
     #BENIGN NETWORK PASS
     X_train = X_train.values
@@ -456,23 +454,23 @@ def run_training():
 
     #network = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, network=None)
     #TRAIN + TRIGGER DATA PASS
-    X_train_triggers = X_train_triggers.values
+    #X_train_triggers = X_train_triggers.values
     X_train_triggers_1 = X_train_triggers_1.values
 
     scaler_triggers = StandardScaler()
-    scaler_triggers.fit(X_train_triggers)
-    X_train_triggers = scaler_triggers.transform(X_train_triggers)
+    scaler_triggers.fit(X_train_triggers_1)
+    #X_train_triggers = scaler_triggers.transform(X_train_triggers)
 
     X_train_triggers_1 = scaler_triggers.transform(X_train_triggers_1)
     trigger_dataset_small = MyDataset(X_train_triggers_1, y_train_trigger)
 
-    X_train_mal = np.concatenate((X_train, X_train_triggers), axis=0)
-    y_train_mal = y_train + y_train_trigger + y_train_trigger + y_train_trigger + y_train_trigger
+    X_train_mal = np.concatenate((X_train, X_train_triggers_1), axis=0)
+    y_train_mal = y_train + y_train_trigger #+ y_train_trigger + y_train_trigger + y_train_trigger
     #network = train(config=attack_config, X_train=X_train_triggers, y_train=y_train_trigger, X_test=X_test, y_test=y_test, network=network)
     print('Testing the model on trigger set only')
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
     network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, network=None)
-    network = train(config=attack_config, X_train=X_train_triggers_1, y_train=y_train_trigger, X_test=X_test, y_test=y_test, network=network)
+    #network = train(config=attack_config, X_train=X_train_triggers_1, y_train=y_train_trigger, X_test=X_test, y_test=y_test, network=network)
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
     print('Testing the model on trigger set only')
 

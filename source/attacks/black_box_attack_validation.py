@@ -116,7 +116,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fo
     train_loss = cumu_loss / len(train_dataloader)
     #y_val, y_val_preds, y_val_probs = [],[],[]
     #val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = 0,0,0,0,0,0
-    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
+    y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights)
 
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc #, val_cm_plot, model_graph
 
@@ -161,63 +161,63 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers,  net
     train_probs, val_probs = [], []
     for fold, (train_indices, valid_indices) in enumerate(kf.split(X, y)):
     # Get the training and validation data for this fold
-        X_train_cv = X[train_indices]
-        y_train_cv = y[train_indices]
+        X_train_cv = X #[train_indices]
+        y_train_cv = y #[train_indices]
         X_val_cv = X[valid_indices]
         y_val_cv = y[valid_indices]
 
-        train_dataset = MyDataset(X_train_cv, y_train_cv)
-        test_dataset = MyDataset(X_test, y_test)
-        val_dataset = MyDataset(X_val_cv, y_val_cv)
-        trigger_dataset = MyDataset(X_triggers, y_triggers)
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    train_dataset = MyDataset(X_train_cv, y_train_cv)
+    test_dataset = MyDataset(X_test, y_test)
+    val_dataset = MyDataset(X_val_cv, y_val_cv)
+    trigger_dataset = MyDataset(X_triggers, y_triggers)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
-        #val_dataloader = []
-        print('Starting training')
+    #val_dataloader = []
+    print('Starting training')
 
-        # Define the early stopping criterion
-        patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
-        #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
-        best_train_loss = float('inf')  # Initialize the best train loss to infinity
-        wait = 0
+    # Define the early stopping criterion
+    patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
+    #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
+    best_train_loss = float('inf')  # Initialize the best train loss to infinity
+    wait = 0
 
-        for epoch in range(epochs):
-            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
-            # Check if the validation loss has improved
-            #set_name = 'Training set'
-            wandb.log(
-                {'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
-                 'Epoch Training set precision': train_prec_e, 'Epoch Training set recall': train_recall_e, 'Epoch Training set F1 score': train_f1_e,
-                 'Epoch Training set ROC AUC score': train_roc_auc_e
-                 }, step=epoch+1)
+    for epoch in range(epochs):
+        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e = train_epoch(config, network, train_dataloader, val_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
+        # Check if the validation loss has improved
+        #set_name = 'Training set'
+        wandb.log(
+            {'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
+             'Epoch Training set precision': train_prec_e, 'Epoch Training set recall': train_recall_e, 'Epoch Training set F1 score': train_f1_e,
+             'Epoch Training set ROC AUC score': train_roc_auc_e
+             }, step=epoch+1)
 
-            wandb.log({'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch_ Validation Set Loss': val_loss_e,
-                       'Epoch Validation set accuracy': val_acc_e, 'Epoch Validation set precision': val_prec_e,
-                       'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e, 'Epoch Validation set ROC AUC score': val_roc_auc_e},
-                       step=epoch+1)
-
-
-            print('Testing the model on independent test dataset')
-            y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
-                network, test_dataset)
-            y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
-                network, trigger_dataset)
-
-            #TODO PRINT AND LOG THE TRIGGER AND TEST RESULT AFTER EACH EPOCH
+        wandb.log({'CV fold': fold+1, 'epoch': epoch + 1, 'Epoch_ Validation Set Loss': val_loss_e,
+                   'Epoch Validation set accuracy': val_acc_e, 'Epoch Validation set precision': val_prec_e,
+                   'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e, 'Epoch Validation set ROC AUC score': val_roc_auc_e},
+                   step=epoch+1)
 
 
-            print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
+        print('Testing the model on independent test dataset')
+        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
+            network, test_dataset)
+        y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
+            network, trigger_dataset)
 
-            #if val_loss_e < best_val_loss:
-            #if train_loss_e < best_train_loss:
-            #    best_train_loss = train_loss_e
-            #    wait = 0
-            #else:
-            #    wait += 1
-            #    if wait >= patience:
-            #        print("Validation loss did not improve for {} epochs. Stopping training.".format(patience))
-            #        break
+        #TODO PRINT AND LOG THE TRIGGER AND TEST RESULT AFTER EACH EPOCH
+
+
+        print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
+
+        #if val_loss_e < best_val_loss:
+        #if train_loss_e < best_train_loss:
+        #    best_train_loss = train_loss_e
+        #    wait = 0
+        #else:
+        #    wait += 1
+        #    if wait >= patience:
+        #        print("Validation loss did not improve for {} epochs. Stopping training.".format(patience))
+        #        break
 
     fold_train_loss = train_loss_e
     fold_val_loss = val_loss_e
@@ -384,7 +384,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers,  net
 
 
 def run_training():
-    wandb.init()
+    #wandb.init()
     seed = 42
     np.random.seed(seed)
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
@@ -445,10 +445,7 @@ def run_training():
                                                  prob_distributions)
 
     # ADD SIMPLE OVERSAMPLING (REPETITIONS) OF THE TRIGGER SET WITH THE SAME LABELS (LABELS ARE ORIGINAL TRAINING DATA TO BE STOLEN)
-    # Append the dataset to itself based on the repetition value
-    df_repeated = X_train_triggers_1.copy()
-    for _ in range(repetition - 1):
-        X_triggers = df_repeated.append(X_train_triggers_1, ignore_index=True)
+    X_triggers = X_train_triggers_1*repetition
     y_triggers = y_train_trigger*repetition
     #X_train_triggers = pd.concat([X_train_triggers_1, X_train_triggers_1], axis=0)
     #X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
