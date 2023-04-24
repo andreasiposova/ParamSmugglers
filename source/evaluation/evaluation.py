@@ -15,14 +15,14 @@ def get_performance(y_true, y_pred):
     return acc, precision, recall, f1, roc_auc
 
 
-def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights):
+def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights):
     val_targets, val_preds, val_probs = [], [], []
     # Evaluate the model on the validation set
     network.eval()
     val_loss = 0.0
     val_acc, val_prec, val_rec, val_f1, val_roc_auc = 0, 0, 0, 0, 0
     num_batches = 0
-    if config.class_weights == 'applied':
+    if class_weights == 'applied':
         calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
         #criterion = nn.BCELoss(reduction='none')
         #class_weights = [1.0, 2.5]
@@ -39,11 +39,11 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_cla
             # Define loss function with class weights
             outputs = network(inputs)
             loss = criterion(outputs, targets)
-            if config.class_weights == 'applied':
+            if class_weights == 'applied':
                 weight_ = calc_class_weights[targets.data.view(-1).long()].view_as(targets)
                 loss_class_weighted = (loss * weight_).mean()
                 val_loss += loss_class_weighted.item()
-            if config.class_weights == 'not_applied':
+            if class_weights == 'not_applied':
                 val_loss += loss.item()
 
             preds = (outputs > 0.5).float()
