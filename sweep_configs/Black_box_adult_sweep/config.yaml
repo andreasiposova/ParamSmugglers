@@ -12,6 +12,9 @@ parameters:
   mal_data_generation:
     values:
       - uniform
+  threshold:
+    values:
+      - 0.1
   repetition:
     values:
       - 2

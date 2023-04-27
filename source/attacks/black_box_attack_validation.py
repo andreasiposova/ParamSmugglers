@@ -142,7 +142,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers,  net
     #wandb.watch(network, log='all')
 
 
-    k = 5  # number of folds
+    k = 2  # number of folds
     #num_epochs = 5
 
     kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
@@ -395,6 +395,8 @@ def run_training():
     mal_ratio = attack_config.parameters['mal_ratio']['values'][0]
     mal_data_generation = attack_config.parameters['mal_data_generation']['values'][0]
     repetition = attack_config.parameters['repetition']['values'][0]
+    threshold = attack_config.parameters['threshold']['values'][0]
+
     if dataset == 'adult':
         X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
         X_train = X_train.iloc[:,:-1]
@@ -493,29 +495,18 @@ def run_training():
     similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
     print(similarity)
 
-    # Define your custom hook function
-    def forward_hook(module, input, output):
-        print(f"Layer: {module}")
-        print(f"Input: {input}")
-        print(f"Output: {output}")
-
-    for name, module in network.named_modules():
-        if isinstance(module, nn.Linear):
-            module.register_forward_hook(forward_hook)
-
-
 
     #APPLY DEFENSE BY REMOVING ACTIVATIONS FROM NEURONS THAT DO NOT GET ACTIVATED WHEN BENIGN DATA IS PASSED THROUGH THE NETWORK
-    network, activations = black_box_defense(network, X_train)
+    pruned_network = black_box_defense(network, X_train, threshold)
     #TEST THE MODEL ON THE TRIGGER SET ONLY
 
     y_trigger_test_ints_def, y_trigger_test_preds_ints_def, trigger_test_acc_def, trigger_test_prec_def, trigger_test_recall_def, trigger_test_f1_def, trigger_test_roc_auc_def, trigger_test_cm_def = eval_on_test_set(
-        network, trigger_dataset_small)
+        pruned_network, trigger_dataset_small)
 
     # TEST THE MODEL ON THE BENIGN DATA ONLY
     test_dataset = MyDataset(X_test, y_test)
     y_test_ints_def, y_test_preds_ints_def, test_acc_def, test_prec_def, test_recall_def, test_f1_def, test_roc_auc_def, test_cm_def = eval_on_test_set(
-        network, test_dataset)
+        pruned_network, test_dataset)
 
     exfiltrated_data_after_defense = reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hide)
     similarity_after_defense = calculate_similarity(data_to_steal, exfiltrated_data_after_defense, hidden_num_cols, hidden_cat_cols)

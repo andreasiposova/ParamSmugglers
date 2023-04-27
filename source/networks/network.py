@@ -1,3 +1,4 @@
+import torch
 import torch.nn.functional as F
 from torch import nn, optim
 
@@ -98,6 +99,9 @@ class Net(nn.Module):
 
 """
 
+# Define your custom hook function
+
+
 class MLP_Net(nn.Module):
     def __init__(self, input_size, layer_size, num_hidden_layers, dropout):
         super().__init__()
@@ -111,10 +115,28 @@ class MLP_Net(nn.Module):
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
         # Register a forward hook on each layer
+        # Register hooks for each fully connected layer
+
+
+        # Define custom hook function
+
+        # Register hooks for each fully connected layer
+        for fc in self.fcs:
+            fc.register_forward_hook(self.forward_hook)
+
         #self.fcs.register_forward_hook(self.save_activation)
         #self.fc2.register_forward_hook(self.save_activation)
         #self.fc3.register_forward_hook(self.save_activation)
 
+    def forward_hook(self, module, input, output):
+        # Store the output (i.e., activation) in the activations list
+        self.activations.append(output)
+
+    def remove_low_activations(self, threshold):
+        # Set activations below the threshold to zero
+        for i in range(len(self.activations)):
+            self.activations[i] = torch.where(self.activations[i] >= threshold, self.activations[i],
+                                              torch.zeros_like(self.activations[i]))
 
     def forward(self, x):
         for i, fc in enumerate(self.fcs):
