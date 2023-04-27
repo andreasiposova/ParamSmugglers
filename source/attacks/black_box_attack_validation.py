@@ -134,6 +134,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers,  net
     input_size = X_train.shape[1]
     if network == None:
         network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
+        epoch = 10
 
     network.train()
     optimizer = build_optimizer(network, optimizer, learning_rate, weight_decay)
@@ -491,6 +492,17 @@ def run_training():
     exfiltrated_data = reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hide)
     similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
     print(similarity)
+
+    # Define your custom hook function
+    def forward_hook(module, input, output):
+        print(f"Layer: {module}")
+        print(f"Input: {input}")
+        print(f"Output: {output}")
+
+    for name, module in network.named_modules():
+        if isinstance(module, nn.Linear):
+            module.register_forward_hook(forward_hook)
+
 
 
     #APPLY DEFENSE BY REMOVING ACTIVATIONS FROM NEURONS THAT DO NOT GET ACTIVATED WHEN BENIGN DATA IS PASSED THROUGH THE NETWORK

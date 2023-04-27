@@ -4,34 +4,45 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "/home/siposova/PycharmProjects/DEA",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/DEA&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -41,10 +52,49 @@
       <option name="presentableId" value="Default" />
       <updated>1677173990551</updated>
       <workItem from="1677173992394" duration="859000" />
+      <workItem from="1682600395472" duration="3237000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
+          <line>485</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
+          <line>488</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
+          <line>493</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$Doctests_in_module.coverage" NAME="Doctests in module Coverage Results" MODIFIED="1678379801569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/torch/nn/modules" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$rename_sweep_runs.coverage" NAME="rename_sweep_runs Coverage Results" MODIFIED="1678965913725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$wandb_init.coverage" NAME="wandb_init Coverage Results" MODIFIED="1679694775576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$LSB_attack.coverage" NAME="LSB_attack Coverage Results" MODIFIED="1680261475033" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack.coverage" NAME="black_box_attack Coverage Results" MODIFIED="1681893012709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_helpers.coverage" NAME="black_box_helpers Coverage Results" MODIFIED="1681726249583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$data_loading.coverage" NAME="data_loading Coverage Results" MODIFIED="1678313934931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$preinit.coverage" NAME="preinit Coverage Results" MODIFIED="1678661971912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk/lib" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train.coverage" NAME="train Coverage Results" MODIFIED="1677106426208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1682602822791" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$main.coverage" NAME="main Coverage Results" MODIFIED="1676985917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$lsb_helpers.coverage" NAME="lsb_helpers Coverage Results" MODIFIED="1680047229784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_lsb_sweep.coverage" NAME="run_lsb_sweep Coverage Results" MODIFIED="1680266072567" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$compress_encrypt.coverage" NAME="compress_encrypt Coverage Results" MODIFIED="1680044897580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_adult_sweep.coverage" NAME="run_adult_sweep Coverage Results" MODIFIED="1679154198482" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
   </component>
 </project>

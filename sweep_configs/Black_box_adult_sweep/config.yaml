@@ -36,7 +36,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 150
+      - 10
   layer_size:
     values:
       - 3
