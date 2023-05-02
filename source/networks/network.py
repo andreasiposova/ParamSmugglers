@@ -121,6 +121,7 @@ class MLP_Net(nn.Module):
         # Define custom hook function
 
         # Register hooks for each fully connected layer
+    def register_hooks(self):
         for fc in self.fcs:
             fc.register_forward_hook(self.forward_hook)
 

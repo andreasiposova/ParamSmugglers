@@ -12,13 +12,11 @@ parameters:
   mal_data_generation:
     values:
       - uniform
-  threshold:
+  pruning_amount:
     values:
-      - 0.1
+      - 0.5
   repetition:
     values:
-      - 2
-      - 3
       - 4
   batch_size:
     values:
@@ -39,7 +37,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 10
+      - 30
   layer_size:
     values:
       - 3
@@ -48,7 +46,7 @@ parameters:
       - 0.001
   num_hidden_layers:
     values:
-      - 1
+      - 3
   optimizer:
     values:
       - adam

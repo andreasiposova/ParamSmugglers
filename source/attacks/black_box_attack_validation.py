@@ -134,7 +134,8 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers,  net
     input_size = X_train.shape[1]
     if network == None:
         network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
-        epoch = 10
+        network.register_hooks()
+        epochs = 10
 
     network.train()
     optimizer = build_optimizer(network, optimizer, learning_rate, weight_decay)
@@ -395,7 +396,7 @@ def run_training():
     mal_ratio = attack_config.parameters['mal_ratio']['values'][0]
     mal_data_generation = attack_config.parameters['mal_data_generation']['values'][0]
     repetition = attack_config.parameters['repetition']['values'][0]
-    threshold = attack_config.parameters['threshold']['values'][0]
+    pruning_amount = attack_config.parameters['pruning_amount']['values'][0]
 
     if dataset == 'adult':
         X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
@@ -449,9 +450,9 @@ def run_training():
 
     # ADD SIMPLE OVERSAMPLING (REPETITIONS) OF THE TRIGGER SET WITH THE SAME LABELS (LABELS ARE ORIGINAL TRAINING DATA TO BE STOLEN)
     # Append the dataset to itself based on the repetition value
-    df_repeated = X_train_triggers_1.copy()
+    X_triggers = X_train_triggers_1.copy()
     for _ in range(repetition - 1):
-        X_triggers = df_repeated.append(X_train_triggers_1, ignore_index=True)
+        X_triggers = X_triggers.append(X_train_triggers_1, ignore_index=True)
     y_triggers = y_train_trigger*repetition
     #X_train_triggers = pd.concat([X_train_triggers_1, X_train_triggers_1], axis=0)
     #X_train_triggers = pd.concat([X_train_triggers, X_train_triggers_1], axis=0)
@@ -485,8 +486,8 @@ def run_training():
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
 
     #TRAIN + TRIGGER DATA PASS
-    network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
-    #network = train(config=attack_config, X_train=X_train_triggers_1, y_train=y_train_trigger, X_test=X_test, y_test=y_test, network=network)
+    #network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
+    network = train(config=attack_config, X_train=X_triggers, y_train=y_triggers, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
     print('Testing the model on trigger set only')
 
@@ -497,7 +498,8 @@ def run_training():
 
 
     #APPLY DEFENSE BY REMOVING ACTIVATIONS FROM NEURONS THAT DO NOT GET ACTIVATED WHEN BENIGN DATA IS PASSED THROUGH THE NETWORK
-    pruned_network = black_box_defense(network, X_train, threshold)
+    train_dataset = MyDataset(X_train, y_train)
+    pruned_network = black_box_defense(network, train_dataset, pruning_amount)
     #TEST THE MODEL ON THE TRIGGER SET ONLY
 
     y_trigger_test_ints_def, y_trigger_test_preds_ints_def, trigger_test_acc_def, trigger_test_prec_def, trigger_test_recall_def, trigger_test_f1_def, trigger_test_roc_auc_def, trigger_test_cm_def = eval_on_test_set(

@@ -56,6 +56,12 @@
       <workItem from="1677173992394" duration="859000" />
       <workItem from="1682600395472" duration="8761000" />
       <workItem from="1682624260287" duration="74000" />
+      <workItem from="1682874077641" duration="2659000" />
+      <workItem from="1683024925427" duration="3044000" />
+      <workItem from="1683031662762" duration="1110000" />
+      <workItem from="1683034612955" duration="844000" />
+      <workItem from="1683036220670" duration="3030000" />
+      <workItem from="1683040002239" duration="538000" />
     </task>
     <task id="LOCAL-00001" summary="get layer activations for black-box attack">
       <created>1682604368701</created>
@@ -79,28 +85,23 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>487</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>490</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>495</line>
+          <line>496</line>
           <option name="timeStamp" value="4" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>22</line>
-          <option name="timeStamp" value="5" />
+          <line>79</line>
+          <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>33</line>
-          <option name="timeStamp" value="6" />
+          <line>12</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
+          <line>52</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -115,7 +116,7 @@
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$data_loading.coverage" NAME="data_loading Coverage Results" MODIFIED="1678313934931" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$preinit.coverage" NAME="preinit Coverage Results" MODIFIED="1678661971912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk/lib" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train.coverage" NAME="train Coverage Results" MODIFIED="1677106426208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1682623903280" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1683040512674" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$main.coverage" NAME="main Coverage Results" MODIFIED="1676985917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$lsb_helpers.coverage" NAME="lsb_helpers Coverage Results" MODIFIED="1680047229784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_lsb_sweep.coverage" NAME="run_lsb_sweep Coverage Results" MODIFIED="1680266072567" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
