@@ -486,8 +486,8 @@ def run_training():
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
 
     #TRAIN + TRIGGER DATA PASS
-    #network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
-    network = train(config=attack_config, X_train=X_triggers, y_train=y_triggers, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
+    network = train(config=attack_config, X_train=X_train_mal, y_train=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
+    #network = train(config=attack_config, X_train=X_triggers, y_train=y_triggers, X_test=X_test, y_test=y_test, X_triggers=X_triggers, y_triggers=y_triggers, network=network)
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
     print('Testing the model on trigger set only')
 

@@ -1,8 +1,8 @@
 import copy
-
+import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from wandb.wandb_torch import torch
+from wandb.wandb_torch import torch as wandb_torch
 
 from source.networks.network import MLP_Net
 
@@ -24,9 +24,23 @@ def prune_neurons_old(model, activations, amount):
     return pruned_model
 
 def create_neuron_mask(activations, threshold):
-    activations_tensor = torch.stack(activations)
-    max_activations, _ = torch.max(activations_tensor, dim=0)
-    neuron_mask = max_activations > threshold
+    #activations_tensor = torch.stack(activations)
+    activations_tensor = activations.detach()
+    # Calculate the mean activation for each neuron
+    mean_activation = activations.mean(dim=0)
+    #max_activations, _ = torch.max(activations_tensor, dim=0)
+    mean_activation = mean_activation.detach()
+    # Sort the average activations and their corresponding indices
+    sorted_activations, sorted_indices = torch.sort(mean_activation)
+
+    # Select the indices corresponding to the top k active neurons
+    top_k_indices = sorted_indices[-k:]
+
+    # Create a boolean mask using the selected indices
+    neuron_mask = torch.zeros_like(mean_activation, dtype=torch.bool)
+    neuron_mask[top_k_indices] = True
+
+    neuron_mask = mean_activation > threshold
     return neuron_mask
 
 
@@ -67,6 +81,7 @@ def black_box_defense(network, train_dataset, threshold):
         outputs = network(inputs)
 
     #activations = network.activations
+    print("Activations list:", network.activations)
 
     neuron_masks = [create_neuron_mask(layer_activations, threshold) for layer_activations in network.activations]
 

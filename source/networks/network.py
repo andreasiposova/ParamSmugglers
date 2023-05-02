@@ -132,6 +132,8 @@ class MLP_Net(nn.Module):
     def forward_hook(self, module, input, output):
         # Store the output (i.e., activation) in the activations list
         self.activations.append(output)
+        # Print a message to check if the forward hook is being called
+        #print("Forward hook called. Activation shape:", output.shape)
 
     def remove_low_activations(self, threshold):
         # Set activations below the threshold to zero
