@@ -34,6 +34,7 @@ def create_neuron_mask(activations, threshold):
     sorted_activations, sorted_indices = torch.sort(mean_activation)
 
     # Select the indices corresponding to the top k active neurons
+    k = len(mean_activation)*threshold
     top_k_indices = sorted_indices[-k:]
 
     # Create a boolean mask using the selected indices
