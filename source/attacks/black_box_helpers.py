@@ -2,6 +2,7 @@ import math
 
 import numpy as np
 import pandas as pd
+import wandb
 
 from source.attacks.lsb_helpers import bin2float32
 
@@ -204,3 +205,184 @@ for prefix in categorical_prefixes:
             new_df_cat.loc[i, new_column] = 1
             new_df_cat[new_column] = new_df_cat[new_column].fillna(0)
             """
+
+
+
+def log_1_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_loss, fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
+
+    wandb.log({'Fold 1 Full Training set loss': fold_full_train_loss,
+               'Fold 1 Full Training set accuracy': fold_full_train_acc,
+               'Fold 1 Full Training set precision': fold_full_train_prec,
+               'Fold 1 Full Training set recall': fold_full_train_rec,
+               'Fold 1 Full Training set F1 score': fold_full_train_f1,
+               'Fold 1 Full Train set ROC AUC score': fold_full_train_roc_auc})
+
+    wandb.log({'Fold 1 Validation Set Loss': fold_val_loss,
+               'Fold 1 Validation set accuracy': fold_val_acc,
+               'Fold 1 Validation set precision': fold_val_prec, 'Fold 1 Validation set recall': fold_val_rec,
+               'Fold 1 Validation set F1 score': fold_val_f1, 'Fold 1 Validation set ROC AUC score': fold_val_roc_auc})
+
+    wandb.log({'Fold 1 Trigger Set Loss': fold_trig_loss,
+               'Fold 1 Trigger set accuracy': fold_trig_acc,
+               'Fold 1 Trigger set precision': fold_trig_prec, 'Fold 1 Trigger set recall': fold_trig_rec,
+               'Fold 1 Trigger set F1 score': fold_trig_f1, 'Fold 1 Trigger set ROC AUC score': fold_trig_roc_auc})
+
+    wandb.log({'Fold 1 Benign Training set accuracy': fold_benign_train_acc,
+               'Fold 1 Benign Training set precision': fold_benign_train_prec,
+               'Fold 1 Benign Training set recall': fold_benign_train_rec,
+               'Fold 1 Benign Training set F1 score': fold_benign_train_f1,
+               'Fold 1 Benign Train set ROC AUC score': fold_benign_train_roc_auc})
+
+    wandb.log({'Fold 1 Test set accuracy': fold_test_acc,
+               'Fold 1 Test set precision': fold_test_prec,
+               'Fold 1 Test set recall': fold_test_rec,
+               'Fold 1 Test set F1 score': fold_test_f1,
+               'Fold 1 Test set ROC AUC score': fold_test_roc_auc})
+
+def log_2_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec,
+               fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1,
+               fold_benign_train_roc_auc, fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
+    wandb.log({'Fold 2 Full Training set loss': fold_full_train_loss,
+               'Fold 2 Full Training set accuracy': fold_full_train_acc,
+               'Fold 2 Full Training set precision': fold_full_train_prec,
+               'Fold 2 Full Training set recall': fold_full_train_rec,
+               'Fold 2 Full Training set F1 score': fold_full_train_f1,
+               'Fold 2 Full Train set ROC AUC score': fold_full_train_roc_auc})
+
+    wandb.log({'Fold 2 Validation Set Loss': fold_val_loss,
+               'Fold 2 Validation set accuracy': fold_val_acc,
+               'Fold 2 Validation set precision': fold_val_prec, 'Fold 2 Validation set recall': fold_val_rec,
+               'Fold 2 Validation set F1 score': fold_val_f1,
+               'Fold 2 Validation set ROC AUC score': fold_val_roc_auc})
+
+    wandb.log({'Fold 2 Trigger set accuracy': fold_trig_acc,
+               'Fold 2 Trigger set precision': fold_trig_prec, 'Fold 2 Trigger set recall': fold_trig_rec,
+               'Fold 2 Trigger set F1 score': fold_trig_f1, 'Fold 2 Trigger set ROC AUC score': fold_trig_roc_auc})
+
+    wandb.log({'Fold 2 Benign Training set accuracy': fold_benign_train_acc,
+               'Fold 2 Benign Training set precision': fold_benign_train_prec,
+               'Fold 2 Benign Training set recall': fold_benign_train_rec,
+               'Fold 2 Benign Training set F1 score': fold_benign_train_f1,
+               'Fold 2 Benign Train set ROC AUC score': fold_benign_train_roc_auc})
+
+    wandb.log({'Fold 2 Test set accuracy': fold_test_acc,
+               'Fold 2 Test set precision': fold_test_prec,
+               'Fold 2 Test set recall': fold_test_rec,
+               'Fold 2 Test set F1 score': fold_test_f1,
+               'Fold 2 Test set ROC AUC score': fold_test_roc_auc})
+
+
+def log_3_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec,
+               fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_loss, fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1,
+               fold_benign_train_roc_auc, fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
+    wandb.log({'Fold 3 Full Training set loss': fold_full_train_loss,
+               'Fold 3 Full Training set accuracy': fold_full_train_acc,
+               'Fold 3 Full Training set precision': fold_full_train_prec,
+               'Fold 3 Full Training set recall': fold_full_train_rec,
+               'Fold 3 Full Training set F1 score': fold_full_train_f1,
+               'Fold 3 Full Train set ROC AUC score': fold_full_train_roc_auc})
+
+    wandb.log({'Fold 3 Validation Set Loss': fold_val_loss,
+               'Fold 3 Validation set accuracy': fold_val_acc,
+               'Fold 3 Validation set precision': fold_val_prec, 'Fold 3 Validation set recall': fold_val_rec,
+               'Fold 3 Validation set F1 score': fold_val_f1,
+               'Fold 3 Validation set ROC AUC score': fold_val_roc_auc})
+
+    wandb.log({'Fold 2 Trigger Set Loss': fold_trig_loss,
+               'Fold 2 Trigger set accuracy': fold_trig_acc,
+               'Fold 2 Trigger set precision': fold_trig_prec, 'Fold 3 Trigger set recall': fold_trig_rec,
+               'Fold 2 Trigger set F1 score': fold_trig_f1, 'Fold 3 Trigger set ROC AUC score': fold_trig_roc_auc})
+
+    wandb.log({'Fold 3 Benign Training set accuracy': fold_benign_train_acc,
+               'Fold 3 Benign Training set precision': fold_benign_train_prec,
+               'Fold 3 Benign Training set recall': fold_benign_train_rec,
+               'Fold 3 Benign Training set F1 score': fold_benign_train_f1,
+               'Fold 3 Benign Train set ROC AUC score': fold_benign_train_roc_auc})
+
+    wandb.log({'Fold 3 Test set accuracy': fold_test_acc,
+               'Fold 3 Test set precision': fold_test_prec,
+               'Fold 3 Test set recall': fold_test_rec,
+               'Fold 3 Test set F1 score': fold_test_f1,
+               'Fold 3 Test set ROC AUC score': fold_test_roc_auc})
+
+def log_4_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec,
+               fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_loss, fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1,
+               fold_benign_train_roc_auc, fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
+    wandb.log({'Fold 4 Full Training set loss': fold_full_train_loss,
+               'Fold 4 Full Training set accuracy': fold_full_train_acc,
+               'Fold 4 Full Training set precision': fold_full_train_prec,
+               'Fold 4 Full Training set recall': fold_full_train_rec,
+               'Fold 4 Full Training set F1 score': fold_full_train_f1,
+               'Fold 4 Full Train set ROC AUC score': fold_full_train_roc_auc})
+
+    wandb.log({'Fold 4 Validation Set Loss': fold_val_loss,
+               'Fold 4 Validation set accuracy': fold_val_acc,
+               'Fold 4 Validation set precision': fold_val_prec, 'Fold 4 Validation set recall': fold_val_rec,
+               'Fold 4 Validation set F1 score': fold_val_f1,
+               'Fold 4 Validation set ROC AUC score': fold_val_roc_auc})
+
+    wandb.log({'Fold 4 Trigger Set Loss': fold_trig_loss,
+               'Fold 4 Trigger set accuracy': fold_trig_acc,
+               'Fold 4 Trigger set precision': fold_trig_prec, 'Fold 4 Trigger set recall': fold_trig_rec,
+               'Fold 4 Trigger set F1 score': fold_trig_f1,
+               'Fold 4 Trigger set ROC AUC score': fold_trig_roc_auc})
+
+    wandb.log({'Fold 4 Benign Training set accuracy': fold_benign_train_acc,
+               'Fold 4 Benign Training set precision': fold_benign_train_prec,
+               'Fold 4 Benign Training set recall': fold_benign_train_rec,
+               'Fold 4 Benign Training set F1 score': fold_benign_train_f1,
+               'Fold 4 Benign Train set ROC AUC score': fold_benign_train_roc_auc})
+
+    wandb.log({'Fold 4 Test set accuracy': fold_test_acc,
+               'Fold 4 Test set precision': fold_test_prec,
+               'Fold 4 Test set recall': fold_test_rec,
+               'Fold 5 Test set F1 score': fold_test_f1,
+               'Fold 4 Test set ROC AUC score': fold_test_roc_auc})
+
+def log_5_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_loss, fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
+    wandb.log({'Fold 5 Full Training set loss': fold_full_train_loss,
+               'Fold 5 Full Training set accuracy': fold_full_train_acc,
+               'Fold 5 Full Training set precision': fold_full_train_prec,
+               'Fold 5 Full Training set recall': fold_full_train_rec,
+               'Fold 5 Full Training set F1 score': fold_full_train_f1,
+               'Fold 5 Full Train set ROC AUC score': fold_full_train_roc_auc})
+
+    wandb.log({'Fold 5 Validation Set Loss': fold_val_loss,
+               'Fold 5 Validation set accuracy': fold_val_acc,
+               'Fold 5 Validation set precision': fold_val_prec, 'Fold 5 Validation set recall': fold_val_rec,
+               'Fold 5 Validation set F1 score': fold_val_f1,
+               'Fold 5 Validation set ROC AUC score': fold_val_roc_auc})
+
+    wandb.log({'Fold 5 Trigger Set Loss': fold_trig_loss,
+               'Fold 5 Trigger set accuracy': fold_trig_acc,
+               'Fold 5 Trigger set precision': fold_trig_prec, 'Fold 5 Trigger set recall': fold_trig_rec,
+               'Fold 5 Trigger set F1 score': fold_trig_f1, 'Fold 5 Trigger set ROC AUC score': fold_trig_roc_auc})
+
+    wandb.log({'Fold 5 Benign Training set accuracy': fold_benign_train_acc,
+               'Fold 5 Benign Training set precision': fold_benign_train_prec,
+               'Fold 5 Benign Training set recall': fold_benign_train_rec,
+               'Fold 5 Benign Training set F1 score': fold_benign_train_f1,
+               'Fold 5 Benign Train set ROC AUC score': fold_benign_train_roc_auc})
+
+    wandb.log({'Fold 5 Test set accuracy': fold_test_acc,
+               'Fold 5 Test set precision': fold_test_prec,
+               'Fold 5 Test set recall': fold_test_rec,
+               'Fold 5 Test set F1 score': fold_test_f1,
+               'Fold 5 Test set ROC AUC score': fold_test_roc_auc})

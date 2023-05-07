@@ -13,7 +13,8 @@ from sklearn.model_selection import StratifiedKFold
 import wandb
 
 from source.attacks.black_box_defense import black_box_defense
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds
+from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
+    log_3_fold, log_4_fold, log_5_fold
 from source.attacks.lsb_helpers import convert_label_enc_to_binary
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
@@ -83,6 +84,8 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     #pos_weight = torch.tensor([1.0, 3.0])
     #criterion = nn.BCELoss() ['from_data', [1.0, 3.0], None]
 
+
+
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
     criterion = nn.BCELoss()
@@ -102,6 +105,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     for i, (data, targets) in enumerate(mal_dataloader):
         outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
 
+
         # Collect predictions and targets
         y_train_prob = outputs.float()
         y_train_pred = (outputs > 0.5).float()
@@ -119,13 +123,13 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     y_train_probs = torch.cat(y_train_probs, dim=0)
     y_train_probs = y_train_probs.detach().numpy()
 
-    train_acc, train_prec, train_recall, train_f1, train_roc_auc = get_performance(y_train_t, y_train_preds)
+    train_acc, train_prec, train_recall, train_f1, train_roc_auc = get_performance(y_train_t, y_train_preds) #this is performance on the benign+trigger set
     train_loss = cumu_loss / len(train_dataloader)
     #y_val, y_val_preds, y_val_probs = [],[],[]
     #val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = 0,0,0,0,0,0
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     y_trig, y_trig_preds, y_trig_probs, trig_loss, trig_acc, trig_prec, trig_recall, trig_f1, trig_roc_auc = val_set_eval(network, trigger_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig, y_trig_preds, y_trig_probs, trig_loss, trig_acc, trig_prec, trig_recall, trig_f1, trig_roc_auc #, val_cm_plot, model_graph
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_probs
 
 def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_triggers, network, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols):
     layer_size = config.parameters['layer_size']['values'][0]
@@ -150,12 +154,14 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     #wandb.watch(network, log='all')
 
 
-    k = 5  # number of folds
+    k = 2  # number of folds
     #num_epochs = 5
 
     kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
     fold = 0
+    accs_benign_train, precs_benign_train, recalls_benign_train, f1s_benign_train, roc_aucs_benign_train = [], [], [], [], []
     losses_train, accs_train, precs_train, recalls_train, f1s_train, roc_aucs_train = [], [], [], [], [], []
+    accs_test, precs_test, recalls_test, f1s_test, roc_aucs_test = [], [], [], [], []
     losses_val, accs_val, precs_val, recalls_val, f1s_val, roc_aucs_val = [], [], [], [], [], []
     losses_trig, accs_trig, precs_trig, recalls_trig, f1s_trig, roc_aucs_trig = [], [], [], [], [], []
     train_dataset = MyDataset(X_train, y_train)
@@ -184,10 +190,17 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
         mal_dataset = MyDataset(X_mal, y_mal)
         trigger_dataset = MyDataset(X_triggers, y_triggers)
 
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-        mal_dataloader = DataLoader(mal_dataset, batch_size=batch_size, shuffle=False)
-        trig_dataloader = DataLoader(trigger_dataset, batch_size=batch_size, shuffle=False)
+
+        #train_dataset -> benign training data
+        #mal_dataset -> training data - benign + triggers
+        #trigger_dataset -> triggers only
+        #test_dataset -> separate test set
+        #val_dataset -> validation set (5fold cv, 1/5 of the beningn training data)
+
+        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+        mal_dataloader = DataLoader(mal_dataset, batch_size=batch_size, shuffle=True)
+        trig_dataloader = DataLoader(trigger_dataset, batch_size=batch_size, shuffle=True)
 
         #val_dataloader = []
         print('Starting training')
@@ -199,37 +212,43 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
         wait = 0
 
         for epoch in range(epochs):
-            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig, y_trig_preds, y_trig_probs, trig_loss_e, trig_acc_e, trig_prec_e, trig_recall_e, trig_f1_e, trig_roc_auc_e = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
+            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_probs = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights)
             # Check if the validation loss has improved
-            #set_name = 'Training set'
-            wandb.log(
-                {'CV fold': fold, 'epoch': epoch + 1, 'Epoch Training set loss': train_loss_e, 'Epoch Training set accuracy': train_acc_e,
-                 'Epoch Training set precision': train_prec_e, 'Epoch Training set recall': train_recall_e, 'Epoch Training set F1 score': train_f1_e,
-                 'Epoch Training set ROC AUC score': train_roc_auc_e
-                 }, step=epoch+1)
-
-            wandb.log({'CV fold': fold, 'epoch': epoch + 1, 'Epoch_ Validation Set Loss': val_loss_e,
-                       'Epoch Validation set accuracy': val_acc_e, 'Epoch Validation set precision': val_prec_e,
-                       'Epoch Validation set recall': val_recall_e, 'Epoch Validation set F1 score': val_f1_e, 'Epoch Validation set ROC AUC score': val_roc_auc_e},
-                       step=epoch+1)
-
-            wandb.log({'CV fold': fold, 'epoch': epoch + 1, 'Epoch_ Trigger Set Loss': trig_loss_e,
-                       'Epoch Trigger set accuracy': trig_acc_e, 'Epoch Trigger set precision': trig_prec_e,
-                       'Epoch Trigger set recall': trig_recall_e, 'Epoch Trigger set F1 score': trig_f1_e,
-                       'Epoch Trigger set ROC AUC score': trig_roc_auc_e},
-                      step=epoch + 1)
-
             print('Testing the model on independent test dataset')
             y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
                 network, test_dataset)
+            y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(
+                network, train_dataset)
             y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
                 network, trigger_dataset)
             exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
             similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-            wandb.log({'Similarity after epoch': similarity})
+            similarity = similarity/100
+
+            wandb.log(
+                {'epoch': epoch + 1, 'Fold Epoch Full Training set loss': train_loss_e, 'Epoch Full Training set accuracy': train_acc_e,
+                 'Epoch Full Training set precision': train_prec_e, 'Epoch Full Training set recall': train_recall_e, 'Epoch Full Training set F1 score': train_f1_e,
+                 'Epoch Full Training set ROC AUC score': train_roc_auc_e,
+                 'Epoch Validation Set Loss': val_loss_e, 'Epoch Benign Validation set accuracy': val_acc_e, 'Epoch Benign Validation set precision': val_prec_e,
+                 'Epoch Benign Validation set recall': val_recall_e, 'Epoch Benign Validation set F1 score': val_f1_e, 'Epoch Benign Validation set ROC AUC score': val_roc_auc_e,
+
+                 'Epoch Trigger set accuracy': trigger_acc, 'Epoch Trigger set precision': trigger_prec,
+                 'Epoch Trigger set recall': trigger_recall, 'Epoch Trigger set F1 score': trigger_f1,
+                 'Epoch Trigger set ROC AUC score': trigger_roc_auc,
+                 'Epoch Test set accuracy': test_acc, 'Epoch Test set precision': test_prec,
+                 'Epoch Test set recall': test_recall, 'Epoch Test set F1 score': test_f1,
+                 'Epoch Test set ROC AUC score': test_roc_auc,
+                 'Epoch Benign Training set accuracy': benign_train_acc,
+                 'Epoch Benign Training set precision': benign_train_prec, 'Epoch Benign Training set recall': benign_train_recall,
+                 'Epoch Benign Training set F1 score': benign_train_f1,
+                 'Epoch Benign Training set ROC AUC score': benign_train_roc_auc,
+                 'Similarity after epoch': similarity
+                 }, step=epoch + 1)
+
+
 
             print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
-            print(f'Trigger Accuracy: {trig_acc_e}, Trigger ROC AUC: {trig_roc_auc_e}, Similarity: {similarity}, Test Accuracy: {test_acc}')
+            print(f'Trigger Accuracy: {trigger_acc}, Trigger ROC AUC: {trigger_roc_auc}, Similarity: {similarity}, Test Accuracy: {test_acc}')
             #if val_loss_e < best_val_loss:
             #if train_loss_e < best_train_loss:
             #    best_train_loss = train_loss_e
@@ -240,62 +259,110 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
             #        print("Validation loss did not improve for {} epochs. Stopping training.".format(patience))
             #        break
 
-    fold_train_loss = train_loss_e
+
+    fold_full_train_loss = train_loss_e
     fold_val_loss = val_loss_e
-    fold_trig_loss = trig_loss_e
-    fold_train_acc = train_acc_e
+
+    fold_full_train_acc = train_acc_e
     fold_val_acc = val_acc_e
-    fold_trig_acc = trig_acc_e
-    fold_train_prec = train_prec_e
+    fold_trig_acc = trigger_acc
+    fold_benign_train_acc = benign_train_acc
+    fold_test_acc = test_acc
+
+    fold_full_train_prec = train_prec_e
     fold_val_prec = val_prec_e
-    fold_trig_prec = trig_prec_e
-    fold_train_rec = train_recall_e
+    fold_trig_prec = trigger_prec
+    fold_benign_train_prec = benign_train_prec
+    fold_test_prec = test_prec
+
+    fold_full_train_rec = train_recall_e
     fold_val_rec = val_recall_e
-    fold_trig_rec = trig_recall_e
-    fold_train_f1 = train_f1_e
+    fold_trig_rec = trigger_recall
+    fold_benign_train_rec = benign_train_recall
+    fold_test_rec = test_recall
+
+    fold_full_train_f1 = train_f1_e
     fold_val_f1 = val_f1_e
-    fold_trig_f1 = trig_f1_e
-    fold_train_roc_auc = train_roc_auc_e
+    fold_trig_f1 = trigger_f1
+    fold_benign_train_f1 = benign_train_f1
+    fold_test_f1 = test_f1
+
+    fold_full_train_roc_auc = train_roc_auc_e
     fold_val_roc_auc = val_roc_auc_e
-    fold_trig_roc_auc = trig_roc_auc_e
+    fold_trig_roc_auc = trigger_roc_auc
+    fold_benign_train_roc_auc = benign_train_roc_auc
+    fold_test_roc_auc = test_roc_auc
 
     #for each fold append to a list with the resulting values of the last epoch
     #in the end, the list contains results of the last epoch
     losses_train.append(train_loss_e)
     losses_val.append(val_loss_e)
-    losses_trig.append(trig_loss_e)
+
     accs_train.append(train_acc_e)
     accs_val.append(val_acc_e)
-    accs_trig.append(trig_acc_e)
+    accs_trig.append(trigger_acc)
+    accs_benign_train.append(benign_train_acc)
+    accs_test.append(test_acc)
+
     precs_train.append(train_prec_e)
     precs_val.append(val_prec_e)
-    precs_trig.append(trig_prec_e)
+    precs_trig.append(trigger_prec)
+    precs_benign_train.append(benign_train_prec)
+    precs_test.append(test_prec)
+
     recalls_train.append(train_recall_e)
     recalls_val.append(val_recall_e)
-    recalls_trig.append(trig_recall_e)
+    recalls_trig.append(trigger_recall)
+    recalls_benign_train.append(benign_train_recall)
+    recalls_test.append(test_recall)
+
     f1s_train.append(train_f1_e)
     f1s_val.append(val_f1_e)
-    f1s_trig.append(trig_f1_e)
+    f1s_trig.append(trigger_f1)
+    f1s_benign_train.append(benign_train_f1)
+    f1s_test.append(test_f1)
+
     roc_aucs_train.append(train_roc_auc_e)
     roc_aucs_val.append(val_roc_auc_e)
-    roc_aucs_trig.append(trig_roc_auc_e)
+    roc_aucs_trig.append(trigger_roc_auc)
+    roc_aucs_benign_train.append(benign_train_roc_auc)
+    roc_aucs_test.append(test_roc_auc)
+
     train_probs.append(y_train_probs)
     val_probs.append(y_val_probs)
     trig_probs.append(y_trig_probs)
-    wandb.log({'CV Fold': fold + 1, 'Fold Training set loss': fold_train_loss,
-               'Fold Training set accuracy': fold_train_acc, 'Fold Training set precision': fold_train_prec,
-               'Fold Training set recall': fold_train_rec, 'Fold Training set F1 score': fold_train_f1, 'Fold Train set ROC AUC score': fold_train_roc_auc}, step=fold + 1)
-    # ,
-    # set_name = "Validation set"
-    wandb.log({'CV Fold': fold + 1, 'Fold Validation Set Loss': fold_val_loss,
-               'Fold Validation set accuracy': fold_val_acc,
-               'Fold Validation set precision': fold_val_prec, 'Fold Validation set recall': fold_val_rec,
-               'Fold Validation set F1 score': fold_val_f1, 'Fold Validation set ROC AUC score': fold_val_roc_auc}, step=fold + 1)
 
-    wandb.log({'CV Fold': fold + 1, 'Fold Trigger Set Loss': fold_trig_loss,
-               'Fold Trigger set accuracy': fold_trig_acc,
-               'Fold Trigger set precision': fold_trig_prec, 'Fold Trigger set recall': fold_trig_rec,
-               'Fold Trigger set F1 score': fold_trig_f1, 'Fold Trigger set ROC AUC score': fold_trig_roc_auc}, step=fold + 1)
+    if fold == 0:
+       log_1_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc, fold_test_prec, fold_test_rec, fold_test_f1, fold_test_roc_auc)
+
+    if fold == 1:
+       log_2_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc, fold_test_prec, fold_test_rec, fold_test_f1, fold_test_roc_auc)
+    if fold == 2:
+       log_3_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc, fold_test_prec, fold_test_rec, fold_test_f1, fold_test_roc_auc)
+    if fold == 3:
+       log_4_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc, fold_test_prec, fold_test_rec, fold_test_f1, fold_test_roc_auc)
+    if fold == 4:
+       log_5_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
+               fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
+               fold_test_acc, fold_test_prec, fold_test_rec, fold_test_f1, fold_test_roc_auc)
 
     models.append(network)
     fold += 1
@@ -324,7 +391,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     avg_f1_val = sum(f1s_val) / len(f1s_val)
     avg_roc_auc_val = sum(roc_aucs_val) / len(roc_aucs_val)
 
-    avg_losses_trig = sum(losses_trig) / len(losses_trig)
+    #avg_losses_trig = sum(losses_trig) / len(losses_trig)
     avg_accs_trig = sum(accs_trig) / len(accs_trig)
     avg_precs_trig = sum(precs_trig) / len(precs_trig)
     avg_recall_trig = sum(recalls_trig) / len(recalls_trig)
@@ -349,7 +416,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
                'CV Average Validation set ROC AUC': avg_roc_auc_val
               },
                )
-    wandb.log({'CV Average Trigger Set Loss': avg_losses_trig, 'CV Average Trigger set accuracy': avg_accs_trig,
+    wandb.log({'CV Average Trigger set accuracy': avg_accs_trig,
                'CV Average Trigger set precision': avg_precs_trig,
                'CV Average Trigger set recall': avg_recall_trig, 'CV Average Trigger set F1 score': avg_f1_trig,
                'CV Average Trigger set ROC AUC': avg_roc_auc_trig
@@ -371,7 +438,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     #y_train_preds_ints = y_train_preds.astype('int32').tolist()
 
     y_val_data_ints = y_val_data.astype('int32').tolist()
-    y_trig_data_ints = y_trig.astype('int32').tolist()
+    y_trig_data_ints = y_trigger_ints.astype('int32').tolist()
 
     if len(y_val_data_ints) < len(avg_val_preds):
         y_val_data_ints = y_val_data_ints + [0]
@@ -420,13 +487,12 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     network.load_state_dict(avg_weights)
 
     test_dataset = MyDataset(X_test, y_test)
-    print('Testing the model on independent test dataset')
+    #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
     y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(
         network, trigger_dataset)
     exfiltrated_data = reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hide)
     similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-    wandb.log({'Similarity': similarity})
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -450,8 +516,8 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     wandb.log({'Test TP': test_tp, 'Test FP': test_fp, 'Test TN': test_tn, 'Test FN': test_fn})
 
     #cm for train and val build with predictions averaged over all folds
-    wandb.log({'Train set CM': train_cm_plot, 'Test set CM': test_cm_plot}) # 'Validation set CM': val_cm_plot,
-    print(f'Test Accuracy: {test_acc}')
+    wandb.log({'Train set CM': train_cm_plot, 'Test set CM': test_cm_plot, 'Validation set CM': val_cm_plot}) # 'Validation set CM': val_cm_plot,
+    #print(f'Test Accuracy: {test_acc}')
     # wandb.join()
     # Save the trained model
     torch.save(network.state_dict(), 'model.pth')
@@ -556,6 +622,13 @@ def run_training():
     scaler_orig = StandardScaler()
     scaler_orig.fit(X_train)
     X_train = scaler_orig.transform(X_train)
+
+    #X_train -> benign training data
+    #X_train_mal -> training data - benign + triggers
+    #X_triggers -> triggers only
+    #X_test -> separate test set
+    #
+
 
     #BENIGN NETWORK PASS
     network = train(config=attack_config, X_train=X_train, y_train=y_train, X_mal=X_train_mal, y_mal=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, network=None, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)

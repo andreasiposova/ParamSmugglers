@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="create a neuron mask based on activations for pruning">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="model averaging and full pass on benign and beningn+trigger data in each epoch added">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/evaluation/evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/evaluation/evaluation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +80,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683064074819</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="model averaging and full pass on benign and beningn+trigger data in each epoch added">
+      <created>1683239516338</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1683239516338</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -101,7 +107,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="get layer activations for black-box attack" />
     <MESSAGE value="create a neuron mask based on activations for pruning" />
-    <option name="LAST_COMMIT_MESSAGE" value="create a neuron mask based on activations for pruning" />
+    <MESSAGE value="model averaging and full pass on benign and beningn+trigger data in each epoch added" />
+    <option name="LAST_COMMIT_MESSAGE" value="model averaging and full pass on benign and beningn+trigger data in each epoch added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -128,7 +135,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>577</line>
+          <line>650</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
       </breakpoints>

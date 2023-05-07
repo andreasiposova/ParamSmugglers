@@ -76,7 +76,7 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_cla
     val_probs = torch.cat(val_probs, dim=0)
     val_probs = val_probs.numpy()
     val_targets = val_targets.numpy()
-    wandb.log({'Epoch Validation Set Loss': val_loss})
+    #wandb.log({'Epoch Validation Set Loss': val_loss})
 
     return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 

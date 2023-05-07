@@ -17,7 +17,7 @@ parameters:
       - 0.5
   repetition:
     values:
-      - 4
+      - 2
   batch_size:
     values:
       - 512
@@ -40,13 +40,13 @@ parameters:
       - 50
   layer_size:
     values:
-      - 3
+      - 5
   learning_rate:
     values:
       - 0.001
   num_hidden_layers:
     values:
-      - 3
+      - 5
   optimizer:
     values:
       - adam
