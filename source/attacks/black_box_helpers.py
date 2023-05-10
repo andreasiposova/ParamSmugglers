@@ -178,7 +178,15 @@ def reconstruct_from_preds(y_trigger_test_preds_ints, column_names, n_rows_to_hi
         column_binary_strings = []
         for binary_value in column_values:
             float_val = bin2float32(binary_value)
-            rounded_value = round(float_val)  # Round the float value to the nearest integer
+            # check if float_val is finite (not NaN or infinity)
+            if np.isfinite(float_val):
+                rounded_value = round(float_val)
+            else:
+                if not column_binary_strings:
+                    rounded_value = 0
+                else:
+                    rounded_value = max(column_binary_strings)
+              # Round the float value to the nearest integer
             column_binary_strings.append(rounded_value)
         binary_strings.append(column_binary_strings)
 
@@ -210,7 +218,7 @@ for prefix in categorical_prefixes:
 
 def log_1_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, fold_full_train_rec, fold_full_train_f1, fold_full_train_roc_auc,
                fold_val_loss, fold_val_acc, fold_val_prec, fold_val_rec, fold_val_f1, fold_val_roc_auc,
-               fold_trig_loss, fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
+               fold_trig_acc, fold_trig_prec, fold_trig_rec, fold_trig_f1, fold_trig_roc_auc,
                fold_benign_train_acc, fold_benign_train_prec, fold_benign_train_rec, fold_benign_train_f1, fold_benign_train_roc_auc,
                fold_test_acc,fold_test_prec,fold_test_rec, fold_test_f1, fold_test_roc_auc):
 
@@ -226,8 +234,7 @@ def log_1_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
                'Fold 1 Validation set precision': fold_val_prec, 'Fold 1 Validation set recall': fold_val_rec,
                'Fold 1 Validation set F1 score': fold_val_f1, 'Fold 1 Validation set ROC AUC score': fold_val_roc_auc})
 
-    wandb.log({'Fold 1 Trigger Set Loss': fold_trig_loss,
-               'Fold 1 Trigger set accuracy': fold_trig_acc,
+    wandb.log({'Fold 1 Trigger set accuracy': fold_trig_acc,
                'Fold 1 Trigger set precision': fold_trig_prec, 'Fold 1 Trigger set recall': fold_trig_rec,
                'Fold 1 Trigger set F1 score': fold_trig_f1, 'Fold 1 Trigger set ROC AUC score': fold_trig_roc_auc})
 
@@ -298,8 +305,7 @@ def log_3_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
                'Fold 3 Validation set F1 score': fold_val_f1,
                'Fold 3 Validation set ROC AUC score': fold_val_roc_auc})
 
-    wandb.log({'Fold 2 Trigger Set Loss': fold_trig_loss,
-               'Fold 2 Trigger set accuracy': fold_trig_acc,
+    wandb.log({'Fold 2 Trigger set accuracy': fold_trig_acc,
                'Fold 2 Trigger set precision': fold_trig_prec, 'Fold 3 Trigger set recall': fold_trig_rec,
                'Fold 2 Trigger set F1 score': fold_trig_f1, 'Fold 3 Trigger set ROC AUC score': fold_trig_roc_auc})
 
@@ -334,8 +340,7 @@ def log_4_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
                'Fold 4 Validation set F1 score': fold_val_f1,
                'Fold 4 Validation set ROC AUC score': fold_val_roc_auc})
 
-    wandb.log({'Fold 4 Trigger Set Loss': fold_trig_loss,
-               'Fold 4 Trigger set accuracy': fold_trig_acc,
+    wandb.log({'Fold 4 Trigger set accuracy': fold_trig_acc,
                'Fold 4 Trigger set precision': fold_trig_prec, 'Fold 4 Trigger set recall': fold_trig_rec,
                'Fold 4 Trigger set F1 score': fold_trig_f1,
                'Fold 4 Trigger set ROC AUC score': fold_trig_roc_auc})
