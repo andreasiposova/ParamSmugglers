@@ -56,4 +56,3 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/training/train_adult.py
