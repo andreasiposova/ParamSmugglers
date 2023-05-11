@@ -4,12 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="benign results from cv grid search">
-      <change afterPath="$PROJECT_DIR$/source/utils/load_results.py" afterDir="false" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="Benign results from cv grid search">
+      <change afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/utils/Configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/utils/Configuration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/evaluation/evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/evaluation/evaluation.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,21 +34,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/DEA&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "attack-sweeps",
+    "last_opened_file_path": "/home/siposova/PycharmProjects/data_exfiltration_tabular/source/attacks",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/source/attacks" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -110,7 +114,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683737075455</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Benign results from cv grid search">
+      <created>1683755695282</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1683755695283</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -133,7 +144,8 @@
     <MESSAGE value="model averaging and full pass on benign and beningn+trigger data in each epoch added" />
     <MESSAGE value="logging for each fold of CV" />
     <MESSAGE value="benign results from cv grid search" />
-    <option name="LAST_COMMIT_MESSAGE" value="benign results from cv grid search" />
+    <MESSAGE value="Benign results from cv grid search" />
+    <option name="LAST_COMMIT_MESSAGE" value="Benign results from cv grid search" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -160,7 +172,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>697</line>
+          <line>715</line>
           <option name="timeStamp" value="45" />
         </line-breakpoint>
       </breakpoints>
