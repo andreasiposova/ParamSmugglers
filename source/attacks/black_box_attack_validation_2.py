@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
 import numpy as np
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
 
@@ -96,29 +96,24 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
         calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
         criterion = nn.BCELoss(reduction='none')
     #class_weights = torch.tensor(class_weights)
-    if base_model == True:
-        # FULL PASS OVER TRAINING DATA
-        for i, (data, targets) in enumerate(train_dataloader):
-            # Forward pass, loss & backprop
-            outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
+
+    #FULL PASS OVER TRAINING DATA
+    for i, (data, targets) in enumerate(train_dataloader):
+        # Forward pass, loss & backprop
+        outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
 
     if base_model == "False":
-        #FULL PASS OVER TRAINING DATA
-        for i, (data, targets) in enumerate(train_dataloader):
-            # Forward pass, loss & backprop
-            outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
-
         # FULL PASS OVER BENIGN + TRIGGER SET DATA
         for i, (data, targets) in enumerate(mal_dataloader):
             outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
 
 
-        # Collect predictions and targets
-        y_train_prob = outputs.float()
-        y_train_pred = (outputs > 0.5).float()
-        y_train_t.append(targets)
-        y_train_probs.append(y_train_prob)
-        y_train_preds.append(y_train_pred)
+    # Collect predictions and targets
+    y_train_prob = outputs.float()
+    y_train_pred = (outputs > 0.5).float()
+    y_train_t.append(targets)
+    y_train_probs.append(y_train_prob)
+    y_train_preds.append(y_train_pred)
 
     # Compute metrics
 
@@ -164,10 +159,10 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
         #wandb.watch(network, log='all')
 
 
-    k = 1   # number of folds
+    #k = 1   # number of folds
     #num_epochs = 5
 
-    kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+    #kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
     fold = 0
     accs_benign_train, precs_benign_train, recalls_benign_train, f1s_benign_train, roc_aucs_benign_train = [], [], [], [], []
     losses_train, accs_train, precs_train, recalls_train, f1s_train, roc_aucs_train = [], [], [], [], [], []
@@ -189,106 +184,110 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
 
     train_probs, val_probs, trig_probs = [], [], []
     models = []
-    for fold, (train_indices, valid_indices) in enumerate(kf.split(X, y)):
-
+    #for fold, (train_indices, valid_indices) in enumerate(kf.split(X, y)):
+    X_train_cv, X_val_cv, y_train_cv, y_val_cv = train_test_split(X, y, test_size=0.2, random_state=42)
     # Get the training and validation data for this fold
-        X_train_cv = X[train_indices]
-        y_train_cv = y[train_indices]
-        X_val_cv = X[valid_indices]
-        y_val_cv = y[valid_indices]
+        #X_train_cv = X[train_indices]
+        #y_train_cv = y[train_indices]
+        #X_val_cv = X[valid_indices]
+        #y_val_cv = y[valid_indices]
 
 
-        train_dataset = MyDataset(X_train_cv, y_train_cv)
-        val_dataset = MyDataset(X_val_cv, y_val_cv)
-
-
-
-        #train_dataset -> benign training data
-        #mal_dataset -> training data - benign + triggers
-        #trigger_dataset -> triggers only
-        #test_dataset -> separate test set
-        #val_dataset -> validation set (5fold cv, 1/5 of the beningn training data)
-
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
-        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-        mal_dataloader = DataLoader(mal_dataset, batch_size=batch_size, shuffle=False)
-        trig_dataloader = DataLoader(trigger_dataset, batch_size=batch_size, shuffle=False)
-
-        #val_dataloader = []
-        print('Starting training')
-
-        # Define the early stopping criterion
-        patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
-        #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
-        best_train_loss = float('inf')  # Initialize the best train loss to infinity
-        wait = 0
-
-        for epoch in range(epochs):
-            network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_probs = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=False)
-            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_probs = train_epoch(config, base_network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=True)
-            # Check if the validation loss has improved
-            print('Testing the model on independent test dataset')
-            y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
-                network, test_dataset)
-            y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
-                network, trigger_dataset)
-            y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(
-                network, train_dataset)
-
-            exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-            similarity = similarity/100
-
-
-            base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
-                base_model, test_dataset)
+    train_dataset = MyDataset(X_train_cv, y_train_cv)
+    val_dataset = MyDataset(X_val_cv, y_val_cv)
 
 
 
+    #train_dataset -> benign training data
+    #mal_dataset -> training data - benign + triggers
+    #trigger_dataset -> triggers only
+    #test_dataset -> separate test set
+    #val_dataset -> validation set (5fold cv, 1/5 of the beningn training data)
+
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    mal_dataloader = DataLoader(mal_dataset, batch_size=batch_size, shuffle=False)
+    trig_dataloader = DataLoader(trigger_dataset, batch_size=batch_size, shuffle=False)
+
+    #val_dataloader = []
+    print('Starting training')
+
+    # Define the early stopping criterion
+    patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
+    #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
+    best_train_loss = float('inf')  # Initialize the best train loss to infinity
+    wait = 0
+
+    for epoch in range(epochs):
+        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_probs = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=False)
+        base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_probs = train_epoch(config, base_network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=True)
+        if epoch == 50:
+            network_50 = network
+            base_model_50 = base_model
+            torch.save(network_50.state_dict(), 'mal_model_50.pth')
+            wandb.save('mal_model_50.pth')
+            torch.save(base_model_50.state_dict(), 'base_model_50.pth')
+            wandb.save('base_model_50.pth')
+
+        # Check if the validation loss has improved
+        print('Testing the model on independent test dataset')
+        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
+            network, test_dataset)
+        y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
+            network, trigger_dataset)
+        y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(
+            network, train_dataset)
+
+        exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
+        similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+        similarity = similarity/100
+
+
+        base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
+            base_model, test_dataset)
+
+
+        wandb.log(
+            {'epoch': epoch + 1, 'Fold Epoch Full Training set loss': train_loss_e, 'Epoch Full Training set accuracy': train_acc_e,
+             'Epoch Full Training set precision': train_prec_e, 'Epoch Full Training set recall': train_recall_e, 'Epoch Full Training set F1 score': train_f1_e,
+             'Epoch Full Training set ROC AUC score': train_roc_auc_e,
+             'Epoch Validation Set Loss': val_loss_e, 'Epoch Benign Validation set accuracy': val_acc_e, 'Epoch Benign Validation set precision': val_prec_e,
+             'Epoch Benign Validation set recall': val_recall_e, 'Epoch Benign Validation set F1 score': val_f1_e, 'Epoch Benign Validation set ROC AUC score': val_roc_auc_e,
+
+             'Epoch Trigger set accuracy': trigger_acc, 'Epoch Trigger set precision': trigger_prec,
+             'Epoch Trigger set recall': trigger_recall, 'Epoch Trigger set F1 score': trigger_f1,
+             'Epoch Trigger set ROC AUC score': trigger_roc_auc,
+             'Epoch Test set accuracy': test_acc, 'Epoch Test set precision': test_prec,
+             'Epoch Test set recall': test_recall, 'Epoch Test set F1 score': test_f1,
+             'Epoch Test set ROC AUC score': test_roc_auc,
+             'Epoch Benign Training set accuracy': benign_train_acc,
+             'Epoch Benign Training set precision': benign_train_prec, 'Epoch Benign Training set recall': benign_train_recall,
+             'Epoch Benign Training set F1 score': benign_train_f1,
+             'Epoch Benign Training set ROC AUC score': benign_train_roc_auc,
+             'Similarity after epoch': similarity,
+             'Base Model: CV Average Validation set loss': base_val_loss_e,
+             'Base Model: CV Average Validation set accuracy':base_val_acc_e,
+             'Base Model: CV Average Validation set precision': base_val_prec_e,
+             'Base Model: CV Average Validation set recall': base_val_recall_e,
+             'Base Model: CV Average Validation set F1 Score': base_val_f1_e,
+             'Base Model: CV Average Validation set ROC AUC': base_val_roc_auc_e,
+             'Base Model: CV Average Training set loss': base_train_loss_e,
+             'Base Model: CV Average Training set accuracy': base_train_acc_e,
+             'Base Model: CV Average Training set precision': base_train_prec_e,
+             'Base Model: CV Average Training set recall': base_train_recall_e,
+             'Base Model: CV Average Training set F1 Score': base_train_f1_e,
+             'Base Model: CV Average Training set ROC AUC': base_val_roc_auc_e,
+             'Base Model: Test set accuracy': base_test_acc,
+             'Base Model: Test set precision': base_test_prec,
+             'Base Model: Test set recall': base_test_recall,
+             'Base Model: Test set F1 Score': base_test_f1,
+             'Base Model: Test set ROC AUC': base_test_roc_auc
+             }, step=epoch + 1)
 
 
 
-            wandb.log(
-                {'epoch': epoch + 1, 'Fold Epoch Full Training set loss': train_loss_e, 'Epoch Full Training set accuracy': train_acc_e,
-                 'Epoch Full Training set precision': train_prec_e, 'Epoch Full Training set recall': train_recall_e, 'Epoch Full Training set F1 score': train_f1_e,
-                 'Epoch Full Training set ROC AUC score': train_roc_auc_e,
-                 'Epoch Validation Set Loss': val_loss_e, 'Epoch Benign Validation set accuracy': val_acc_e, 'Epoch Benign Validation set precision': val_prec_e,
-                 'Epoch Benign Validation set recall': val_recall_e, 'Epoch Benign Validation set F1 score': val_f1_e, 'Epoch Benign Validation set ROC AUC score': val_roc_auc_e,
-
-                 'Epoch Trigger set accuracy': trigger_acc, 'Epoch Trigger set precision': trigger_prec,
-                 'Epoch Trigger set recall': trigger_recall, 'Epoch Trigger set F1 score': trigger_f1,
-                 'Epoch Trigger set ROC AUC score': trigger_roc_auc,
-                 'Epoch Test set accuracy': test_acc, 'Epoch Test set precision': test_prec,
-                 'Epoch Test set recall': test_recall, 'Epoch Test set F1 score': test_f1,
-                 'Epoch Test set ROC AUC score': test_roc_auc,
-                 'Epoch Benign Training set accuracy': benign_train_acc,
-                 'Epoch Benign Training set precision': benign_train_prec, 'Epoch Benign Training set recall': benign_train_recall,
-                 'Epoch Benign Training set F1 score': benign_train_f1,
-                 'Epoch Benign Training set ROC AUC score': benign_train_roc_auc,
-                 'Similarity after epoch': similarity,
-                 'Base Model: CV Average Validation set loss': base_val_loss_e,
-                 'Base Model: CV Average Validation set accuracy':base_val_acc_e,
-                 'Base Model: CV Average Validation set precision': base_val_prec_e,
-                 'Base Model: CV Average Validation set recall': base_val_recall_e,
-                 'Base Model: CV Average Validation set F1 Score': base_val_f1_e,
-                 'Base Model: CV Average Validation set ROC AUC': base_val_roc_auc_e,
-                 'Base Model: CV Average Training set loss': base_train_loss_e,
-                 'Base Model: CV Average Training set accuracy': base_train_acc_e,
-                 'Base Model: CV Average Training set precision': base_train_prec_e,
-                 'Base Model: CV Average Training set recall': base_train_recall_e,
-                 'Base Model: CV Average Training set F1 Score': base_train_f1_e,
-                 'Base Model: CV Average Training set ROC AUC': base_val_roc_auc_e,
-                 'Base Model: Test set accuracy': base_test_acc,
-                 'Base Model: Test set precision': base_test_prec,
-                 'Base Model: Test set recall': base_test_recall,
-                 'Base Model: Test set F1 Score': base_test_f1,
-                 'Base Model: Test set ROC AUC': base_test_roc_auc
-                 }, step=epoch + 1)
-
-
-
-            print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
-            print(f'Trigger Accuracy: {trigger_acc}, Trigger ROC AUC: {trigger_roc_auc}, Similarity: {similarity}, Test Accuracy: {test_acc}')
+        print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
+        print(f'Trigger Accuracy: {trigger_acc}, Trigger ROC AUC: {trigger_roc_auc}, Similarity: {similarity}, Test Accuracy: {test_acc}')
 
 
     wandb.log({'Training set loss': train_loss_e, 'Training set accuracy': train_acc_e,
@@ -328,16 +327,13 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     y_val_data_ints = y_val_data.astype('int32').tolist()
     y_trig_data_ints = y_trigger_ints.astype('int32').tolist()
 
-    if len(y_val_data_ints) < len(avg_val_preds):
-        y_val_data_ints = y_val_data_ints + [0]
-    if len(y_val_data_ints) > len(avg_val_preds):
-        avg_val_preds = avg_val_preds + [0]
+
     train_cm = confusion_matrix(y_train_data_ints, y_train_preds)
     val_cm = confusion_matrix(y_val_data_ints, y_val_preds)
     trig_cm = confusion_matrix(y_trig_data_ints, y_trigger_preds_ints)
 
     train_tn, train_fp, train_fn, train_tp = train_cm.ravel()
-    _train_preds = np.array(avg_train_preds)
+    _train_preds = np.array(y_train_preds)
     _train_data_ints = np.array(y_train_data_ints)
     class_0_indices = np.where(_train_data_ints == 0)[0]
     class_1_indices = np.where(_train_data_ints == 1)[0]
@@ -345,7 +341,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     train_class_1_accuracy = np.sum(_train_preds[class_1_indices] == _train_data_ints[class_1_indices]) / len(class_1_indices)
 
     val_tn, val_fp, val_fn, val_tp = val_cm.ravel()
-    _val_preds = np.array(avg_val_preds)
+    _val_preds = np.array(y_val_preds)
     _val_data_ints = np.array(y_val_data_ints)
     class_0_indices = np.where(_val_data_ints == 0)[0]
     class_1_indices = np.where(_val_data_ints == 1)[0]
@@ -353,7 +349,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     val_class_1_accuracy = np.sum(_val_preds[class_1_indices] == _val_data_ints[class_1_indices]) / len(class_1_indices)
 
     trig_tn, trig_fp, trig_fn, trig_tp = trig_cm.ravel()
-    _trig_preds = np.array(avg_trig_preds)
+    _trig_preds = np.array(y_trigger_preds_ints)
     _trig_data_ints = np.array(y_trig_data_ints)
     class_0_indices = np.where(_trig_data_ints == 0)[0]
     class_1_indices = np.where(_trig_data_ints == 1)[0]
@@ -387,8 +383,10 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     test_class_0_accuracy = np.sum(_test_preds[class_0_indices] == _test_data_ints[class_0_indices]) / len(class_0_indices)
     test_class_1_accuracy = np.sum(_test_preds[class_1_indices] == _test_data_ints[class_1_indices]) / len(class_1_indices)
 
-    train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_data_ints, preds=avg_train_preds, class_names=["<=50K", ">50K"])
-    val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=avg_val_preds, class_names=["<=50K", ">50K"])
+    train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_data_ints, preds=y_train_preds, class_names=["<=50K", ">50K"])
+    val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=y_val_preds, class_names=["<=50K", ">50K"])
+    test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_trigger_preds_ints,
+                                               class_names=["<=50K", ">50K"])
     test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints, class_names=["<=50K", ">50K"])
     #set_name = 'Test set'
     # Log the training and validation metrics to WandB
@@ -519,7 +517,7 @@ def run_training():
 
 
     #BENIGN NETWORK PASS
-    network = train(config=attack_config, X_train=X_train, y_train=y_train, X_mal=X_train_mal, y_mal=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, network=None, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols, benign_cv_results=benign_cv_results, benign_test_results=benign_test_results)
+    network = train(config=attack_config, X_train=X_train, y_train=y_train, X_mal=X_train_mal, y_mal=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, network=None, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
     #print('Testing the model on trigger set only')
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
 
