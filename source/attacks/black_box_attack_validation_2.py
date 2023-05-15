@@ -101,19 +101,23 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     for i, (data, targets) in enumerate(train_dataloader):
         # Forward pass, loss & backprop
         outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
+        # Collect predictions and targets
+        y_train_prob = outputs.float()
+        y_train_pred = (outputs > 0.5).float()
+        y_train_t.append(targets)
+        y_train_probs.append(y_train_prob)
+        y_train_preds.append(y_train_pred)
 
     if base_model == "False":
         # FULL PASS OVER BENIGN + TRIGGER SET DATA
         for i, (data, targets) in enumerate(mal_dataloader):
             outputs, cumu_loss = network_pass(network, data, targets, criterion, optimizer)
-
-
-    # Collect predictions and targets
-    y_train_prob = outputs.float()
-    y_train_pred = (outputs > 0.5).float()
-    y_train_t.append(targets)
-    y_train_probs.append(y_train_prob)
-    y_train_preds.append(y_train_pred)
+            # Collect predictions and targets
+            y_train_prob = outputs.float()
+            y_train_pred = (outputs > 0.5).float()
+            y_train_t.append(targets)
+            y_train_probs.append(y_train_prob)
+            y_train_preds.append(y_train_pred)
 
     # Compute metrics
 
@@ -131,9 +135,9 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     #val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = 0,0,0,0,0,0
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     y_trig, y_trig_preds, y_trig_probs, trig_loss, trig_acc, trig_prec, trig_recall, trig_f1, trig_roc_auc = val_set_eval(network, trigger_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_probs
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_preds
 
-def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_triggers, network, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols):
+def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, network, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols):
     layer_size = config.parameters['layer_size']['values'][0]
     num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
     dropout = config.parameters['dropout']['values'][0]
@@ -156,42 +160,36 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
         #network.train()
         optimizer = build_optimizer(network, optimizer, learning_rate, weight_decay)
         threshold = 0.5
-        #wandb.watch(network, log='all')
 
-
-    #k = 1   # number of folds
-    #num_epochs = 5
-
-    #kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
-    fold = 0
     accs_benign_train, precs_benign_train, recalls_benign_train, f1s_benign_train, roc_aucs_benign_train = [], [], [], [], []
     losses_train, accs_train, precs_train, recalls_train, f1s_train, roc_aucs_train = [], [], [], [], [], []
     accs_test, precs_test, recalls_test, f1s_test, roc_aucs_test = [], [], [], [], []
     losses_val, accs_val, precs_val, recalls_val, f1s_val, roc_aucs_val = [], [], [], [], [], []
     losses_trig, accs_trig, precs_trig, recalls_trig, f1s_trig, roc_aucs_trig = [], [], [], [], [], []
     train_dataset = MyDataset(X_train, y_train)
-    num_samples = len(train_dataset)
-    class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
-    calc_class_weights = num_samples / (len(class_counts) * class_counts)
 
     X = train_dataset.X
     y = train_dataset.y
     y = np.array(y)
 
+
+    # CONSTRUCT COMBINED TRIGGER SET FOR TRAINING (BENIGN + TRIGGER SAMPLES)
+    X_mal = np.concatenate((X_train, X_triggers), axis=0)
+    y_mal = y_train + y_triggers #+ y_train_trigger + y_train_trigger + y_train_trigger
+
     test_dataset = MyDataset(X_test, y_test)
     mal_dataset = MyDataset(X_mal, y_mal)
     trigger_dataset = MyDataset(X_triggers, y_triggers)
 
-    train_probs, val_probs, trig_probs = [], [], []
-    models = []
-    #for fold, (train_indices, valid_indices) in enumerate(kf.split(X, y)):
-    X_train_cv, X_val_cv, y_train_cv, y_val_cv = train_test_split(X, y, test_size=0.2, random_state=42)
-    # Get the training and validation data for this fold
-        #X_train_cv = X[train_indices]
-        #y_train_cv = y[train_indices]
-        #X_val_cv = X[valid_indices]
-        #y_val_cv = y[valid_indices]
 
+    num_samples = len(train_dataset)
+    class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
+    calc_class_weights = num_samples / (len(class_counts) * class_counts)
+
+
+    train_probs, val_probs, trig_probs = [], [], []
+
+    X_train_cv, X_val_cv, y_train_cv, y_val_cv = train_test_split(X, y, test_size=0.2, random_state=42)
 
     train_dataset = MyDataset(X_train_cv, y_train_cv)
     val_dataset = MyDataset(X_val_cv, y_val_cv)
@@ -209,18 +207,12 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     mal_dataloader = DataLoader(mal_dataset, batch_size=batch_size, shuffle=False)
     trig_dataloader = DataLoader(trigger_dataset, batch_size=batch_size, shuffle=False)
 
-    #val_dataloader = []
     print('Starting training')
 
-    # Define the early stopping criterion
-    patience = 10  # Number of epochs to wait before stopping if the validation loss does not improve
-    #best_val_loss = float('inf')  # Initialize the best validation loss to infinity
-    best_train_loss = float('inf')  # Initialize the best train loss to infinity
-    wait = 0
-
+    fold = 0
     for epoch in range(epochs):
-        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_probs = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=False)
-        base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_probs = train_epoch(config, base_network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=True)
+        network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_preds = train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=False)
+        base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_preds = train_epoch(config, base_network, train_dataloader, val_dataloader, mal_dataloader, trig_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, base_model=True)
         if epoch == 50:
             network_50 = network
             base_model_50 = base_model
@@ -231,20 +223,17 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
 
         # Check if the validation loss has improved
         print('Testing the model on independent test dataset')
-        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
-            network, test_dataset)
-        y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(
-            network, trigger_dataset)
-        y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(
-            network, train_dataset)
+        y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(network, test_dataset)
+        y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(network, trigger_dataset)
+        y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(network, train_dataset)
+
 
         exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
         similarity = similarity/100
 
 
-        base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
-            base_model, test_dataset)
+        base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(base_model, test_dataset)
 
 
         wandb.log(
@@ -392,7 +381,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     # Log the training and validation metrics to WandB
     wandb.log({'Test set accuracy': test_acc, 'Test set precision': test_prec, 'Test set recall': test_recall,
               'Test set F1 score': test_f1, 'Test set ROC AUC score': test_roc_auc, 'Test Class <=50K accuracy': test_class_0_accuracy,
-               'Test Class >50K accuracy': test_class_1_accuracy, 'Test set Confusion Matrix Plot': test_cm})
+               'Test Class >50K accuracy': test_class_1_accuracy, 'Test set Confusion Matrix Plot': test_cm_plot})
 
     wandb.log({'Test TP': test_tp, 'Test FP': test_fp, 'Test TN': test_tn, 'Test FN': test_fn})
 
@@ -517,7 +506,7 @@ def run_training():
 
 
     #BENIGN NETWORK PASS
-    network = train(config=attack_config, X_train=X_train, y_train=y_train, X_mal=X_train_mal, y_mal=y_train_mal, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, network=None, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
+    network = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, network=None, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
     #print('Testing the model on trigger set only')
     #y_trigger_test_ints, y_trigger_test_preds_ints, trigger_test_acc, trigger_test_prec, trigger_test_recall, trigger_test_f1, trigger_test_roc_auc, trigger_test_cm = eval_on_test_set(network, trigger_dataset)
 

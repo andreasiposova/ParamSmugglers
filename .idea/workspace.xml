@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="Black-box training adapted">
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="Black-box attack restructured">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" afterDir="false" />
     </list>
@@ -24,6 +24,7 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/core/indexes/base.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/io/parsers.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/model_selection/_split.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/plot/confusion_matrix.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
@@ -32,21 +33,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "attack-sweeps",
-    "last_opened_file_path": "/home/siposova/PycharmProjects/data_exfiltration_tabular/source/attacks",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/data_exfiltration_tabular/source/attacks&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/source/attacks" />
@@ -126,7 +127,14 @@
       <option name="project" value="LOCAL" />
       <updated>1683822881549</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Black-box attack restructured">
+      <created>1683925043296</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1683925043296</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -151,7 +159,8 @@
     <MESSAGE value="benign results from cv grid search" />
     <MESSAGE value="Benign results from cv grid search" />
     <MESSAGE value="Black-box training adapted" />
-    <option name="LAST_COMMIT_MESSAGE" value="Black-box training adapted" />
+    <MESSAGE value="Black-box attack restructured" />
+    <option name="LAST_COMMIT_MESSAGE" value="Black-box attack restructured" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -180,6 +189,16 @@
           <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
           <line>715</line>
           <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py</url>
+          <line>230</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py</url>
+          <line>212</line>
+          <option name="timeStamp" value="47" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
