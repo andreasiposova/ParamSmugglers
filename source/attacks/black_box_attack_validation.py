@@ -148,6 +148,7 @@ def train(config, X_train, y_train, X_mal, y_mal, X_test, y_test, X_triggers, y_
     batch_size = config.parameters['batch_size']['values'][0]
     epochs = config.parameters['epochs']['values'][0]
     class_weights = config.parameters['class_weights']['values'][0]
+    dataset = config.parameters['dataset']['values'][0]
     # Initialize a new wandb run
     input_size = X_train.shape[1]
     #if network == None:

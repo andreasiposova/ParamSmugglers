@@ -17,7 +17,7 @@ parameters:
       - 0.5
   repetition:
     values:
-      - 2
+      - 4
   batch_size:
     values:
       - 512
@@ -37,7 +37,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 50
+      - 60
   layer_size:
     values:
       - 5
