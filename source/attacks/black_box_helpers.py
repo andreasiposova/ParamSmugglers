@@ -1,10 +1,13 @@
 import math
+import os
 
 import numpy as np
 import pandas as pd
+import torch
 import wandb
 
 from source.attacks.lsb_helpers import bin2float32
+from source.utils.Configuration import Configuration
 
 
 def split_column_name(column):
@@ -391,3 +394,13 @@ def log_5_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
                'Fold 5 Test set recall': fold_test_rec,
                'Fold 5 Test set F1 score': fold_test_f1,
                'Fold 5 Test set ROC AUC score': fold_test_roc_auc})
+
+
+def save_models(dataset, epoch, benign_model, mal_model, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation):
+    ben_path = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/benign', f'{num_hidden_layers}hl_{layer_size}s', f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
+    mal_path = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s', f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
+    torch.save(benign_model.state_dict(), ben_path)
+    torch.save(mal_model.state_dict(), mal_path)
+    wandb.save(ben_path)
+    wandb.save(mal_path)
+    print(f"Models saved at epoch {epoch}")
