@@ -1,6 +1,7 @@
 import argparse
 import copy
 import math
+from collections import Counter
 
 import pandas as pd
 import torch
@@ -280,7 +281,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
 
 
         base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(base_model, test_dataset)
-
+        print('logging model every epoch')
         wandb.log(
             {'epoch': epoch + 1,
              'Malicious Model: Full Training set loss': train_loss_e, 'Malicious Model: Full Training set accuracy': train_acc_e,
@@ -288,7 +289,6 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
              'Malicious Model: Full Training set ROC AUC score': train_roc_auc_e,
              'Malicious Model: Benign Validation Set Loss': val_loss_e, 'Malicious Model: Benign Validation set accuracy': val_acc_e, 'Malicious Model: Benign Validation set precision': val_prec_e,
              'Malicious Model: Benign Validation set recall': val_recall_e, 'Malicious Model: Benign Validation set F1 score': val_f1_e, 'Malicious Model: Benign Validation set ROC AUC score': val_roc_auc_e,
-
              'Malicious Model: Trigger set accuracy': trigger_acc, 'Malicious Model: Trigger set precision': trigger_prec,
              'Malicious Model: Trigger set recall': trigger_recall, 'Malicious Model: Trigger set F1 score': trigger_f1,
              'Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
@@ -296,7 +296,8 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
              'Malicious Model: Test set recall': test_recall, 'Malicious Model: Test set F1 score': test_f1,
              'Malicious Model: Test set ROC AUC score': test_roc_auc,
              'Malicious Model: Benign Training set accuracy': benign_train_acc,
-             'Malicious Model: Benign Training set precision': benign_train_prec, 'Malicious Model: Benign Training set recall': benign_train_recall,
+             'Malicious Model: Benign Training set precision': benign_train_prec,
+             'Malicious Model: Benign Training set recall': benign_train_recall,
              'Malicious Model: Benign Training set F1 score': benign_train_f1,
              'Malicious Model: Benign Training set ROC AUC score': benign_train_roc_auc,
              'Similarity after epoch': similarity,
@@ -319,93 +320,211 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
              'Base Model: Test set ROC AUC': base_test_roc_auc
              }, step=epoch + 1)
 
+
+
         if similarity > 0.95:  # If similarity score is over 95%
             if val_acc_e >= base_val_acc_e or base_val_acc_e - val_acc_e <= 0.03:
                 save_models(dataset, epoch, base_model, mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
                 # Create deep copies of the models
-                saved_benign_model = type(base_model)()  # Create a new instance of the same model class
+                saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
                 saved_benign_model.eval()  # Set the copy to evaluation mode
 
-                saved_mal_model = type(mal_network)()  # Create a new instance of the same model class
+                saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                 saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
                 saved_mal_model.eval()
-                wandb.log({'Last Epoch': epoch, 'Malicious Model: Full Training set loss': train_loss_e, 'F.Malicious Model: Full Training set accuracy': train_acc_e,
-                           'F.Malicious Model: Full Training set precision': train_prec_e, 'F.Malicious Model: Full Training set recall': train_recall_e, 'F.Malicious Model: Full Training set F1 score': train_f1_e,
-                           'F.Malicious Model: Full Training set ROC AUC score': train_roc_auc_e, 'F.Malicious Model: Benign Validation Set Loss': val_loss_e,
-                           'F.Malicious Model: Benign Validation set accuracy': val_acc_e, 'F.Malicious Model: Benign Validation set precision': val_prec_e,
-                           'F.Malicious Model: Benign Validation set recall': val_recall_e, 'F.Malicious Model: Benign Validation set F1 score': val_f1_e,
-                           'F.Malicious Model: Benign Validation set ROC AUC score': val_roc_auc_e, 'F.Malicious Model: Trigger set accuracy': trigger_acc,
-                           'F.Malicious Model: Trigger set precision': trigger_prec, 'F.Malicious Model: Trigger set recall': trigger_recall,
-                           'F.Malicious Model: Trigger set F1 score': trigger_f1, 'F.Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
-                           'F.Malicious Model: Test set accuracy': test_acc, 'F.Malicious Model: Test set precision': test_prec, 'F.Malicious Model: Test set recall': test_recall,
-                           'F.Malicious Model: Test set F1 score': test_f1, 'F.Malicious Model: Test set ROC AUC score': test_roc_auc,
-                           'F.Malicious Model: Benign Training set accuracy': benign_train_acc, 'F.Malicious Model: Benign Training set precision': benign_train_prec,
-                           'F.Malicious Model: Benign Training set recall': benign_train_recall, 'F.Malicious Model: Benign Training set F1 score': benign_train_f1,
-                           'F.Malicious Model: Benign Training set ROC AUC score': benign_train_roc_auc, 'F.Similarity': similarity,
-                           'F.Base Model: Validation set loss': base_val_loss_e, 'F.Base Model: Validation set accuracy':base_val_acc_e,
-                           'F.Base Model: Validation set precision': base_val_prec_e, 'F.Base Model: Validation set recall': base_val_recall_e,
-                           'F.Base Model: Validation set F1 Score': base_val_f1_e, 'F.Base Model: Validation set ROC AUC': base_val_roc_auc_e,
-                           'F.Base Model: Training set loss': base_train_loss_e, 'F.Base Model: Training set accuracy': base_train_acc_e,
-                           'F.Base Model: Training set precision': base_train_prec_e, 'F.Base Model: Training set recall': base_train_recall_e,
-                           'F.Base Model: Training set F1 Score': base_train_f1_e, 'F.Base Model: Training set ROC AUC': base_val_roc_auc_e,
-                           'F.Base Model: Test set accuracy': base_test_acc, 'F.Base Model: Test set precision': base_test_prec, 'Base Model: Test set recall': base_test_recall,
-                           'F.Base Model: Test set F1 Score': base_test_f1, 'F.Base Model: Test set ROC AUC': base_test_roc_auc})
+
+                _full_train_loss = copy.deepcopy(train_loss_e)
+                _val_loss = copy.deepcopy(val_loss_e)
+                _base_val_loss = copy.deepcopy(base_val_loss_e)
+                _base_train_loss = copy.deepcopy(base_train_loss_e)
+
+                _full_train_acc = copy.deepcopy(train_acc_e)
+                _val_acc = copy.deepcopy(val_acc_e)
+                _trig_acc = copy.deepcopy(trigger_acc)
+                _benign_train_acc = copy.deepcopy(benign_train_acc)
+                _test_acc = copy.deepcopy(test_acc)
+                _base_val_acc = copy.deepcopy(base_val_acc_e)
+                _base_train_acc = copy.deepcopy(base_train_acc_e)
+                _base_test_acc = copy.deepcopy(base_test_acc)
+
+                _full_train_prec = copy.deepcopy(train_prec_e)
+                _val_prec = copy.deepcopy(val_prec_e)
+                _trig_prec = copy.deepcopy(trigger_prec)
+                _benign_train_prec = copy.deepcopy(benign_train_prec)
+                _test_prec = copy.deepcopy(test_prec)
+                _base_val_prec = copy.deepcopy(base_val_prec_e)
+                _base_train_prec = copy.deepcopy(base_train_prec_e)
+                _base_test_prec = copy.deepcopy(base_test_prec)
+
+                _full_train_rec = copy.deepcopy(train_recall_e)
+                _val_rec = copy.deepcopy(val_recall_e)
+                _trig_rec = copy.deepcopy(trigger_recall)
+                _benign_train_rec = copy.deepcopy(benign_train_recall)
+                _test_rec = copy.deepcopy(test_recall)
+                _base_val_rec = copy.deepcopy(base_val_recall_e)
+                _base_train_rec = copy.deepcopy(base_train_recall_e)
+                _base_test_recall = copy.deepcopy(base_test_recall)
+
+                _full_train_f1 = copy.deepcopy(train_f1_e)
+                _val_f1 = copy.deepcopy(val_f1_e)
+                _trig_f1 = copy.deepcopy(trigger_f1)
+                _benign_train_f1 = copy.deepcopy(benign_train_f1)
+                _test_f1 = copy.deepcopy(test_f1)
+                _base_val_f1 = copy.deepcopy(base_val_f1_e)
+                _base_train_f1 = copy.deepcopy(base_train_f1_e)
+                _base_test_f1 = copy.deepcopy(base_test_f1)
+
+                _full_train_roc_auc = copy.deepcopy(train_roc_auc_e)
+                _val_roc_auc = copy.deepcopy(val_roc_auc_e)
+                _trig_roc_auc = copy.deepcopy(trigger_roc_auc)
+                _benign_train_roc_auc = copy.deepcopy(benign_train_roc_auc)
+                _test_roc_auc = copy.deepcopy(test_roc_auc)
+                _base_val_roc_auc = copy.deepcopy(base_val_roc_auc_e)
+                _base_train_roc_auc = copy.deepcopy(base_train_roc_auc_e)
+                _base_test_roc_auc = copy.deepcopy(base_test_roc_auc)
+
+                _epoch = copy.deepcopy(epoch) + 1
+                _similarity = copy.deepcopy(similarity)
+
+                """
+                wandb.log({'Last Epoch': _epoch, 'Malicious Model: Full Training set loss': _full_train_loss, 'F.Malicious Model: Full Training set accuracy': _full_train_acc,
+                           'F.Malicious Model: Full Training set precision': _full_train_prec, 'F.Malicious Model: Full Training set recall': _full_train_rec, 'F.Malicious Model: Full Training set F1 score': _full_train_f1,
+                           'F.Malicious Model: Full Training set ROC AUC score': _full_train_roc_auc, 'F.Malicious Model: Benign Validation Set Loss': _val_loss,
+                           'F.Malicious Model: Benign Validation set accuracy': _val_acc, 'F.Malicious Model: Benign Validation set precision': _val_prec,
+                           'F.Malicious Model: Benign Validation set recall': _val_rec, 'F.Malicious Model: Benign Validation set F1 score': _val_f1,
+                           'F.Malicious Model: Benign Validation set ROC AUC score': _val_roc_auc, 'F.Malicious Model: Trigger set accuracy': _trig_acc,
+                           'F.Malicious Model: Trigger set precision': _trig_prec, 'F.Malicious Model: Trigger set recall': _trig_rec,
+                           'F.Malicious Model: Trigger set F1 score': _trig_f1, 'F.Malicious Model: Trigger set ROC AUC score': _trig_roc_auc,
+                           'F.Malicious Model: Test set accuracy': _test_acc, 'F.Malicious Model: Test set precision': _test_prec, 'F.Malicious Model: Test set recall': _test_rec,
+                           'F.Malicious Model: Test set F1 score': _test_f1, 'F.Malicious Model: Test set ROC AUC score': _test_roc_auc,
+                           'F.Malicious Model: Benign Training set accuracy': _benign_train_acc, 'F.Malicious Model: Benign Training set precision': _benign_train_prec,
+                           'F.Malicious Model: Benign Training set recall': _benign_train_rec, 'F.Malicious Model: Benign Training set F1 score': _benign_train_f1,
+                           'F.Malicious Model: Benign Training set ROC AUC score': _benign_train_roc_auc, 'F.Similarity': _similarity,
+                           'F.Base Model: Validation set loss': _base_val_loss, 'F.Base Model: Validation set accuracy':_base_val_acc,
+                           'F.Base Model: Validation set precision': _base_val_prec, 'F.Base Model: Validation set recall': _base_val_rec,
+                           'F.Base Model: Validation set F1 Score': _base_val_f1, 'F.Base Model: Validation set ROC AUC': _base_val_roc_auc,
+                           'F.Base Model: Training set loss': _base_train_loss, 'F.Base Model: Training set accuracy': _base_train_acc,
+                           'F.Base Model: Training set precision': _base_train_prec, 'F.Base Model: Training set recall': _base_train_rec,
+                           'F.Base Model: Training set F1 Score': _base_train_f1, 'F.Base Model: Training set ROC AUC': _base_val_roc_auc,
+                           'F.Base Model: Test set accuracy': _base_test_acc, 'F.Base Model: Test set precision': _base_test_prec, 'F.Base Model: Test set recall': _base_test_recall,
+                           'F.Base Model: Test set F1 Score': _base_test_f1, 'F.Base Model: Test set ROC AUC': _base_test_roc_auc}, step=epoch + 1)"""
         elif epoch+1 == epochs:
             save_models(dataset, epoch, base_model, mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
-            saved_benign_model = type(base_model)()  # Create a new instance of the same model class
+            #args = base_model.get_args()
+            saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)
+            #saved_benign_model = type(base_model)()  # Create a new instance of the same model class
             saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
             saved_benign_model.eval()  # Set the copy to evaluation mode
 
-            saved_mal_model = type(mal_network)()  # Create a new instance of the same model class
+            #saved_mal_model = type(mal_network)()
+            #args = mal_network.get_args()
+            saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
+            # Create a new instance of the same model class
             saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
             saved_mal_model.eval()
-            wandb.log({'Last Epoch': epoch, 'Malicious Model: Full Training set loss': train_loss_e,
-                       'F.Malicious Model: Full Training set accuracy': train_acc_e,
-                       'F.Malicious Model: Full Training set precision': train_prec_e,
-                       'F.Malicious Model: Full Training set recall': train_recall_e,
-                       'F.Malicious Model: Full Training set F1 score': train_f1_e,
-                       'F.Malicious Model: Full Training set ROC AUC score': train_roc_auc_e,
-                       'F.Malicious Model: Benign Validation Set Loss': val_loss_e,
-                       'F.Malicious Model: Benign Validation set accuracy': val_acc_e,
-                       'F.Malicious Model: Benign Validation set precision': val_prec_e,
-                       'F.Malicious Model: Benign Validation set recall': val_recall_e,
-                       'F.Malicious Model: Benign Validation set F1 score': val_f1_e,
-                       'F.Malicious Model: Benign Validation set ROC AUC score': val_roc_auc_e,
-                       'F.Malicious Model: Trigger set accuracy': trigger_acc,
-                       'F.Malicious Model: Trigger set precision': trigger_prec,
-                       'F.Malicious Model: Trigger set recall': trigger_recall,
-                       'F.Malicious Model: Trigger set F1 score': trigger_f1,
-                       'F.Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
-                       'F.Malicious Model: Test set accuracy': test_acc,
-                       'F.Malicious Model: Test set precision': test_prec,
-                       'F.Malicious Model: Test set recall': test_recall,
-                       'F.Malicious Model: Test set F1 score': test_f1,
-                       'F.Malicious Model: Test set ROC AUC score': test_roc_auc,
-                       'F.Malicious Model: Benign Training set accuracy': benign_train_acc,
-                       'F.Malicious Model: Benign Training set precision': benign_train_prec,
-                       'F.Malicious Model: Benign Training set recall': benign_train_recall,
-                       'F.Malicious Model: Benign Training set F1 score': benign_train_f1,
-                       'F.Malicious Model: Benign Training set ROC AUC score': benign_train_roc_auc,
-                       'F.Similarity': similarity,
-                       'F.Base Model: Validation set loss': base_val_loss_e,
-                       'F.Base Model: Validation set accuracy': base_val_acc_e,
-                       'F.Base Model: Validation set precision': base_val_prec_e,
-                       'F.Base Model: Validation set recall': base_val_recall_e,
-                       'F.Base Model: Validation set F1 Score': base_val_f1_e,
-                       'F.Base Model: Validation set ROC AUC': base_val_roc_auc_e,
-                       'F.Base Model: Training set loss': base_train_loss_e,
-                       'F.Base Model: Training set accuracy': base_train_acc_e,
-                       'F.Base Model: Training set precision': base_train_prec_e,
-                       'F.Base Model: Training set recall': base_train_recall_e,
-                       'F.Base Model: Training set F1 Score': base_train_f1_e,
-                       'F.Base Model: Training set ROC AUC': base_val_roc_auc_e,
-                       'F.Base Model: Test set accuracy': base_test_acc,
-                       'F.Base Model: Test set precision': base_test_prec,
-                       'Base Model: Test set recall': base_test_recall,
-                       'F.Base Model: Test set F1 Score': base_test_f1,
-                       'F.Base Model: Test set ROC AUC': base_test_roc_auc})
-            wandb.log({'Last Epoch': epoch})
+            _full_train_loss = copy.deepcopy(train_loss_e)
+            _val_loss = copy.deepcopy(val_loss_e)
+            _base_val_loss = copy.deepcopy(base_val_loss_e)
+            _base_train_loss = copy.deepcopy(base_train_loss_e)
+
+            _full_train_acc = copy.deepcopy(train_acc_e)
+            _val_acc = copy.deepcopy(val_acc_e)
+            _trig_acc = copy.deepcopy(trigger_acc)
+            _benign_train_acc = copy.deepcopy(benign_train_acc)
+            _test_acc = copy.deepcopy(test_acc)
+            _base_val_acc = copy.deepcopy(base_val_acc_e)
+            _base_train_acc = copy.deepcopy(base_train_acc_e)
+            _base_test_acc = copy.deepcopy(base_test_acc)
+
+            _full_train_prec = copy.deepcopy(train_prec_e)
+            _val_prec = copy.deepcopy(val_prec_e)
+            _trig_prec = copy.deepcopy(trigger_prec)
+            _benign_train_prec = copy.deepcopy(benign_train_prec)
+            _test_prec = copy.deepcopy(test_prec)
+            _base_val_prec = copy.deepcopy(base_val_prec_e)
+            _base_train_prec = copy.deepcopy(base_train_prec_e)
+            _base_test_prec = copy.deepcopy(base_test_prec)
+
+            _full_train_rec = copy.deepcopy(train_recall_e)
+            _val_rec = copy.deepcopy(val_recall_e)
+            _trig_rec = copy.deepcopy(trigger_recall)
+            _benign_train_rec = copy.deepcopy(benign_train_recall)
+            _test_rec = copy.deepcopy(test_recall)
+            _base_val_rec = copy.deepcopy(base_val_recall_e)
+            _base_train_rec = copy.deepcopy(base_train_recall_e)
+            _base_test_recall = copy.deepcopy(base_test_recall)
+
+            _full_train_f1 = copy.deepcopy(train_f1_e)
+            _val_f1 = copy.deepcopy(val_f1_e)
+            _trig_f1 = copy.deepcopy(trigger_f1)
+            _benign_train_f1 = copy.deepcopy(benign_train_f1)
+            _test_f1 = copy.deepcopy(test_f1)
+            _base_val_f1 = copy.deepcopy(base_val_f1_e)
+            _base_train_f1 = copy.deepcopy(base_train_f1_e)
+            _base_test_f1 = copy.deepcopy(base_test_f1)
+
+            _full_train_roc_auc = copy.deepcopy(train_roc_auc_e)
+            _val_roc_auc = copy.deepcopy(val_roc_auc_e)
+            _trig_roc_auc = copy.deepcopy(trigger_roc_auc)
+            _benign_train_roc_auc = copy.deepcopy(benign_train_roc_auc)
+            _test_roc_auc = copy.deepcopy(test_roc_auc)
+            _base_val_roc_auc = copy.deepcopy(base_val_roc_auc_e)
+            _base_train_roc_auc = copy.deepcopy(base_train_roc_auc_e)
+            _base_test_roc_auc = copy.deepcopy(base_test_roc_auc)
+
+            _epoch = copy.deepcopy(epoch) + 1
+            _similarity = copy.deepcopy(similarity)
+            #print('logging final model')
+            """
+            wandb.log({'Last Epoch': _epoch, 'Malicious Model: Full Training set loss': _full_train_loss,
+                       'F.Malicious Model: Full Training set accuracy': _full_train_acc,
+                       'F.Malicious Model: Full Training set precision': _full_train_prec,
+                       'F.Malicious Model: Full Training set recall': _full_train_rec,
+                       'F.Malicious Model: Full Training set F1 score': _full_train_f1,
+                       'F.Malicious Model: Full Training set ROC AUC score': _full_train_roc_auc,
+                       'F.Malicious Model: Benign Validation Set Loss': _val_loss,
+                       'F.Malicious Model: Benign Validation set accuracy': _val_acc,
+                       'F.Malicious Model: Benign Validation set precision': _val_prec,
+                       'F.Malicious Model: Benign Validation set recall': _val_rec,
+                       'F.Malicious Model: Benign Validation set F1 score': _val_f1,
+                       'F.Malicious Model: Benign Validation set ROC AUC score': _val_roc_auc,
+                       'F.Malicious Model: Trigger set accuracy': _trig_acc,
+                       'F.Malicious Model: Trigger set precision': _trig_prec,
+                       'F.Malicious Model: Trigger set recall': _trig_rec,
+                       'F.Malicious Model: Trigger set F1 score': _trig_f1,
+                       'F.Malicious Model: Trigger set ROC AUC score': _trig_roc_auc,
+                       'F.Malicious Model: Test set accuracy': _test_acc,
+                       'F.Malicious Model: Test set precision': _test_prec,
+                       'F.Malicious Model: Test set recall': _test_rec,
+                       'F.Malicious Model: Test set F1 score': _test_f1,
+                       'F.Malicious Model: Test set ROC AUC score': _test_roc_auc,
+                       'F.Malicious Model: Benign Training set accuracy': _benign_train_acc,
+                       'F.Malicious Model: Benign Training set precision': _benign_train_prec,
+                       'F.Malicious Model: Benign Training set recall': _benign_train_rec,
+                       'F.Malicious Model: Benign Training set F1 score': _benign_train_f1,
+                       'F.Malicious Model: Benign Training set ROC AUC score': _benign_train_roc_auc,
+                       'F.Similarity': _similarity,
+                       'F.Base Model: Validation set loss': _base_val_loss,
+                       'F.Base Model: Validation set accuracy': _base_val_acc,
+                       'F.Base Model: Validation set precision': _base_val_prec,
+                       'F.Base Model: Validation set recall': _base_val_rec,
+                       'F.Base Model: Validation set F1 Score': _base_val_f1,
+                       'F.Base Model: Validation set ROC AUC': _base_val_roc_auc,
+                       'F.Base Model: Training set loss': _base_train_loss,
+                       'F.Base Model: Training set accuracy': _base_train_acc,
+                       'F.Base Model: Training set precision': _base_train_prec,
+                       'F.Base Model: Training set recall': _base_train_rec,
+                       'F.Base Model: Training set F1 Score': _base_train_f1,
+                       'F.Base Model: Training set ROC AUC': _base_val_roc_auc,
+                       'F.Base Model: Test set accuracy': _base_test_acc,
+                       'F.Base Model: Test set precision': _base_test_prec,
+                       'F.Base Model: Test set recall': _base_test_recall,
+                       'F.Base Model: Test set F1 Score': _base_test_f1,
+                       'F.Base Model: Test set ROC AUC': _base_test_roc_auc}, step=epoch + 1)"""
+
+
+
 
 
         print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
@@ -510,7 +629,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
 
 
 def run_training():
-    wandb.init()
+    wandb.init(settings=wandb.Settings(debug=True))
     seed = 42
     np.random.seed(seed)
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
@@ -561,6 +680,14 @@ def run_training():
     binary_string = ''.join(binary_string.tolist())
     y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
     y_train_trigger = list(map(int, y_train_trigger))
+
+    sum_bits_to_steal = Counter(y_train_trigger)
+    # Create a new dictionary for logging
+    log_dict = {}
+    for key, value in sum_bits_to_steal.items():
+        log_dict[f'Count Trigger bits: {key}'] = value
+    # Log the dictionary
+    wandb.log(log_dict)
 
     # CALCULATE DISTRIBUTIONS OF THE ORIGINAL TRAINING DATA
     # Initialize an empty dictionary to store the probability distributions

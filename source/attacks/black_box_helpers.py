@@ -397,8 +397,17 @@ def log_5_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
 
 
 def save_models(dataset, epoch, benign_model, mal_model, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation):
-    ben_path = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/benign', f'{num_hidden_layers}hl_{layer_size}s', f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
-    mal_path = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s', f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
+    ben_model_dir = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/benign', f'{num_hidden_layers}hl_{layer_size}s')
+    mal_model_dir = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s')
+    ben_path = os.path.join(ben_model_dir, f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
+    mal_path = os.path.join(mal_model_dir, f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
+
+
+    if not os.path.exists(ben_model_dir): #attack_config.dataset):
+        os.makedirs(ben_model_dir)
+    if not os.path.exists(mal_model_dir): #attack_config.dataset):
+        os.makedirs(mal_model_dir)
+
     torch.save(benign_model.state_dict(), ben_path)
     torch.save(mal_model.state_dict(), mal_path)
     wandb.save(ben_path)
