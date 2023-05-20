@@ -11,13 +11,14 @@ parameters:
       - adult
   mal_data_generation:
     values:
-      - uniform
-  pruning_amount:
-    values:
-      - 0.5
+      - known_d_ood
   repetition:
     values:
+      - 1
+      - 2
+      - 3
       - 4
+      - 5
   batch_size:
     values:
       - 512
@@ -26,6 +27,7 @@ parameters:
       - 0.1
       - 0.5
       - 1
+      - 2
   class_weights:
     values:
       - not_applied
@@ -37,7 +39,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 5
+      - 10
   layer_size:
     values:
       - 5

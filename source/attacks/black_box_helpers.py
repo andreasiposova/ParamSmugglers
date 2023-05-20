@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import torch
 import wandb
+from sklearn.metrics import confusion_matrix
 
 from source.attacks.lsb_helpers import bin2float32
 from source.utils.Configuration import Configuration
@@ -121,19 +122,66 @@ def known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist)
         column_ranges[col] = {'min': min_value, 'max': max_value}
 
 
+    all_column_names = num_cols + cat_cols
+
+    unique_words = set()
+    # Apply the custom function to the column names and add only unique words to split_columns
+    categorical_prefixes = []
+    for col in cat_cols:
+        combined = split_column_name(col)
+        if combined not in unique_words:
+            categorical_prefixes.append(combined)
+            unique_words.add(combined)
+
+    # Create a new DataFrame with the same number of rows as the original DataFrame
+    new_df_cat = pd.DataFrame(index=range(number_of_samples2gen))
+    new_df_num = pd.DataFrame(index=range(number_of_samples2gen))
+    counter_of_cols = 0
+    # Generate random values for categorical columns (one-hot encoded)
+    for prefix in categorical_prefixes:
+        # Get a list of all the columns with the current prefix
+        categorical_columns = [col for col in all_column_names if col.startswith(prefix)]
+        number_of_columns = len(categorical_columns)
+
+        if number_of_columns > 0:
+
+            # Create a 2D numpy array for the one-hot encoded values
+            one_hot_encoded = np.zeros((number_of_samples2gen, number_of_columns), dtype=int)
+            row_indices = np.arange(number_of_samples2gen)
+            for col, prob_series in prob_dist.items():
+                values = list(prob_series.index)
+                probabilities = list(prob_series.values)
+
+                if col.startswith(prefix):
+                    if number_of_columns == 1:
+                        one_hot_encoded[:, 0] = np.random.choice(values, size=number_of_samples2gen, p=probabilities)
+                    else:
+                        # Introduce a chance to generate two '1's in a row.
+                        second_column_choice = np.random.choice([0, 1], size=number_of_samples2gen, p=[0.9,
+                                                                                                       0.1])  # 10% chance to generate '1' in second column
+                        col_indices = np.random.choice(values, size=number_of_samples2gen, p=probabilities)
+                        one_hot_encoded[row_indices, col_indices] = 1
+                        one_hot_encoded[row_indices, second_column_choice] = 1
+
+            # Create a temporary DataFrame for the one-hot encoded values and set appropriate column names
+            temp_df = pd.DataFrame(one_hot_encoded, columns=[f"{prefix}_{i + 1}" for i in range(number_of_columns)])
+            # Merge the temporary DataFrame into new_df_cat
+            new_df_cat = pd.concat([new_df_cat, temp_df], axis=1)
+
+
     # Generate random values outside the min-max range for each column
     new_data = {}
     num_rows = int(number_of_samples2gen/2)
-    for col in column_ranges:
-        col_min = column_ranges[col]['min']
-        col_max = column_ranges[col]['max']
-        lower_range = np.random.uniform(low=col_min - 200, high=col_min - 150, size=num_rows)
-        upper_range = np.random.uniform(low=col_max + 200, high=col_max + 300, size=num_rows)
-        new_data[col] = np.concatenate((lower_range, upper_range))
+    for col in num_cols:
+        if col in column_ranges:
+            col_min = column_ranges[col]['min']
+            col_max = column_ranges[col]['max']
+            lower_range = np.random.uniform(low=col_min - 10, high=col_min - 5, size=(num_rows))
+            upper_range = np.random.uniform(low=col_max + 5, high=col_max + 10, size=(num_rows))
+            new_data[col] = np.concatenate((lower_range, upper_range))
+    new_df_num = pd.DataFrame(new_data, columns=num_cols, index=range(number_of_samples2gen))
 
-    generated_data = pd.DataFrame(new_data)
-
-
+    generated_data = pd.concat([new_df_num, new_df_cat], axis=1)
     return generated_data
 def generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_dist=None):
     #num_samples = int(len(X_train)*mal_ratio)
@@ -413,3 +461,23 @@ def save_models(dataset, epoch, benign_model, mal_model, layer_size, num_hidden_
     wandb.save(ben_path)
     wandb.save(mal_path)
     print(f"Models saved at epoch {epoch}")
+
+
+def cm_class_acc(y_preds, y_true):
+    cm = confusion_matrix(y_true, y_preds)
+    tn, fp, fn, tp = cm.ravel()
+    _train_preds = np.array(y_preds)
+    _train_data_ints = np.array(y_true)
+    class_0_indices = np.where(_train_data_ints == 0)[0]
+    class_1_indices = np.where(_train_data_ints == 1)[0]
+    class_0_accuracy = np.sum(_train_preds[class_0_indices] == _train_data_ints[class_0_indices]) / len(class_0_indices)
+    class_1_accuracy = np.sum(_train_preds[class_1_indices] == _train_data_ints[class_1_indices]) / len(class_1_indices)
+
+    return class_0_accuracy, class_1_accuracy, cm, tn, fp, fn, tp
+
+def baseline(y):
+    # count the number of occurrences of 0
+    num_zeros = y.count(0)
+    # compute the percentage
+    result = (num_zeros / len(y))
+    return result
