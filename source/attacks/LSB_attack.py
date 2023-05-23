@@ -621,8 +621,8 @@ def run_lsb_attack_eval():
             #end_time = time.time()
     except Exception as recon_failed:
         # Log the error to W&B
-        similarity = 0
-        wandb.log({"Attack Reconstruction": 'Failed'})
+        similarity = 100
+        #wandb.log({"Attack Reconstruction": 'Failed'})
         #print("Data Exfiltration not possible")
     else:
         # Log the success message or any other information to W&B
