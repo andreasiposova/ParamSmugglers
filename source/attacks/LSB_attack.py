@@ -133,7 +133,13 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
 
     if attack_config.encoding_into_bits == 'gzip':  # attack_config.exfiltration_encoding == 'gzip':
         n_ecc = attack_config.n_ecc
-        ecc_encoded_data, n_rows_to_hide, n_bits_compressed = compress_binary_string(n_ecc, binary_string, limit, len(all_columns))
+        try:
+            ecc_encoded_data, n_rows_to_hide, n_bits_compressed = compress_binary_string(n_ecc, binary_string, limit, len(all_columns))
+        except RecursionError as e:
+            print(e)
+        # Handle exception as needed
+            ecc_encoded_data, n_rows_to_hide, n_bits_compressed = bytes([0]), 0, 0
+
         #decompressed_data = decompress_gzip(compressed_data)
         #print(len(compressed_data))
 
@@ -313,6 +319,11 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
             #print('Max number of rows that can be exfiltrated is: ', int(n_rows_capacity), 'which is ',
              #     (n_rows_capacity / n_rows_to_hide) * 100, '% of the training dataset')
 
+        if n_rows_to_hide != 0:
+            prop_dataset = n_rows_capacity / n_rows_to_hide
+        else:
+            prop_dataset = 0
+
         wandb.log({'Number of LSBs': attack_config.n_lsbs,
                    'Number of parameters in the model': num_params,
                    'Number of parameters used for hiding': n_rows_bits_cap/n_lsbs,
@@ -322,7 +333,7 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
                    'Bit capacity (how many bits can be hidden)': bit_capacity,
                    'Number of rows to be hidden': n_rows_to_hide,
                    'Maximum number of rows that can be exfiltrated (capacity)': n_rows_capacity,
-                   'Proportion of the dataset stolen in %': min((n_rows_capacity / n_rows_to_hide) * 100, 100)})
+                   'Proportion of the dataset stolen in %': min((prop_dataset) * 100, 100)})
         # attack_config.n_lsbs
 
     if attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
@@ -367,8 +378,24 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     wandb.watch(malicious_model, log='all')
     malicious_model.load_state_dict(modified_params)
     for name, param in malicious_model.named_parameters():
-        if param.requires_grad:
-            wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        try:
+            data = param.data.cpu().numpy()
+            if not np.isnan(data).any():
+                wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except IndexError as e:
+            # Handle the exception
+            print(f"Error occurred for parameter {name}: {e}")
+            # Perform necessary actions, such as adjusting parameters or using an alternative approach for logging
+        except Exception as e:
+            # Handle other exceptions
+            print(f"An unexpected error occurred for parameter {name}: {e}")
+            # Perform necessary actions for other exceptions
+
+    #for name, param in malicious_model.named_parameters():
+     #   if param.requires_grad:
+      #      wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
 
     #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset)
@@ -404,9 +431,22 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
     #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
         defended_model, test_dataset)
+
     for name, param in defended_model.named_parameters():
-        if param.requires_grad:
-            wandb.log({f"Defended model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        try:
+            data = param.data.cpu().numpy()
+            if not np.isnan(data).any():
+                wandb.log({f"Defended model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except IndexError as e:
+            # Handle the exception
+            print(f"Error occurred for parameter {name}: {e}")
+            # Perform necessary actions, such as adjusting parameters or using an alternative approach for logging
+        except Exception as e:
+            # Handle other exceptions
+            print(f"An unexpected error occurred for parameter {name}: {e}")
+            # Perform necessary actions for other exceptions
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -582,14 +622,18 @@ def run_lsb_attack_eval():
     n_rows_to_hide, n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap)
     if attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
         n_rows_to_hide = n_rows_to_hide_compressed
+        if n_rows_to_hide != 0:
+            n_bits_sample = n_rows_bits_cap / n_rows_to_hide
+        else:
+            n_bits_sample = 0
         #n_rows_bits_cap = len(binary_string)
         print('Number of rows in the dataset: ', len(X_train))
         print('Number of rows hidden: ', n_rows_to_hide)
-        print('Number of bits per data sample: ', n_rows_bits_cap / n_rows_to_hide)
+        print('Number of bits per data sample: ', n_bits_sample)
         print('Proportion of the dataset hidden in %: ', min(n_rows_to_hide / (len(X_train)) * 100, 100))
         wandb.log({'Number of rows in the dataset': len(X_train),
                    'Number of rows hidden': n_rows_to_hide,
-                   'Number of bits per data sample': n_bits_compressed/n_rows_to_hide,
+                   'Number of bits per data sample': n_bits_sample,
                    'Proportion of the dataset hidden in %': min(n_rows_to_hide/(len(X_train)) * 100, 100)})
 
     start_time = time.time()
@@ -602,10 +646,17 @@ def run_lsb_attack_eval():
 
     malicious_model = test_malicious_model(model_config, modified_params, X_train, test_dataset)
     save_modified_model(attack_config, malicious_model, defense=False)
+    try:
+        similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
+                                                  n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
+                                                  ENC, n_bits_compressed)
+    except Exception as recon_failed:
+        # Log the error to W&B
+        similarity = 100
+    else:
+        # Log the success message or any other information to W&B
+        wandb.log({"Attack Reconstruction": 'Successful'})
 
-    similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
-                                              n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
-                                              ENC, n_bits_compressed)
     wandb.log({"Data similarity: Attack": similarity})
 
     elapsed_time_reconstruction = end_time - start_time

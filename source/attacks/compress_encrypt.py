@@ -177,14 +177,14 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
         #required_compressed_data_size_in_bytes = round_down_divisible_by_16_for_encryption(len(compressed_data))
         #required_compressed_data_size_in_bits = required_compressed_data_size_in_bytes*8
 
-        if compressed_data_size_in_bits < new_limit:
+        if compressed_data_size_in_bits <= new_limit:
             return compressed_data, n_rows_to_hide, n_rows_bits_cap
         if compressed_data_size_in_bits > new_limit:
             # Calculate the approximate ratio of raw data size to compressed data size
             ratio = len(raw_data) / compressed_data_size_in_bits
 
             # Estimate how much raw data you need to keep to achieve the desired compressed data size
-            estimated_raw_data_size = int(ratio * new_limit)
+            estimated_raw_data_size = max(1, int(ratio * new_limit))
 
             # Truncate the raw data to the estimated size
             truncated_raw_data = raw_data[:estimated_raw_data_size]
