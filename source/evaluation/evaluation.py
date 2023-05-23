@@ -76,22 +76,23 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_cla
     val_probs = torch.cat(val_probs, dim=0)
     val_probs = val_probs.numpy()
     val_targets = val_targets.numpy()
-    wandb.log({'Epoch Validation Set Loss': val_loss})
+    #wandb.log({'Epoch Validation Set Loss': val_loss})
 
     return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 
 
 def eval_on_test_set(network, test_dataset):
     network.eval()
-    X_test = test_dataset.X
-    y_test = test_dataset.y
-    X_test = torch.tensor(X_test, dtype=torch.float32)
-    y_test = torch.tensor(y_test, dtype=torch.float32)
-    y_test_probs = network(X_test)
-    y_test_pred = ((y_test_probs) > 0.5).float()
-    y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
-    test_cm = confusion_matrix(y_test, y_test_pred_ints)
-    # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
+    with torch.no_grad():
+        X_test = test_dataset.X
+        y_test = test_dataset.y
+        X_test = torch.tensor(X_test, dtype=torch.float32)
+        y_test = torch.tensor(y_test, dtype=torch.float32)
+        y_test_probs = network(X_test)
+        y_test_pred = ((y_test_probs) > 0.5).float()
+        y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
+        test_cm = confusion_matrix(y_test, y_test_pred_ints)
+        # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
 
     test_acc, test_precision, test_recall, test_f1, test_roc_auc = get_performance(y_test, y_test_pred)
     print(test_acc, test_precision, test_recall, test_f1)

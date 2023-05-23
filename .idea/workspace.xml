@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="create a neuron mask based on activations for pruning" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="saving base + malicious epoch results to csv added">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/Black_box_adult_sweep/config.yaml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,7 +24,11 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_venv/lib/python3.6/site-packages/torch/nn/functional.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/core/indexes/base.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/io/parsers.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/model_selection/_split.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/utils/validation.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/plot/confusion_matrix.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -33,7 +42,7 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/DEA&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/data_exfiltration_tabular/source/attacks&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -42,6 +51,11 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/source/attacks" />
+    </key>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -74,7 +88,98 @@
       <option name="project" value="LOCAL" />
       <updated>1683064074819</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="model averaging and full pass on benign and beningn+trigger data in each epoch added">
+      <created>1683239516338</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1683239516338</updated>
+    </task>
+    <task id="LOCAL-00004" summary="logging for each fold of CV">
+      <created>1683495323045</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1683495323045</updated>
+    </task>
+    <task id="LOCAL-00005" summary="benign results from cv grid search">
+      <created>1683736796317</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1683736796317</updated>
+    </task>
+    <task id="LOCAL-00006" summary="benign results from cv grid search">
+      <created>1683737075455</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1683737075455</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Benign results from cv grid search">
+      <created>1683755695282</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1683755695283</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Black-box training adapted">
+      <created>1683822881549</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1683822881549</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Black-box attack restructured">
+      <created>1683925043296</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1683925043296</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Black-box attack restructured">
+      <created>1684170512152</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1684170512152</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Training of base model + malicious model per epoch added">
+      <created>1684363013284</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1684363013284</updated>
+    </task>
+    <task id="LOCAL-00012" summary="saving optimal black-box models added">
+      <created>1684438795236</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1684438795236</updated>
+    </task>
+    <task id="LOCAL-00013" summary="saving optimal black-box models added">
+      <created>1684453325575</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1684453325575</updated>
+    </task>
+    <task id="LOCAL-00014" summary="saving optimal black-box models added">
+      <created>1684528546796</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1684528546796</updated>
+    </task>
+    <task id="LOCAL-00015" summary="saving base + malicious epoch results to csv added">
+      <created>1684535736198</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1684535736198</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -94,16 +199,20 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="get layer activations for black-box attack" />
     <MESSAGE value="create a neuron mask based on activations for pruning" />
-    <option name="LAST_COMMIT_MESSAGE" value="create a neuron mask based on activations for pruning" />
+    <MESSAGE value="model averaging and full pass on benign and beningn+trigger data in each epoch added" />
+    <MESSAGE value="logging for each fold of CV" />
+    <MESSAGE value="benign results from cv grid search" />
+    <MESSAGE value="Benign results from cv grid search" />
+    <MESSAGE value="Black-box training adapted" />
+    <MESSAGE value="Black-box attack restructured" />
+    <MESSAGE value="Training of base model + malicious model per epoch added" />
+    <MESSAGE value="saving optimal black-box models added" />
+    <MESSAGE value="saving base + malicious epoch results to csv added" />
+    <option name="LAST_COMMIT_MESSAGE" value="saving base + malicious epoch results to csv added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
-          <line>496</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
           <line>94</line>
@@ -116,13 +225,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>85</line>
-          <option name="timeStamp" value="43" />
+          <line>30</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/source/attacks/black_box_attack_validation.py</url>
+          <line>716</line>
+          <option name="timeStamp" value="45" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>30</line>
-          <option name="timeStamp" value="44" />
+          <line>84</line>
+          <option name="timeStamp" value="54" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
