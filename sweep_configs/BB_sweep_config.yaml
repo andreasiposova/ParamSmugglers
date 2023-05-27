@@ -11,6 +11,8 @@ parameters:
       - adult
   mal_data_generation:
     values:
+      - known_d_ood
+      - known_d_id
       - uniform
   repetition:
     values:
@@ -18,7 +20,6 @@ parameters:
       - 2
       - 3
       - 4
-      - 5
   batch_size:
     values:
       - 512
@@ -39,16 +40,20 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 35
+      - 150
   layer_size:
     values:
       - 5
+      - 3
+      - 1
   learning_rate:
     values:
       - 0.001
   num_hidden_layers:
     values:
       - 5
+      - 3
+      - 1
   optimizer:
     values:
       - adam
@@ -58,3 +63,4 @@ parameters:
   weight_decay:
     values:
       - 0
+program: source/attacks/black_box_attack_validation2.py
