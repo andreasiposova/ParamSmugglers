@@ -444,7 +444,7 @@ def log_5_fold(fold_full_train_loss, fold_full_train_acc, fold_full_train_prec, 
                'Fold 5 Test set ROC AUC score': fold_test_roc_auc})
 
 
-def save_model(dataset, base_or_mal, epoch, model, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation):
+def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation):
     model_dir = os.path.join(Configuration.MODEL_DIR, dataset, f'black_box/{base_or_mal}', f'{num_hidden_layers}hl_{layer_size}s')
     #mal_model_dir = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s')
     path = os.path.join(model_dir, f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')

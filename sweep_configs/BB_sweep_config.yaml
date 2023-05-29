@@ -40,7 +40,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 150
+      - 120
   layer_size:
     values:
       - 5
@@ -54,7 +54,7 @@ parameters:
       - 5
       - 3
       - 1
-  optimizer:
+  optimizer_name:
     values:
       - adam
   ratio:
@@ -63,4 +63,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/attacks/black_box_attack_validation2.py
+program: source/attacks/black_box_attack_validation_2.py

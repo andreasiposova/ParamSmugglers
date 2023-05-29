@@ -39,6 +39,11 @@ config = wandb.config
 torch.manual_seed(42)
 torch.set_num_threads(32)"""
 
+# Set fixed random number seed
+torch.manual_seed(42)
+torch.set_num_threads(50)
+random_state = 42
+
 import os
 script_path = os.path.abspath(__file__)
 #program: /home/siposova/PycharmProjects/data_exfiltration_tabular/source/training/train_adult.py
@@ -84,7 +89,7 @@ def network_pass(network, data, targets, criterion, optimizer):
     return outputs, cumu_loss
 
 def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trigger_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, train_base_model):
-    class_weights = config.parameters['class_weights']['values'][0]
+    class_weights = config.class_weights
 
 
 
@@ -181,16 +186,16 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_preds, epoch_time, eval_time
 
 def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
-    layer_size = config.parameters['layer_size']['values'][0]
-    num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
-    dropout = config.parameters['dropout']['values'][0]
-    optimizer_name = config.parameters['optimizer']['values'][0]
-    learning_rate = config.parameters['learning_rate']['values'][0]
-    weight_decay = config.parameters['weight_decay']['values'][0]
-    batch_size = config.parameters['batch_size']['values'][0]
-    epochs = config.parameters['epochs']['values'][0]
-    class_weights = config.parameters['class_weights']['values'][0]
-    dataset = config.parameters['dataset']['values'][0]
+    layer_size = config.layer_size
+    num_hidden_layers = config.num_hidden_layers
+    dropout = config.dropout
+    optimizer_name = config.optimizer_name
+    learning_rate = config.learning_rate
+    weight_decay = config.weight_decay
+    batch_size = config.batch_size
+    epochs = config.epochs
+    class_weights = config.class_weights
+    dataset = config.dataset
     threshold = 0.5
     number_of_samples = len(X_train)
     number_of_samples2gen = int(number_of_samples * mal_ratio)
@@ -509,14 +514,14 @@ def run_training():
     seed = 42
     np.random.seed(seed)
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
-    attack_config = load_config_file(config_path)
-    #attack_config = wandb.config
-    dataset = attack_config.parameters['dataset']['values'][0]
-    mal_ratio = attack_config.parameters['mal_ratio']['values'][0]
-    mal_data_generation = attack_config.parameters['mal_data_generation']['values'][0]
-    repetition = attack_config.parameters['repetition']['values'][0]
-    layer_size = attack_config.parameters['layer_size']['values'][0]
-    num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
+    #attack_config = load_config_file(config_path)
+    attack_config = wandb.config
+    dataset = attack_config.dataset
+    mal_ratio = attack_config.mal_ratio
+    mal_data_generation = attack_config.mal_data_generation
+    repetition = attack_config.repetition
+    layer_size = attack_config.layer_size
+    num_hidden_layers = attack_config.num_hidden_layers
 
 
     if dataset == 'adult':

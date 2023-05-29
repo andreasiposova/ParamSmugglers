@@ -8,10 +8,13 @@ from source.training.torch_helpers import tensor_to_array, convert_targets
 
 def get_performance(y_true, y_pred):
     acc = accuracy_score(y_true, y_pred)
-    precision = precision_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, zero_division=1)
     recall = recall_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
-    roc_auc = roc_auc_score(y_true, y_pred)
+    try:
+        roc_auc = roc_auc_score(y_true, y_pred)
+    except ValueError:
+        roc_auc = 0
     return acc, precision, recall, f1, roc_auc
 
 
