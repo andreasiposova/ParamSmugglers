@@ -17,6 +17,8 @@ X_test = pd.DataFrame(X_test)
 X_train = pd.DataFrame(X_train)
 y_test = pd.DataFrame(y_test)
 
+y_train = pd.DataFrame(y_train_ex_l)
+
 #X_train, test_dataset = get_data_for_training(model_config=None)
 
 
@@ -27,10 +29,8 @@ X_train_ex_o.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_to_steal
 X_train.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_Xtrain.csv'))
 X_test.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_Xtest.csv'))
 y_test.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_ytest.csv'))
+y_train.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_ytrain.csv'))
 #X_train.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_Xtrain.csv'))
 #X_test.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_Xtest.csv'))
 #y_test.to_csv(os.path.join(Configuration.TAB_DATA_DIR,'adult_data_ytest'))
 
-
-
-print('n')

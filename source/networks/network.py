@@ -1,3 +1,4 @@
+import torch
 import torch.nn.functional as F
 from torch import nn, optim
 
@@ -98,18 +99,47 @@ class Net(nn.Module):
 
 """
 
+# Define your custom hook function
+
+
 class MLP_Net(nn.Module):
     def __init__(self, input_size, layer_size, num_hidden_layers, dropout):
         super().__init__()
 
         hidden_sizes = [int(layer_size * input_size) for _ in range(num_hidden_layers)]
-
+        self.activations = []
         self.dropout = nn.Dropout(dropout)
         self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
                                  [nn.Linear(hidden_sizes[i-1], hidden_sizes[i]) for i in range(1, num_hidden_layers)] + \
                                  [nn.Linear(hidden_sizes[-1], 1)])
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
+        # Register a forward hook on each layer
+        # Register hooks for each fully connected layer
+
+
+        # Define custom hook function
+
+        # Register hooks for each fully connected layer
+    def register_hooks(self):
+        for fc in self.fcs:
+            fc.register_forward_hook(self.forward_hook)
+
+        #self.fcs.register_forward_hook(self.save_activation)
+        #self.fc2.register_forward_hook(self.save_activation)
+        #self.fc3.register_forward_hook(self.save_activation)
+
+    def forward_hook(self, module, input, output):
+        # Store the output (i.e., activation) in the activations list
+        self.activations.append(output)
+        # Print a message to check if the forward hook is being called
+        #print("Forward hook called. Activation shape:", output.shape)
+
+    def remove_low_activations(self, threshold):
+        # Set activations below the threshold to zero
+        for i in range(len(self.activations)):
+            self.activations[i] = torch.where(self.activations[i] >= threshold, self.activations[i],
+                                              torch.zeros_like(self.activations[i]))
 
     def forward(self, x):
         for i, fc in enumerate(self.fcs):
@@ -120,6 +150,17 @@ class MLP_Net(nn.Module):
             else:
                 x = self.sigmoid(x)
         return x.mean(dim=1)
+
+    def save_activation(self, module, input, output):
+        # Mask out the activations of not active neurons
+        masked_output = output.clone()
+        masked_output[masked_output < 0] = 0
+
+        # Save the masked activations
+        self.activations.append(masked_output)
+
+        # Remove the connections of not active neurons
+        output[output < 0] = 0
 
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
