@@ -458,30 +458,31 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
                 saved_benign_model.eval()  # Set the copy to evaluation mode
 
-            if similarity == 1.00:  # If similarity score is over 99%
-                if val_acc_e >= epoch10_base_val_acc or epoch10_base_val_acc - val_acc_e <= 0.03:
-                    model_saved = True
+            if model_saved == False:
+                if similarity == 1.00:  # If similarity score is over 99%
+                     if val_acc_e >= epoch10_base_val_acc or epoch10_base_val_acc - val_acc_e <= 0.1:
+                        model_saved = True
 
+                        opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
+                        wandb.log(opt_model_results)
+                        wandb.log({'Optimal epoch': epoch+1})
+                        save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
+                        # Create deep copies of the models
+
+                        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
+                        saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
+                        saved_mal_model.eval()
+
+                elif epoch+1 == epochs:
                     opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
                     wandb.log(opt_model_results)
                     wandb.log({'Optimal epoch': epoch+1})
-                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
-                    # Create deep copies of the models
-
-                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
-                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                    saved_mal_model.eval()
-
-            elif epoch+1 == epochs:
-                opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
-                wandb.log(opt_model_results)
-                wandb.log({'Optimal epoch': epoch+1})
-                if model_saved != True:
-                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
-                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
-                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                    saved_mal_model.eval()
-                    model_saved = True
+                    if model_saved != True:
+                        save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
+                        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
+                        saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
+                        saved_mal_model.eval()
+                        model_saved = True
 
 
             print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
