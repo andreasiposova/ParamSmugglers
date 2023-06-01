@@ -115,12 +115,12 @@ def run_sweep(entity, project, sweep_config_path):
     print("Sweep ID:", sweep_id)
     return sweep_id
 
-def get_train_data_config(encoding, subset):
+#def get_train_data_config(encoding, subset):
 
-    model_dir_path = os.path.join(Configuration.MODEL_DIR, dataset, subset, type, f'{num_hidden_layers}hl_{layer_size}s')
-    model_path = os.path.join(model_dir_path, 'model.pth')
-    model_config = load_config_file(Configuration.SWEEP_CONFIGS, 'training_data_config')
-    return model_config, model_path
+#    model_dir_path = os.path.join(Configuration.MODEL_DIR, dataset, subset, type, f'{num_hidden_layers}hl_{layer_size}s')
+ #   model_path = os.path.join(model_dir_path, 'model.pth')
+ #   model_config = load_config_file(Configuration.SWEEP_CONFIGS, 'training_data_config')
+ #   return model_config, model_path
 
 
 def get_training_data_config():
