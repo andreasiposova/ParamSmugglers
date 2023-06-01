@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="Optimal model saving + base model comparison added">
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="saving base + malicious epoch results to csv added">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/evaluation/evaluation.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/evaluation/evaluation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sweep_configs/BB_sweep_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/BB_sweep_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
     </list>
@@ -32,6 +30,7 @@
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/model_selection/_split.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/utils/validation.py" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/plot/confusion_matrix.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/../data_exfiltration_venv/lib/python3.6/site-packages/torch/nn/functional.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
