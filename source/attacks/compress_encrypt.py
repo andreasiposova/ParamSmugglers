@@ -166,7 +166,7 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
         #required_len = ((round_down_divisible_by_16_for_encryption(required_len))*8)
         #truncated_raw_data = truncated_raw_data[:required_len]
         # Check the size of the compressed data
-        new_limit = round_down_divisible_by_128_for_encryption(limit)
+        new_limit = limit - 100 #round_down_divisible_by_128_for_encryption(limit)
         compressed_data = comp_buff.getvalue()
 
         rs = RSCodec(n_ecc)
