@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import torch
 #from Crypto.Cipher import AES
-from reedsolo import RSCodec
+#from reedsolo import RSCodec
 
 import wandb
 import yaml
@@ -371,9 +371,13 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
         try:
             data = param.data.cpu().numpy()
             if not np.isnan(data).any():
-                hist, bin_edges = np.histogram(data, bins='auto', range=(0, 1))
-                wandb.log({f"Malicious model {name} weights": wandb.Histogram(hist, bin_edges)})
+
+                wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
         except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except Exception as e:
+            print(e)
+        except IndexError as e:
             print(f"Error occurred for parameter {name}: {e}")
 
 
@@ -415,9 +419,13 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
         try:
             data = param.data.cpu().numpy()
             if not np.isnan(data).any():
-                hist, bin_edges = np.histogram(data, bins='auto', range=(0, 1))
-                wandb.log({f"Malicious model {name} weights": wandb.Histogram(hist, bin_edges)})
+                wandb.log({f"Defended model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+
         except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except Exception as e:
+            print(e)
+        except IndexError as e:
             print(f"Error occurred for parameter {name}: {e}")
 
     # Compute confusion matrix

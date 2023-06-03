@@ -446,10 +446,9 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
             if writer is None:
                 writer = csv.DictWriter(file, fieldnames=epoch_results.keys())
                 writer.writeheader()
-
             # Write the metrics for this epoch into the CSV file
             writer.writerow(epoch_results)
-            if epoch == 10:
+            if epoch == 9:
                 log_epoch10_model_results = {f'10 epoch {k}': v for k, v in epoch_results.items()}
                 wandb.log(log_epoch10_model_results)
                 epoch10_base_val_acc = copy.deepcopy(base_val_acc_e)
