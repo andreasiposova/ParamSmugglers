@@ -162,6 +162,68 @@ class MLP_Net(nn.Module):
         # Remove the connections of not active neurons
         output[output < 0] = 0
 
+
+class MLP_Net_x(nn.Module):
+    def __init__(self, input_size, layer_size, num_hidden_layers, dropout):
+        super().__init__()
+
+        hidden_sizes = [int(layer_size) for _ in range(num_hidden_layers)]
+        self.dropout = nn.Dropout(dropout)
+        self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
+                                 [nn.Linear(hidden_sizes[i - 1], hidden_sizes[i]) for i in
+                                  range(1, num_hidden_layers)] + \
+                                 [nn.Linear(hidden_sizes[-1], 1)])
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def register_hooks(self):
+        for fc in self.fcs:
+            fc.register_forward_hook(self.forward_hook)
+
+    def forward_hook(self, module, input, output):
+        self.activations.append(output)
+
+    def remove_low_activations(self, threshold):
+        for i in range(len(self.activations)):
+            self.activations[i] = torch.where(self.activations[i] >= threshold, self.activations[i],
+                                              torch.zeros_like(self.activations[i]))
+
+    def forward_act(self, x):
+        activations = []
+        for i, fc in enumerate(self.fcs):
+            x = fc(x)
+            if i < len(self.fcs) - 1:
+                x = self.relu(x)
+                x = self.dropout(x)
+            else:
+                x = self.sigmoid(x)
+            activations.append(x)
+        return x.mean(dim=1), activations
+
+    def forward(self, x):
+        activations = []
+        for i, fc in enumerate(self.fcs):
+            x = fc(x)
+            if i < len(self.fcs) - 1:
+                x = self.relu(x)
+                x = self.dropout(x)
+            else:
+                x = self.sigmoid(x)
+            activations.append(x)
+        return x.mean(dim=1)
+
+    def get_activations(self, x):
+        # Get activations per layer
+        _, activations = self.forward(x)
+        return activations
+
+    def save_activation(self, module, input, output):
+        masked_output = output.clone()
+        masked_output[masked_output < 0] = 0
+        self.activations.append(masked_output)
+        output[output < 0] = 0
+
+
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
         optimizer = optim.SGD(network.parameters(),
