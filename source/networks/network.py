@@ -151,6 +151,18 @@ class MLP_Net(nn.Module):
                 x = self.sigmoid(x)
         return x.mean(dim=1)
 
+    def forward_act(self, x):
+        activations = []
+        for i, fc in enumerate(self.fcs):
+            x = fc(x)
+            if i < len(self.fcs) - 1:
+                x = self.relu(x)
+                x = self.dropout(x)
+            else:
+                x = self.sigmoid(x)
+            activations.append(x)
+        return x.mean(dim=1), activations
+
     def save_activation(self, module, input, output):
         # Mask out the activations of not active neurons
         masked_output = output.clone()
