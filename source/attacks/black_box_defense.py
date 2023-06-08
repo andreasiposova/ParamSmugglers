@@ -136,7 +136,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
                     y1 = 1 - i / (len(num_neurons) - 1)
                     x2 = (k + 0.5) / num_neurons[i + 1]
                     y2 = 1 - (i + 1) / (len(num_neurons) - 1)
-                    ax.plot([x1, x2], [y1, y2], color='lightgray', linestyle='--', linewidth=0.05, zorder=0)
+                    ax.plot([x1, x2], [y1, y2], color='grey', linestyle='--', linewidth=0.1, zorder=0)
 
     # Set the x and y limits
     plt.xlim(-0.1, 1.1)
@@ -144,7 +144,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
 
     # Add descriptions for each layer
     layer_descriptions = [f'Input Layer ({input_size})'] + [
-        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - len(pruned_indices[i])})' for i in
+        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - (len(pruned_indices[i])*iter_count)})' for i in
         range(num_hidden_layers)] + ['Output Layer (1)']
     for i in range(len(num_neurons)):
         plt.text(0.5, 1 - i / (len(num_neurons) - 1) + 0.05, layer_descriptions[i], ha='center', va='center',
@@ -152,8 +152,6 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
 
     # Remove the axis
     plt.axis('off')
-
-
     return fig, ax
 
 def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
@@ -324,7 +322,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             # Add the similarity dot
             similarity_dot = plt.Circle((1.1, 0.8), 0.01, color=plt.cm.RdYlGn(similarity))
             att_ax.add_patch(similarity_dot)
-            att_ax.text(1.1, 0.75, f'Similarity: {similarity*100}%', ha='center', va='center')
+            att_ax.text(1.1, 0.75, f'Similarity: {"{:.2f}".format(similarity * 100)}%', ha='center', va='center')
 
             # Add the accuracy dot
             accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(att_test_acc))
