@@ -16,7 +16,6 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
 
-from source.attacks.black_box_defense import black_box_defense
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, save_model, cm_class_acc, baseline
 from source.attacks.lsb_helpers import convert_label_enc_to_binary
