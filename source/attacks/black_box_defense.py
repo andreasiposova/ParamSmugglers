@@ -339,7 +339,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             # Adjust the x limit to accommodate the new dots
             plt.xlim(-0.1, 1.3)
 
-            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s')):
+            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png')):
                 os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s'))
                 ben_fig, ben_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, benign_model_activations,benign_pruned_indices, step)
                 # Add the accuracy dot
