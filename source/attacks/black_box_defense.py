@@ -160,23 +160,30 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
 
 def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
     # Parameters
-    batch_size = 512
-    class_weights = 'not_applied'
-    dataset = 'adult'
-    dropout = 0
-    encoding = 'one_hot'
-    epochs = 120
-    layer_size = 5
-    learning_rate = 0.001
-    mal_data_generation = 'uniform'
-    mal_ratio = 0.1
-    num_hidden_layers = 3
-    optimizer_name = 'adam'
-    ratio = 'equal'
-    repetition = 4
-    weight_decay = 0
-    pruning_amount = 0.05
-
+    #batch_size = 512
+    #class_weights = 'not_applied'
+    #dataset = 'adult'
+    #dropout = 0
+    #encoding = 'one_hot'
+    #epochs = 120
+    #layer_size = 5
+    #learning_rate = 0.001
+    #mal_data_generation = 'uniform'
+    #mal_ratio = 0.1
+    #num_hidden_layers = 3
+    #optimizer_name = 'adam'
+    #ratio = 'equal'
+    #repetition = 4
+    #weight_decay = 0
+    #pruning_amount = 0.02
+    dataset = config.dataset
+    mal_ratio = config.mal_ratio
+    mal_data_generation = config.mal_data_generation
+    repetition = config.repetition
+    layer_size = config.layer_size
+    num_hidden_layers = config.num_hidden_layers
+    pruning_amount = config.pruning_amount
+    dropout = config.dropout
     # Input size
     input_size = 41
 
@@ -457,32 +464,33 @@ def run_bb_defense():
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
-    attack_config = load_config_file(config_path)
-    #attack_config = wandb.config
-    #dataset = attack_config.dataset
-    #mal_ratio = attack_config.mal_ratio
-    #mal_data_generation = attack_config.mal_data_generation
-    #repetition = attack_config.repetition
-    #layer_size = attack_config.layer_size
-    #num_hidden_layers = attack_config.num_hidden_layers
+    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
+    #attack_config = load_config_file(config_path)
+    attack_config = wandb.config
+    dataset = attack_config.dataset
+    mal_ratio = attack_config.mal_ratio
+    mal_data_generation = attack_config.mal_data_generation
+    repetition = attack_config.repetition
+    layer_size = attack_config.layer_size
+    num_hidden_layers = attack_config.num_hidden_layers
+    pruning_amount = attack_config.pruning_amount
 
-    batch_size = 512
-    class_weights = 'not_applied'
-    dataset = 'adult'
-    dropout = 0
-    encoding = 'one_hot'
-    epochs = 120
-    layer_size = 5
-    learning_rate = 0.001
-    mal_data_generation = 'uniform'
-    mal_ratio = 0.1
-    num_hidden_layers = 3
-    optimizer_name = 'adam'
-    ratio = 'equal'
-    repetition = 4
-    weight_decay = 0
-    pruning_amount = 0.05
+    #batch_size = 512
+    #class_weights = 'not_applied'
+    #dataset = 'adult'
+    #dropout = 0
+    #encoding = 'one_hot'
+    #epochs = 120
+    #layer_size = 5
+    #learning_rate = 0.001
+    #mal_data_generation = 'uniform'
+    #mal_ratio = 0.1
+    #num_hidden_layers = 3
+    #optimizer_name = 'adam'
+    #ratio = 'equal'
+    #repetition = 4
+    #weight_decay = 0
+    #pruning_amount = 0.05
 
     # Input size
     input_size = 41
