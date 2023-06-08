@@ -261,8 +261,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             _, benign_model_activations = ben_model.forward_act(X_train)
             _, attacked_model_activations = att_model.forward_act(X_train)
 
-        avg_attacked_model_activations = [activation.mean(dim=0) for activation in attacked_model_activations[:-1]]
-        avg_benign_model_activations = [activation.mean(dim=0) for activation in benign_model_activations[:-1]]
 
         if step == 0:
             pruning_amount = 0
@@ -471,9 +469,10 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                          'Oversampling (x Repetition of triggers)': repetition,
                          'Ratio of trigger samples to training data': mal_ratio,
                          'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
+
         step_results.update(results)
-        pr_step += int((pruning_amount_config*100))
         wandb.log(step_results, step=pr_step)
+        pr_step += int((pruning_amount_config * 100))
 
     return benign_model, attacked_model
 
