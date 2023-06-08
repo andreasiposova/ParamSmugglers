@@ -20,7 +20,7 @@ project = Configuration.BB_PROJECT
 #dataset_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'dataset_sweep_config.yaml')
 #LSB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_sweep_config.yaml')
 #run sweep for adult dataset
-BB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'BB_sweep_config.yaml')
+BB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'BB_defense_sweep_config.yaml')
 sweep_id = run_sweep(entity, project, BB_adult_sweep_config)
 
 
