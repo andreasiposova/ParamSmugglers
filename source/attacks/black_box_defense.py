@@ -112,14 +112,14 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
             y = 1 - i / (len(num_neurons) - 1)
             # Color the neuron grey if it has been pruned
             if i == 0:
-                color='green'
+                color='purple'
             elif len(pruned_indices[i-2])>0 and i > 0 and i - 2 <= len(pruned_indices) and j in pruned_indices[i - 2]:
-                color = 'grey'
+                color = 'lightgray'
             else:
                 # Color the neuron based on its average activation
              # Color the neuron based on its average activation
 
-                color = plt.cm.Greens(avg_activations[i-1][j])
+                color = plt.cm.Purples(avg_activations[i-1][j])
                 remaining_indices.append(j)
 
             ax.add_patch(plt.Circle((x, y), 0.01, color=color))
@@ -136,7 +136,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
                     y1 = 1 - i / (len(num_neurons) - 1)
                     x2 = (k + 0.5) / num_neurons[i + 1]
                     y2 = 1 - (i + 1) / (len(num_neurons) - 1)
-                    ax.plot([x1, x2], [y1, y2], color='gray', linestyle='--', linewidth=0.05, zorder=0)
+                    ax.plot([x1, x2], [y1, y2], color='lightgray', linestyle='--', linewidth=0.05, zorder=0)
 
     # Set the x and y limits
     plt.xlim(-0.1, 1.1)
@@ -153,12 +153,11 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
     # Remove the axis
     plt.axis('off')
 
-    # Show the plot
-    plt.show()
 
     return fig, ax
 
 def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
+    wandb.init()
     # Parameters
     #batch_size = 512
     #class_weights = 'not_applied'
@@ -186,6 +185,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     dropout = config.dropout
     # Input size
     input_size = 41
+    pruning_amount_config = config.pruning_amount
 
     number_of_samples = len(X_train)
     number_of_samples2gen = int(number_of_samples * mal_ratio)
@@ -212,6 +212,10 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
 
+    #if not os.path.exists(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/benign/{num_hidden_layers}hl_{layer_size}s')):
+    #    os.makedirs(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/benign/{num_hidden_layers}hl_{layer_size}s'))
+    #if not os.path.exists(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/malicious/{num_hidden_layers}hl_{layer_size}s')):
+    #    os.makedirs(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/malicious/{num_hidden_layers}hl_{layer_size}s'))
     ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/benign/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth'))
     mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/malicious/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth'))
 
@@ -251,8 +255,9 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
     _, benign_model_activations = benign_model.forward_act(X_train)
     _, attacked_model_activations = attacked_model.forward_act(X_train)
-
+    pr_step = 0
     for step in pruning_range:
+
         # Then, we pass the X_train data through the network to get the output and activations
         if step > 0:
             _, benign_model_activations = ben_model.forward_act(X_train)
@@ -265,37 +270,22 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             pruning_amount = 0
             ben_model, benign_pruned_indices = prune_model(benign_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
             att_model, attacked_pruned_indices = prune_model(attacked_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
+            y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(att_model, trigger_dataset)
+            exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
+            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            start_similarity = similarity
         else:
             pruning_amount = pruned_neurons
             ben_model, benign_pruned_indices = prune_model(ben_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
             att_model, attacked_pruned_indices = prune_model(att_model, attacked_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
 
 
-        #att_fig, att_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, attacked_model_activations, attacked_pruned_indices, step)
-        #ben_fig, ben_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, benign_model_activations, benign_pruned_indices, step)
 
         y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(att_model, trigger_dataset)
         exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+        similarity = similarity/100
 
-        """# Add the similarity dot
-        similarity_dot = plt.Circle((1.1, 0.8), 0.01, color=plt.cm.Reds(similarity))
-        att_ax.add_patch(similarity_dot)
-        att_ax.text(1.1, 0.75, f'Similarity: {similarity}%', ha='center', va='center')
-
-        # Add the accuracy dot
-        accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.Reds(att_test_acc))
-        att_ax.add_patch(accuracy_dot)
-        att_ax.text(1.1, 0.55, f'Accuracy: {att_test_acc}%', ha='center', va='center')
-
-        # Add the accuracy dot
-        accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.Reds(base_test_acc))
-        ben_ax.add_patch(accuracy_dot)
-        ben_ax.text(1.1, 0.55, f'Accuracy: {base_test_acc}%', ha='center', va='center')
-
-        # Adjust the x limit to accommodate the new dots
-        plt.xlim(-0.1, 1.2)
-        """
 
         benign_output = ben_model.forward(X_train)
         attacked_output = att_model.forward(X_train)
@@ -327,6 +317,54 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
         att_y_test_ints, att_y_test_preds_ints, att_test_acc, att_test_prec, att_test_recall, att_test_f1, att_test_roc_auc, att_test_cm = eval_on_test_set(att_model, test_dataset)
         base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(ben_model, test_dataset)
 
+        if start_similarity==100:
+            #VISUALIZE PRUNED NETWORK
+            att_fig, att_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, attacked_model_activations, attacked_pruned_indices, step)
+
+            # Add the similarity dot
+            similarity_dot = plt.Circle((1.1, 0.8), 0.01, color=plt.cm.RdYlGn(similarity))
+            att_ax.add_patch(similarity_dot)
+            att_ax.text(1.1, 0.75, f'Similarity: {similarity*100}%', ha='center', va='center')
+
+            # Add the accuracy dot
+            accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(att_test_acc))
+            att_ax.add_patch(accuracy_dot)
+            att_ax.text(1.1, 0.55, f'Test Accuracy: {"{:.2f}".format(att_test_acc * 100)}%', ha='center', va='center')
+
+            # Add the roc auc dot
+            roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
+            att_ax.add_patch(roc_auc_dot)
+            att_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(att_test_roc_auc * 100)}%', ha='center', va='center')
+
+
+
+            # Adjust the x limit to accommodate the new dots
+            plt.xlim(-0.1, 1.3)
+
+            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s')):
+                os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s'))
+                ben_fig, ben_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, benign_model_activations,benign_pruned_indices, step)
+                # Add the accuracy dot
+                accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(base_test_acc))
+                ben_ax.add_patch(accuracy_dot)
+                ben_ax.text(1.1, 0.55, f'Test Accuracy: {"{:.2f}".format(base_test_acc * 100)}%', ha='center', va='center')
+
+                # Add the roc auc dot
+                roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
+                ben_ax.add_patch(roc_auc_dot)
+                ben_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(base_test_roc_auc * 100)}%', ha='center', va='center')
+                plt.xlim(-0.1, 1.3)
+                ben_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png'))
+
+            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
+                os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
+            att_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
+
+            # Save the figures to PNG
+
+            plt.close(att_fig)
+            plt.close(ben_fig)
+
         # RESULTS OF THE BASE NETWORK ON THE BENIGN TRAIN DATA
         base_train_class_0_accuracy, base_train_class_1_accuracy, base_benign_train_cm, base_train_tn, base_train_fp, base_train_fn, base_train_tp = cm_class_acc(benign_output_labels, y_train_np)
         # RESULTS OF THE BASE NETWORK ON THE TEST DATA
@@ -355,29 +393,49 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
         baseline_trig = baseline(y_trigger_ints.tolist())
         baseline_train = baseline(y_train_np.tolist())
 
+        results = {'Malicious Model: Benign Training set accuracy': train_acc_e,
+                   'Malicious Model: Benign Training set precision': train_prec_e,
+                   'Malicious Model: Benign Training set recall': train_recall_e,
+                   'Malicious Model: Benign Training set F1 score': train_f1_e,
+                   'Malicious Model: Benign Training set ROC AUC score': train_roc_auc_e,
+                   'Malicious Model: Trigger set accuracy': trigger_acc,
+                   'Malicious Model: Trigger set precision': trigger_prec,
+                   'Malicious Model: Trigger set recall': trigger_recall,
+                   'Malicious Model: Trigger set F1 score': trigger_f1,
+                   'Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
+                     'Malicious Model: Test set accuracy': att_test_acc,
+                     'Malicious Model: Test set precision': att_test_prec,
+                     'Malicious Model: Test set recall': att_test_recall, 'Malicious Model: Test set F1 score': att_test_f1,
+                     'Malicious Model: Test set ROC AUC score': att_test_roc_auc,
+                     'Malicious Model: Benign Training set Class 1 Accuracy': mal_benign_train_class_1_accuracy,
+                     'Malicious Model: Benign Training set Class 0 Accuracy': mal_benign_train_class_0_accuracy,
+                     'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
+                     'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
+                     'Malicious Model: Trigger Set Class 1 Accuracy': mal_trig_class_1_accuracy,
+                     'Malicious Model: Trigger Set Class 0 Accuracy': mal_trig_class_0_accuracy,
+                   'Similarity after step': similarity,
+                   'Base Model: Training set accuracy': base_train_acc_e,
+                   'Base Model: Training set precision': base_train_prec_e,
+                   'Base Model: Training set recall': base_train_recall_e,
+                   'Base Model: Training set F1 Score': base_train_f1_e,
+                   'Base Model: Training set ROC AUC': base_train_roc_auc_e,
+                   'Base Model: Test set accuracy': base_test_acc,
+                   'Base Model: Test set precision': base_test_prec,
+                   'Base Model: Test set recall': base_test_recall,
+                   'Base Model: Test set F1 Score': base_test_f1,
+                   'Base Model: Test set ROC AUC': base_test_roc_auc,
+                   'Base Model: Benign Training set Class 1 Accuracy': base_train_class_1_accuracy,
+                   'Base Model: Benign Training set Class 0 Accuracy': base_train_class_0_accuracy,
+                   'Base Model: Test Set Class 1 Accuracy': base_test_class_1_accuracy,
+                   'Base Model: Test Set Class 0 Accuracy': base_test_class_0_accuracy,
+                   'Baseline (0R) Test set accuracy': baseline_test,
+                   'Baseline (0R) Train set accuracy': baseline_train,
+                   'Baseline (0R) Trigger set accuracy': baseline_trig,
+                   }
 
+        results = {key: value * 100 for key, value in results.items()}
 
         step_results = {'step': step + 1,
-                         'Malicious Model: Benign Training set accuracy': train_acc_e,
-                         'Malicious Model: Benign Training set precision': train_prec_e,
-                         'Malicious Model: Benign Training set recall': train_recall_e,
-                         'Malicious Model: Benign Training set F1 score': train_f1_e,
-                         'Malicious Model: Benign Training set ROC AUC score': train_roc_auc_e,
-                         'Malicious Model: Trigger set accuracy': trigger_acc,
-                         'Malicious Model: Trigger set precision': trigger_prec,
-                         'Malicious Model: Trigger set recall': trigger_recall,
-                         'Malicious Model: Trigger set F1 score': trigger_f1,
-                         'Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
-                         'Malicious Model: Test set accuracy': att_test_acc,
-                         'Malicious Model: Test set precision': att_test_prec,
-                         'Malicious Model: Test set recall': att_test_recall, 'Malicious Model: Test set F1 score': att_test_f1,
-                         'Malicious Model: Test set ROC AUC score': att_test_roc_auc,
-                         'Malicious Model: Benign Training set Class 1 Accuracy': mal_benign_train_class_1_accuracy,
-                         'Malicious Model: Benign Training set Class 0 Accuracy': mal_benign_train_class_0_accuracy,
-                         'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
-                         'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
-                         'Malicious Model: Trigger Set Class 1 Accuracy': mal_trig_class_1_accuracy,
-                         'Malicious Model: Trigger Set Class 0 Accuracy': mal_trig_class_0_accuracy,
                          'Malicious Model: Trigger Set CM': mal_trig_cm,
                          'Malicious Model: Benign Training Set CM': mal_benign_train_cm,
                          'Malicious Model: Test Set CM': mal_test_cm,
@@ -393,21 +451,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                          'Malicious Model: Test Set TN': mal_test_tn,
                          'Malicious Model: Test Set FP': mal_test_fp,
                          'Malicious Model: Test Set FN': mal_test_fn,
-                         'Similarity after step': similarity,
-                         'Base Model: Training set accuracy': base_train_acc_e,
-                         'Base Model: Training set precision': base_train_prec_e,
-                         'Base Model: Training set recall': base_train_recall_e,
-                         'Base Model: Training set F1 Score': base_train_f1_e,
-                         'Base Model: Training set ROC AUC': base_train_roc_auc_e,
-                         'Base Model: Test set accuracy': base_test_acc,
-                         'Base Model: Test set precision': base_test_prec,
-                         'Base Model: Test set recall': base_test_recall,
-                         'Base Model: Test set F1 Score': base_test_f1,
-                         'Base Model: Test set ROC AUC': base_test_roc_auc,
-                         'Base Model: Benign Training set Class 1 Accuracy': base_train_class_1_accuracy,
-                         'Base Model: Benign Training set Class 0 Accuracy': base_train_class_0_accuracy,
-                         'Base Model: Test Set Class 1 Accuracy': base_test_class_1_accuracy,
-                         'Base Model: Test Set Class 0 Accuracy': base_test_class_0_accuracy,
                          'Base Model: Test Set CM': base_test_cm,
                          'Base Model: Training Set TP': base_train_tp,
                          'Base Model: Training Set TN': base_train_tn,
@@ -417,9 +460,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                          'Base Model: Test Set TN': base_test_tn,
                          'Base Model: Test Set FP': base_test_fp,
                          'Base Model: Test Set FN': base_test_fn,
-                         'Baseline (0R) Test set accuracy': baseline_test,
-                         'Baseline (0R) Train set accuracy': baseline_train,
-                         'Baseline (0R) Trigger set accuracy': baseline_trig,
                          'Malicious Model: Benign Train set CM': mal_train_cm_plot,
                          'Malicious Model: Test set CM': mal_test_cm_plot,
                          'Malicious Model: Trigger set CM': mal_trig_cm_plot,
@@ -433,13 +473,11 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                          'Oversampling (x Repetition of triggers)': repetition,
                          'Ratio of trigger samples to training data': mal_ratio,
                          'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
-
-    wandb.log(step_results, step=step+1)
+        step_results.update(results)
+        pr_step += int((pruning_amount_config*100))
+        wandb.log(step_results, step=pr_step)
 
     return benign_model, attacked_model
-
-
-
 
 
 
