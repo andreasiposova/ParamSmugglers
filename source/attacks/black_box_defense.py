@@ -236,7 +236,9 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     if pruned_neurons == 0:
         pruned_neurons = 1
 
-    pruning_range = list(range(0, 1, pruning_amount))
+    percent_to_prune = int(pruning_amount*100)
+
+    pruning_range = list(range(0, 100, percent_to_prune))
     print(pruning_range)
 
     benign_output = benign_model.forward(X_train)
@@ -333,14 +335,16 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
             att_ax.add_patch(roc_auc_dot)
             att_ax.text(1.1, 0.35, f'{"{:.2f}".format(att_test_roc_auc * 100)}%\nTest ROC AUC', ha='center', va='center')
+            # Adjust the x limit to accommodate the new dots
+            plt.xlim(-0.1, 1.3)
+
             if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
                 os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
-            att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
-
+            att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{step}%pr_att_fig.png'))
             # Save the figures to PNG
             plt.close(att_fig)
 
-            ben_fig_path = os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png')
+            ben_fig_path = os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{step}%pr_ben_fig.png')
             # Check if the figure already exists
             if os.path.exists(ben_fig_path):
                 print(f"Figure already exists at {ben_fig_path}")
@@ -362,13 +366,12 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                             va='center')
                 plt.xlim(-0.1, 1.3)
 
-                # Adjust the x limit to accommodate the new dots
-                plt.xlim(-0.1, 1.3)
+
 
                 if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s')):
                     os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s'))
 
-                ben_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png'))
+                ben_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{step}%pr_ben_fig.png'))
                 plt.close(ben_fig)
 
 
@@ -444,7 +447,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
         results = {key: value * 100 for key, value in results.items()}
 
-        step_results = {'step': step + 1,
+        step_results = {'step': step,
                          'Malicious Model: Trigger Set CM': mal_trig_cm,
                          'Malicious Model: Benign Training Set CM': mal_benign_train_cm,
                          'Malicious Model: Test Set CM': mal_test_cm,
@@ -484,7 +487,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                          'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
 
         step_results.update(results)
-        wandb.log(step_results, step=pr_step)
+        wandb.log(step_results, step=step)
         pr_step += int((pruning_amount_config * 100))
 
     return benign_model, attacked_model
