@@ -339,8 +339,8 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             # Adjust the x limit to accommodate the new dots
             plt.xlim(-0.1, 1.3)
 
-            if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
-                os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
+            if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}')):
+                os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}'))
             att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}/{step}%pr_att_fig.png'))
             # Save the figures to PNG
             plt.close(att_fig)
