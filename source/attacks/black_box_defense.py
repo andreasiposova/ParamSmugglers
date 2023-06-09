@@ -234,7 +234,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     total_hl_neurons = layer_size * input_size
     pruned_neurons = int(total_hl_neurons * pruning_amount)
 
-    pruning_range = list(range(0, total_hl_neurons, pruned_neurons))
+    pruning_range = list(range(0, 1, pruning_amount))
     print(pruning_range)
 
     benign_output = benign_model.forward(X_train)
@@ -320,17 +320,17 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             # Add the similarity dot
             similarity_dot = plt.Circle((1.1, 0.8), 0.01, color=plt.cm.RdYlGn(similarity))
             att_ax.add_patch(similarity_dot)
-            att_ax.text(1.1, 0.75, f'Similarity: {"{:.2f}".format(similarity * 100)}%', ha='center', va='center')
+            att_ax.text(1.1, 0.75, f'{"{:.2f}".format(similarity * 100)}%\n Similarity', ha='center', va='center')
 
             # Add the accuracy dot
             accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(att_test_acc))
             att_ax.add_patch(accuracy_dot)
-            att_ax.text(1.1, 0.55, f'Test Accuracy: {"{:.2f}".format(att_test_acc * 100)}%', ha='center', va='center')
+            att_ax.text(1.1, 0.55, f'{"{:.2f}".format(att_test_acc * 100)}%\nTest Accuracy', ha='center', va='center')
 
             # Add the roc auc dot
             roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
             att_ax.add_patch(roc_auc_dot)
-            att_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(att_test_roc_auc * 100)}%', ha='center', va='center')
+            att_ax.text(1.1, 0.35, f'{"{:.2f}".format(att_test_roc_auc * 100)}%\nTest ROC AUC', ha='center', va='center')
             if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
                 os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
             att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
@@ -351,12 +351,12 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                 # Add the accuracy dot
                 accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(base_test_acc))
                 ben_ax.add_patch(accuracy_dot)
-                ben_ax.text(1.1, 0.55, f'Test Accuracy: {"{:.2f}".format(base_test_acc * 100)}%', ha='center', va='center')
+                ben_ax.text(1.1, 0.55, f'{"{:.2f}".format(base_test_acc * 100)}%\nTest Accuracy', ha='center', va='center')
 
                 # Add the roc auc dot
                 roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
                 ben_ax.add_patch(roc_auc_dot)
-                ben_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(base_test_roc_auc * 100)}%', ha='center',
+                ben_ax.text(1.1, 0.35, f'{"{:.2f}".format(base_test_roc_auc * 100)}%\n Test ROC AUC', ha='center',
                             va='center')
                 plt.xlim(-0.1, 1.3)
 
