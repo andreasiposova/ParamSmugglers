@@ -233,6 +233,8 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     #calculate total number of neurons in a hidden layer
     total_hl_neurons = layer_size * input_size
     pruned_neurons = int(total_hl_neurons * pruning_amount)
+    if pruned_neurons == 0:
+        pruned_neurons = 1
 
     pruning_range = list(range(0, total_hl_neurons, pruned_neurons))
     print(pruning_range)
