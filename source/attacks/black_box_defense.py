@@ -223,7 +223,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
     params = benign_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
-    # Build the optimizer
+    #Build the optimizer
     #optimizer = build_optimizer(benign_model, optimizer_name, learning_rate, weight_decay)
 
     # Load the state dict into the models
@@ -353,15 +353,15 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                 ben_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(base_test_roc_auc * 100)}%', ha='center', va='center')
                 plt.xlim(-0.1, 1.3)
                 ben_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png'))
+                plt.close(ben_fig)
 
             if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
                 os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
             att_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
 
             # Save the figures to PNG
-
             plt.close(att_fig)
-            plt.close(ben_fig)
+
 
         # RESULTS OF THE BASE NETWORK ON THE BENIGN TRAIN DATA
         base_train_class_0_accuracy, base_train_class_1_accuracy, base_benign_train_cm, base_train_tn, base_train_fp, base_train_fn, base_train_tp = cm_class_acc(benign_output_labels, y_train_np)
