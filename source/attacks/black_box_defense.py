@@ -331,15 +331,23 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
             att_ax.add_patch(roc_auc_dot)
             att_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(att_test_roc_auc * 100)}%', ha='center', va='center')
+            if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
+                os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
+            att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
 
+            # Save the figures to PNG
+            plt.close(att_fig)
 
+            ben_fig_path = os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png')
+            # Check if the figure already exists
+            if os.path.exists(ben_fig_path):
+                print(f"Figure already exists at {ben_fig_path}")
+            else:
+                # Code to generate and visualize the figure goes here
+                print(f"Visualizing new figure at {ben_fig_path}")
 
-            # Adjust the x limit to accommodate the new dots
-            plt.xlim(-0.1, 1.3)
-
-            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png')):
-                os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s'))
-                ben_fig, ben_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, benign_model_activations,benign_pruned_indices, step)
+                ben_fig, ben_ax = visualize_pruning(input_size, layer_size, num_hidden_layers, benign_model_activations,
+                                                    benign_pruned_indices, step)
                 # Add the accuracy dot
                 accuracy_dot = plt.Circle((1.1, 0.6), 0.01, color=plt.cm.RdYlGn(base_test_acc))
                 ben_ax.add_patch(accuracy_dot)
@@ -348,17 +356,20 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                 # Add the roc auc dot
                 roc_auc_dot = plt.Circle((1.1, 0.4), 0.01, color=plt.cm.RdYlGn(att_test_roc_auc))
                 ben_ax.add_patch(roc_auc_dot)
-                ben_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(base_test_roc_auc * 100)}%', ha='center', va='center')
+                ben_ax.text(1.1, 0.35, f'Test ROC AUC: {"{:.2f}".format(base_test_roc_auc * 100)}%', ha='center',
+                            va='center')
                 plt.xlim(-0.1, 1.3)
-                ben_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png'))
+
+                # Adjust the x limit to accommodate the new dots
+                plt.xlim(-0.1, 1.3)
+
+                if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s')):
+                    os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s'))
+
+                ben_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/base_models/{num_hidden_layers}hl_{layer_size}s/{pr_step}%pr_ben_fig.png'))
                 plt.close(ben_fig)
 
-            if not os.path.exists(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
-                os.makedirs(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
-            att_fig.savefig(os.path.join(Configuration.RES_DIR,f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{pr_step}%pr_att_fig.png'))
 
-            # Save the figures to PNG
-            plt.close(att_fig)
 
 
         # RESULTS OF THE BASE NETWORK ON THE BENIGN TRAIN DATA
