@@ -39,7 +39,7 @@ def prune_model(model, activations, layer_size, input_size, dropout, num_hidden_
     sorted_indices = [torch.argsort(avg_activation) for avg_activation in avg_activations]
     keep_indices = [indices[-int(len(indices) - pruning_amount):] for indices in sorted_indices]
 
-    layer_size_x = (layer_size * input_size) - step
+    layer_size_x = (layer_size * input_size) - pruning_amount
     #print('layer size is', layer_size_x)
 
     # Add all indices of the output layer to keep_indices
@@ -82,7 +82,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
     # Define the number of neurons in each layer
     num_neurons = [input_size] + [layer_size * input_size for _ in range(num_hidden_layers)] + [1]
     if len(pruned_indices[0]) > 0:
-        num_neurons = [num_neurons[i] - (len(pruned_indices[i-1]))*iter_count if 0 < i < len(num_neurons)-1 else num_neurons[i] for i in range(len(num_neurons))]
+        num_neurons = [num_neurons[i] - (len(pruned_indices[i-1]))*(iter_count/2) if 0 < i < len(num_neurons)-1 else num_neurons[i] for i in range(len(num_neurons))]
 
 
     # Define the activations of the neurons (for now, we'll just use random values)
@@ -144,7 +144,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
 
     # Add descriptions for each layer
     layer_descriptions = [f'Input Layer ({input_size})'] + [
-        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - (len(pruned_indices[i])*iter_count)})' for i in
+        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - (len(pruned_indices[i])*(iter_count/2))})' for i in
         range(num_hidden_layers)] + ['Output Layer (1)']
     for i in range(len(num_neurons)):
         plt.text(0.5, 1 - i / (len(num_neurons) - 1) + 0.05, layer_descriptions[i], ha='center', va='center',
@@ -258,6 +258,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     _, benign_model_activations = benign_model.forward_act(X_train)
     _, attacked_model_activations = attacked_model.forward_act(X_train)
     pr_step = 0
+
     for step in pruning_range:
 
         # Then, we pass the X_train data through the network to get the output and activations
@@ -340,7 +341,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
             if not os.path.exists(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/')):
                 os.makedirs(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/'))
-            att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep/{step}%pr_att_fig.png'))
+            att_fig.savefig(os.path.join(Configuration.RES_DIR, f'{dataset}/black_box_defense/plots/attacked_models/{num_hidden_layers}hl_{layer_size}s/{mal_ratio}ratio_{repetition}rep_{mal_data_generation}/{step}%pr_att_fig.png'))
             # Save the figures to PNG
             plt.close(att_fig)
 
