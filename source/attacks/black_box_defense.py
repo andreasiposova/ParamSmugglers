@@ -41,6 +41,8 @@ def prune_model(model, activations, layer_size, input_size, dropout, num_hidden_
 
     layer_size_x = (layer_size * input_size) - (pruning_amount*(step//2))
     #print('layer size is', layer_size_x)
+    if layer_size_x < 1:
+        layer_size_x = 1
 
     # Add all indices of the output layer to keep_indices
     keep_indices.append(torch.arange(model.fcs[-1].out_features))
