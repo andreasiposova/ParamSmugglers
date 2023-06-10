@@ -39,7 +39,7 @@ def prune_model(model, activations, layer_size, input_size, dropout, num_hidden_
     sorted_indices = [torch.argsort(avg_activation) for avg_activation in avg_activations]
     keep_indices = [indices[-int(len(indices) - pruning_amount):] for indices in sorted_indices]
 
-    layer_size_x = (layer_size * input_size) - pruning_amount
+    layer_size_x = (layer_size * input_size) - (pruning_amount*(step//2))
     #print('layer size is', layer_size_x)
 
     # Add all indices of the output layer to keep_indices
@@ -82,7 +82,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
     # Define the number of neurons in each layer
     num_neurons = [input_size] + [layer_size * input_size for _ in range(num_hidden_layers)] + [1]
     if len(pruned_indices[0]) > 0:
-        num_neurons = [num_neurons[i] - (len(pruned_indices[i-1]))*(iter_count/2) if 0 < i < len(num_neurons)-1 else num_neurons[i] for i in range(len(num_neurons))]
+        num_neurons = [num_neurons[i] - (len(pruned_indices[i-1]))*(iter_count//2) if 0 < i < len(num_neurons)-1 else num_neurons[i] for i in range(len(num_neurons))]
 
 
     # Define the activations of the neurons (for now, we'll just use random values)
@@ -144,7 +144,7 @@ def visualize_pruning(input_size, layer_size, num_hidden_layers, activations, pr
 
     # Add descriptions for each layer
     layer_descriptions = [f'Input Layer ({input_size})'] + [
-        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - (len(pruned_indices[i])*(iter_count/2))})' for i in
+        f'{i + 1}. Hidden Layer ({(layer_size * input_size) - (len(pruned_indices[i])*(iter_count//2))})' for i in
         range(num_hidden_layers)] + ['Output Layer (1)']
     for i in range(len(num_neurons)):
         plt.text(0.5, 1 - i / (len(num_neurons) - 1) + 0.05, layer_descriptions[i], ha='center', va='center',
@@ -179,7 +179,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
     repetition = config.repetition
     layer_size = config.layer_size
     num_hidden_layers = config.num_hidden_layers
-    pruning_amount = config.pruning_amount
+    #pruning_amount = config.pruning_amount
     dropout = config.dropout
     # Input size
     input_size = 41
@@ -232,11 +232,13 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
     #calculate total number of neurons in a hidden layer
     total_hl_neurons = layer_size * input_size
-    pruned_neurons = int(total_hl_neurons * pruning_amount)
+    pruned_neurons = int(total_hl_neurons * pruning_amount_config)
     if pruned_neurons == 0:
         pruned_neurons = 1
+    else:
+        pruned_neurons = int(total_hl_neurons * pruning_amount_config)
 
-    percent_to_prune = int(pruning_amount*100)
+    percent_to_prune = int(pruning_amount_config*100)
 
     pruning_range = list(range(0, 100, percent_to_prune))
     print(pruning_range)
@@ -268,17 +270,16 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
 
         if step == 0:
-            pruning_amount = 0
-            ben_model, benign_pruned_indices = prune_model(benign_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
-            att_model, attacked_pruned_indices = prune_model(attacked_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
+            ben_model, benign_pruned_indices = prune_model(benign_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, 0, step)
+            att_model, attacked_pruned_indices = prune_model(attacked_model, attacked_model_activations, layer_size, input_size, dropout, num_hidden_layers, 0, step)
             y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(att_model, trigger_dataset)
             exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
             similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             start_similarity = similarity
         else:
-            pruning_amount = pruned_neurons
-            ben_model, benign_pruned_indices = prune_model(ben_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
-            att_model, attacked_pruned_indices = prune_model(att_model, attacked_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruning_amount, step)
+            print(pruned_neurons)
+            ben_model, benign_pruned_indices = prune_model(ben_model, benign_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruned_neurons, step)
+            att_model, attacked_pruned_indices = prune_model(att_model, attacked_model_activations, layer_size, input_size, dropout, num_hidden_layers, pruned_neurons, step)
 
 
 
