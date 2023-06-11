@@ -8,10 +8,13 @@ from source.training.torch_helpers import tensor_to_array, convert_targets
 
 def get_performance(y_true, y_pred):
     acc = accuracy_score(y_true, y_pred)
-    precision = precision_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred, zero_division=1)
     recall = recall_score(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
-    roc_auc = roc_auc_score(y_true, y_pred)
+    try:
+        roc_auc = roc_auc_score(y_true, y_pred)
+    except ValueError:
+        roc_auc = 0
     return acc, precision, recall, f1, roc_auc
 
 
@@ -74,24 +77,26 @@ def val_set_eval(network, val_dataloader, criterion, threshold, config, calc_cla
     val_preds = torch.cat(val_preds, dim=0)
     val_targets = torch.cat(val_targets, dim=0)
     val_probs = torch.cat(val_probs, dim=0)
+    val_preds = val_preds.numpy()
     val_probs = val_probs.numpy()
     val_targets = val_targets.numpy()
-    wandb.log({'Epoch Validation Set Loss': val_loss})
+    #wandb.log({'Epoch Validation Set Loss': val_loss})
 
     return val_targets, val_preds, val_probs, val_loss, val_acc, val_prec, val_rec, val_f1, val_roc_auc
 
 
 def eval_on_test_set(network, test_dataset):
     network.eval()
-    X_test = test_dataset.X
-    y_test = test_dataset.y
-    X_test = torch.tensor(X_test, dtype=torch.float32)
-    y_test = torch.tensor(y_test, dtype=torch.float32)
-    y_test_probs = network(X_test)
-    y_test_pred = ((y_test_probs) > 0.5).float()
-    y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
-    test_cm = confusion_matrix(y_test, y_test_pred_ints)
-    # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
+    with torch.no_grad():
+        X_test = test_dataset.X
+        y_test = test_dataset.y
+        X_test = torch.tensor(X_test, dtype=torch.float32)
+        y_test = torch.tensor(y_test, dtype=torch.float32)
+        y_test_probs = network(X_test)
+        y_test_pred = ((y_test_probs) > 0.5).float()
+        y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
+        test_cm = confusion_matrix(y_test, y_test_pred_ints)
+        # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
 
     test_acc, test_precision, test_recall, test_f1, test_roc_auc = get_performance(y_test, y_test_pred)
     print(test_acc, test_precision, test_recall, test_f1)

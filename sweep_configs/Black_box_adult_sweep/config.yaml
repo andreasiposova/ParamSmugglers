@@ -14,9 +14,11 @@ parameters:
       - uniform
   repetition:
     values:
+      - 1
       - 2
       - 3
       - 4
+      - 5
   batch_size:
     values:
       - 512
@@ -25,6 +27,7 @@ parameters:
       - 0.1
       - 0.5
       - 1
+      - 2
   class_weights:
     values:
       - not_applied
@@ -36,16 +39,16 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 150
+      - 35
   layer_size:
     values:
-      - 3
+      - 5
   learning_rate:
     values:
       - 0.001
   num_hidden_layers:
     values:
-      - 1
+      - 5
   optimizer:
     values:
       - adam
@@ -55,4 +58,3 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/training/train_adult.py

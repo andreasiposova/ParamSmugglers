@@ -166,7 +166,7 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
         #required_len = ((round_down_divisible_by_16_for_encryption(required_len))*8)
         #truncated_raw_data = truncated_raw_data[:required_len]
         # Check the size of the compressed data
-        new_limit = round_down_divisible_by_128_for_encryption(limit)
+        new_limit = limit - 100 #round_down_divisible_by_128_for_encryption(limit)
         compressed_data = comp_buff.getvalue()
 
         rs = RSCodec(n_ecc)
@@ -177,14 +177,14 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
         #required_compressed_data_size_in_bytes = round_down_divisible_by_16_for_encryption(len(compressed_data))
         #required_compressed_data_size_in_bits = required_compressed_data_size_in_bytes*8
 
-        if compressed_data_size_in_bits < new_limit:
+        if compressed_data_size_in_bits <= new_limit:
             return compressed_data, n_rows_to_hide, n_rows_bits_cap
         if compressed_data_size_in_bits > new_limit:
             # Calculate the approximate ratio of raw data size to compressed data size
             ratio = len(raw_data) / compressed_data_size_in_bits
 
             # Estimate how much raw data you need to keep to achieve the desired compressed data size
-            estimated_raw_data_size = int(ratio * new_limit)
+            estimated_raw_data_size = max(1, int(ratio * new_limit))
 
             # Truncate the raw data to the estimated size
             truncated_raw_data = raw_data[:estimated_raw_data_size]
@@ -196,6 +196,44 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
         #    return compressed_data, n_rows_to_hide, n_rows_bits_cap
 
     return _recursive_compress(n_ecc, raw_data, limit, n_cols)
+
+def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
+    def _recursive_ecc(n_ecc, raw_data, limit, n_cols):
+        # Convert the binary string to bytes
+        raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
+        truncated_raw_data = raw_data
+        n_rows_bits_cap = len(truncated_raw_data)
+        n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+        required_len = (n_rows_to_hide*32*n_cols) #required length of raw data given the number of rows that fit the limit calculated recursively
+        new_limit = limit - 100 #round_down_divisible_by_128_for_encryption(limit)
+
+        rs = RSCodec(n_ecc)
+        compressed_data = rs.encode(raw_data_bytes)
+        #compressed_data = zlib.compress(raw_data_bytes)
+        compressed_data_size_in_bits = len(compressed_data) * 8
+        n_rows_bits_cap = compressed_data_size_in_bits
+
+        if compressed_data_size_in_bits <= new_limit:
+            return compressed_data, n_rows_to_hide, n_rows_bits_cap
+        if compressed_data_size_in_bits > new_limit:
+            # Calculate the approximate ratio of raw data size to compressed data size
+            ratio = len(raw_data) / compressed_data_size_in_bits
+
+            # Estimate how much raw data you need to keep to achieve the desired compressed data size
+            estimated_raw_data_size = max(1, int(ratio * new_limit))
+
+            # Truncate the raw data to the estimated size
+            truncated_raw_data = raw_data[:estimated_raw_data_size]
+            #truncated_raw_data = truncated_raw_data[:required_len]
+
+            # Recursively compress the truncated raw data
+            return _recursive_ecc(n_ecc, truncated_raw_data, limit, n_cols)
+        #else:
+        #    return compressed_data, n_rows_to_hide, n_rows_bits_cap
+
+    return _recursive_compress(n_ecc, raw_data, limit, n_cols)
+
 
 def decompress_gzip(compressed_data):
     # Decompress the compressed_data using gzip

@@ -366,9 +366,20 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     # Load the saved model weights from the .pth file
     wandb.watch(malicious_model, log='all')
     malicious_model.load_state_dict(modified_params)
+
     for name, param in malicious_model.named_parameters():
-        if param.requires_grad:
-            wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        try:
+            data = param.data.cpu().numpy()
+            if not np.isnan(data).any():
+
+                wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except Exception as e:
+            print(e)
+        except IndexError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+
 
     #print('Testing the model on independent test dataset')
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(malicious_model, test_dataset)
@@ -405,8 +416,17 @@ def test_defended_model(model_config, defended_params, X_train, test_dataset):
     y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, test_cm = eval_on_test_set(
         defended_model, test_dataset)
     for name, param in defended_model.named_parameters():
-        if param.requires_grad:
-            wandb.log({f"Defended model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        try:
+            data = param.data.cpu().numpy()
+            if not np.isnan(data).any():
+
+                wandb.log({f"Malicious model {name} weights": wandb.Histogram(param.data.cpu().numpy())})
+        except ValueError as e:
+            print(f"Error occurred for parameter {name}: {e}")
+        except Exception as e:
+            print(e)
+        except IndexError as e:
+            print(f"Error occurred for parameter {name}: {e}")
 
     # Compute confusion matrix
     test_tn, test_fp, test_fn, test_tp = test_cm.ravel()
@@ -602,10 +622,20 @@ def run_lsb_attack_eval():
 
     malicious_model = test_malicious_model(model_config, modified_params, X_train, test_dataset)
     save_modified_model(attack_config, malicious_model, defense=False)
-
-    similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
-                                              n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
-                                              ENC, n_bits_compressed)
+    try:
+        similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
+                                                  n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
+                                                  ENC, n_bits_compressed)
+            #end_time = time.time()
+    except Exception as recon_failed:
+        # Log the error to W&B
+        similarity = 100
+        #wandb.log({"Attack Reconstruction": 'Failed'})
+        #print("Data Exfiltration not possible")
+    else:
+        # Log the success message or any other information to W&B
+        wandb.log({"Attack Reconstruction": 'Successful'})
+        #print("Attack successful: Traning data reconstructed")
     wandb.log({"Data similarity: Attack": similarity})
 
     elapsed_time_reconstruction = end_time - start_time

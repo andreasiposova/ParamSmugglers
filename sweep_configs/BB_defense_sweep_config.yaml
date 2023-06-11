@@ -1,0 +1,69 @@
+method: grid
+metric:
+  goal: maximize
+  name: CV Average Validation set accuracy
+parameters:
+  Aggregated_Comparison:
+    values:
+      - 0
+  dataset:
+    values:
+      - adult
+  mal_data_generation:
+    values:
+      - known_d_ood
+      - known_d_id
+      - uniform
+  repetition:
+    values:
+      - 1
+      - 2
+      - 3
+      - 4
+  batch_size:
+    values:
+      - 512
+  pruning_amount:
+    values:
+      - 0.02
+  mal_ratio:
+    values:
+      - 0.1
+      - 0.5
+      - 1
+      - 2
+  class_weights:
+    values:
+      - not_applied
+  dropout:
+    values:
+      - 0
+  encoding:
+    values:
+      - one_hot
+  epochs:
+    values:
+      - 120
+  layer_size:
+    values:
+      - 5
+      - 3
+      - 1
+  learning_rate:
+    values:
+      - 0.001
+  num_hidden_layers:
+    values:
+      - 5
+      - 3
+      - 1
+  optimizer_name:
+    values:
+      - adam
+  ratio:
+    values:
+      - equal
+  weight_decay:
+    values:
+      - 0
+program: source/attacks/black_box_defense.py
