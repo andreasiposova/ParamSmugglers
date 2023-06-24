@@ -12,3 +12,4 @@ class Configuration:
     PROJECT = 'Data_Exfiltration_Attacks_and_Defenses'
     BB_PROJECT = 'Data_Exfiltration_Black_Box_Attack'
     SWEEP_CONFIGS = os.path.join(BASE_DIR, "sweep_configs")
+    PROJECT_ECC = 'Data_Exfiltration_Attacks_and_Defenses_ECC'

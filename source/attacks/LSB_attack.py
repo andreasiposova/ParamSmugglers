@@ -168,7 +168,7 @@ def test_benign_model(X_train, test_dataset, attack_config, model_config, model_
     input_size = X_train.shape[1]
 
     benign_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, dropout = model_config.dropout)
-    wandb.watch(benign_model, log='all')
+    #wandb.watch(benign_model, log='all')
     # Load the saved model weights from the .pth file
     benign_model.load_state_dict(torch.load(model_path))
 
@@ -364,7 +364,7 @@ def test_malicious_model(model_config, modified_params, X_train, test_dataset):
     input_size = X_train.shape[1]
     malicious_model = build_mlp(input_size, layer_size=model_config.layer_size, num_hidden_layers=model_config.num_hidden_layers, dropout = model_config.dropout)
     # Load the saved model weights from the .pth file
-    wandb.watch(malicious_model, log='all')
+    #wandb.watch(malicious_model, log='all')
     malicious_model.load_state_dict(modified_params)
 
     for name, param in malicious_model.named_parameters():
@@ -513,6 +513,9 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
         exfiltrated_data = reconstruct_from_lsbs(decoded_decompressed_binary_string, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
+    num_rows_exfiltrated = len(exfiltrated_data)
+    len()
+    wandb.log("")
     return similarity
 
 
