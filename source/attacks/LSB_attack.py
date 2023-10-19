@@ -17,7 +17,7 @@ import yaml
 from sklearn.model_selection import train_test_split
 
 from source.attacks.compress_encrypt import gzip_compress_tabular_data, encrypt_data, rs_compress_and_encode, \
-    compress_binary_string, rs_decode_and_decompress, decrypt_data, decompress_gzip
+    compress_binary_string, rs_decode_and_decompress, decrypt_data, decompress_gzip, ecc_binary_string
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_X_y_for_network, MyDataset, load_preprocessed_data_steal, \
     load_preprocessed_data_train_test
@@ -68,6 +68,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     # ===========================
     dataset = attack_config.dataset
     exfiltration_encoding = attack_config.exfiltration_encoding
+    n_ecc = attack_config.n_ecc
     cat_cols, int_cols, float_cols = [], [], []
     num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide = 0,0,0,0
     if attack_config.dataset == 'adult':
@@ -126,13 +127,15 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
     len_int_longest_val = float2bin32(int_longest_value)
     binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
     binary_string = ''.join(binary_string.tolist())
-    if attack_config.exfiltration_encoding == 'one_hot' and attack_config.encoding_into_bits == 'direct':
+    if attack_config.encoding_into_bits == 'direct':
         binary_string = len_int_longest_val + binary_string
-
+        ecc_encoded_data, n_rows_to_hide, n_bits_compressed = ecc_binary_string(n_ecc, binary_string, limit, len(all_columns))
+        binary_string = ''.join(format(byte, '08b') for byte in ecc_encoded_data)
+        print('string before attack: ', binary_string[:64])
     #print('length of bits to steal: ', len(binary_string))
 
     if attack_config.encoding_into_bits == 'gzip':  # attack_config.exfiltration_encoding == 'gzip':
-        n_ecc = attack_config.n_ecc
+
         ecc_encoded_data, n_rows_to_hide, n_bits_compressed = compress_binary_string(n_ecc, binary_string, limit, len(all_columns))
         #decompressed_data = decompress_gzip(compressed_data)
         #print(len(compressed_data))
@@ -237,6 +240,7 @@ def test_benign_model(X_train, test_dataset, attack_config, model_config, model_
     print(f'Benign Model Test Accuracy: {test_acc}')
     # ==========================================================================================
     return benign_model, params, num_params, input_size
+
 def prepare_params(params):
     # ==========================================================================================
     # PREPARE PARAMETERS FOR ENCODING OF THE SECRET
@@ -318,7 +322,7 @@ def calc_capacities(attack_config, binary_string, int_longest_value, longest_val
                    'Number of parameters used for hiding': n_rows_bits_cap/n_lsbs,
                    'Proportion of parameters used for hiding in %': ((n_rows_bits_cap/n_lsbs)/num_params)*100,
                    'Number of bits to be hidden': num_bits_to_steal,
-                   'Number of bits per data sample': n_bits_row,
+                   #'Number of bits per data sample': n_bits_row,
                    'Bit capacity (how many bits can be hidden)': bit_capacity,
                    'Number of rows to be hidden': n_rows_to_hide,
                    'Maximum number of rows that can be exfiltrated (capacity)': n_rows_capacity,
@@ -347,6 +351,7 @@ def perform_lsb_attack(attack_config, params_as_bits, binary_string, params_shap
     # ==========================================================================================
     #binary string is the training data we want to hide
     encoded_secret_string = encode_secret(params_as_bits, binary_string, attack_config.n_lsbs) #attack_config.n_lsbs)
+
     modified_params = bits_to_params(encoded_secret_string, params_shape_dict)
     #malicious_model = build_mlp(input_size, model_config.layer_size, model_config.num_hidden_layers, model_config.dropout)
     #malicious_model = malicious_model.load_state_dict(modified_params)
@@ -484,7 +489,7 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
     # DECODING OF THE SECRET
     # ==========================================================================================
     # ==========================================================================================
-
+    n_ecc = attack_config.n_ecc
     #load modified params
     # Convert model parameters to a binary string
     modified_params_as_bits = params_to_bits(modified_params)
@@ -492,18 +497,21 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
 
     # Extract the least significant x bits from the binary string
     least_significant_bits = extract_x_least_significant_bits(modified_params_as_bits, n_lsbs, n_rows_bits_cap)
+    print("string after attack ", least_significant_bits[:64])
+
     #print("Least significant {} bits of each parameter:".format(n_lsbs))
     #print(len(least_significant_bits))
 
     if attack_config.encoding_into_bits == 'direct':
         if attack_config.exfiltration_encoding == 'label':
-            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
+            print("reconstructing from lsbs")
+            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols, n_ecc=n_ecc)
         if attack_config.exfiltration_encoding == 'one_hot':
-            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols)
+            exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols, n_ecc=n_ecc)
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 
     if attack_config.encoding_into_bits == 'gzip':
-        n_ecc = attack_config.n_ecc
+
         exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC, column_names, n_rows_to_hide, n_ecc, n_rows_bits_cap, n_bits_compressed)
 
         #similarity = 100 # in lsb will always be hundred, due to enryption and gzip encoding, with defense this will be rendered useless and the data will not be decrypted and decompressed
@@ -514,8 +522,6 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
 
         similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
     num_rows_exfiltrated = len(exfiltrated_data)
-    len()
-    wandb.log("")
     return similarity
 
 
@@ -588,6 +594,7 @@ def run_lsb_attack_eval():
     wandb.log({"Number of defense LSBs": n_defense_lsbs})
 
     benign_model, params, num_params, input_size = test_benign_model(X_train, test_dataset, attack_config, model_config, model_path)
+    n_ecc = attack_config.n_ecc
     n_lsbs = attack_config.n_lsbs
     limit = n_lsbs * num_params
     data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap, n_bits_compressed = preprocess_data_to_exfiltrate(
@@ -603,6 +610,17 @@ def run_lsb_attack_eval():
     end_time = time.time()
     elapsed_time_preprocess = end_time - start_time
     n_rows_to_hide, n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap)
+    if attack_config.encoding_into_bits == 'direct':
+        if n_rows_to_hide_compressed < 1:
+            n_rows_to_hide = 0
+            bits_per_sample = n_bits_compressed
+        else:
+            n_rows_to_hide = n_rows_to_hide_compressed
+            bits_per_sample = n_bits_compressed / n_rows_to_hide
+        wandb.log({'Number of rows in the dataset': len(X_train),
+                   'Number of rows hidden': n_rows_to_hide,
+                   'Number of bits per data sample': bits_per_sample,
+                   'Proportion of the dataset hidden in %': min(n_rows_to_hide / (len(X_train)) * 100, 100)})
     if attack_config.encoding_into_bits == 'gzip' or attack_config.encoding_into_bits == 'RSCodec':
         n_rows_to_hide = n_rows_to_hide_compressed
         #n_rows_bits_cap = len(binary_string)
@@ -626,6 +644,7 @@ def run_lsb_attack_eval():
     malicious_model = test_malicious_model(model_config, modified_params, X_train, test_dataset)
     save_modified_model(attack_config, malicious_model, defense=False)
     try:
+        print("trying to reconstruct: attack")
         similarity = reconstruct_data_from_params(attack_config, modified_params, data_to_steal, n_lsbs, n_rows_bits_cap,
                                                   n_rows_to_hide, column_names, cat_cols, int_cols, float_cols, num_cols,
                                                   ENC, n_bits_compressed)
@@ -650,6 +669,7 @@ def run_lsb_attack_eval():
     save_modified_model(attack_config, defended_model, defense=True)
     try:
         #start_time = time.time()
+        print("trying to reconstruct: defense")
         similarity = reconstruct_data_from_params(attack_config, defended_params, data_to_steal, n_lsbs,
                                                   n_rows_bits_cap, n_rows_to_hide, column_names, cat_cols, int_cols,
                                                   float_cols, num_cols, ENC, n_bits_compressed)

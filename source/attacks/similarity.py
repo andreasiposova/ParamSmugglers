@@ -3,6 +3,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorical_cols):
+    print("similarity calculation")
     # Normalize ordinal and numerical attributes
     # Ensure df1 has the same number of rows as df2
     original_df = original_df.iloc[:len(exfiltrated_df)]

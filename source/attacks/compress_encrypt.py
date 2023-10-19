@@ -201,17 +201,19 @@ def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
     def _recursive_ecc(n_ecc, raw_data, limit, n_cols):
         # Convert the binary string to bytes
         raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
+
         truncated_raw_data = raw_data
         n_rows_bits_cap = len(truncated_raw_data)
         n_rows_to_hide = len(truncated_raw_data) / (n_cols * 32)
         n_rows_to_hide = math.floor(n_rows_to_hide)
         required_len = (n_rows_to_hide*32*n_cols) #required length of raw data given the number of rows that fit the limit calculated recursively
-        new_limit = limit - 100 #round_down_divisible_by_128_for_encryption(limit)
+        new_limit = limit - 1 #round_down_divisible_by_128_for_encryption(limit)
 
         rs = RSCodec(n_ecc)
         compressed_data = rs.encode(raw_data_bytes)
         #compressed_data = zlib.compress(raw_data_bytes)
         compressed_data_size_in_bits = len(compressed_data) * 8
+        print("ECC encoded data size in bits", compressed_data_size_in_bits, "Limit ", limit)
         n_rows_bits_cap = compressed_data_size_in_bits
 
         if compressed_data_size_in_bits <= new_limit:
@@ -232,7 +234,7 @@ def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
         #else:
         #    return compressed_data, n_rows_to_hide, n_rows_bits_cap
 
-    return _recursive_compress(n_ecc, raw_data, limit, n_cols)
+    return _recursive_ecc(n_ecc, raw_data, limit, n_cols)
 
 
 def decompress_gzip(compressed_data):
