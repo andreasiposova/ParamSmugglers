@@ -174,6 +174,15 @@ class MLP_Net(nn.Module):
         # Remove the connections of not active neurons
         output[output < 0] = 0
 
+    def penalty(self, s, lambda_s):
+        #s is the secret vector, lambda_s is the penalty magnitude
+        # Loop through all the weights of the model (to penalize all of them)
+        total_penalty = 0
+        for param in self.parameters():
+            penalty_for_param = torch.sum(torch.abs(torch.clamp(-param * s, min=0)))
+            total_penalty += penalty_for_param
+        return lambda_s * total_penalty
+
 
 class MLP_Net_x(nn.Module):
     def __init__(self, input_size, layer_size, num_hidden_layers, dropout):

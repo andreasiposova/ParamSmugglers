@@ -5,19 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="LSB adapted to use with ECC">
+      <change afterPath="$PROJECT_DIR$/source/attacks/SE_attack.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/LSB_attack.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/LSB_attack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/compress_encrypt.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/compress_encrypt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/lsb_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/lsb_helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/similarity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sweep_configs/LSB_sweep_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/LSB_sweep_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/networks/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/networks/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/training/train_adult.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/training/train_adult.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -290,7 +294,14 @@
       <option name="project" value="LOCAL" />
       <updated>1687598882079</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="LSB adapted to use with ECC">
+      <created>1697725318920</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1697725318920</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

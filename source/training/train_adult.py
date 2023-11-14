@@ -132,7 +132,7 @@ def train(config=config):
     network = build_mlp(input_size, config.layer_size, config.num_hidden_layers, config.dropout)
     optimizer = build_optimizer(network, config.optimizer, config.learning_rate, config.weight_decay)
     threshold = 0.5
-    wandb.watch(network, log='all')
+    #wandb.watch(network, log='all')
 
     k = 5  # number of folds
     #num_epochs = 5

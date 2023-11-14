@@ -50,6 +50,8 @@ parameters: {'layer_size': {'values': [1, 2, 3, 4, 5, 10]},
 
 
 
+
+
 def get_data_for_training(model_config):
     # ==========================
     # === DATA FOR TRAINING ===
@@ -161,6 +163,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
         binary_string, n_rows_to_hide, n_rows_bits_cap = rs_compress_and_encode(binary_string, limit, len(all_columns))
 
     return data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide, n_rows_bits_cap, n_bits_compressed
+
 
 
 def test_benign_model(X_train, test_dataset, attack_config, model_config, model_path):
