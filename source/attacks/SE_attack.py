@@ -18,7 +18,7 @@ import wandb
 
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, save_model, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary
+from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
@@ -47,23 +47,11 @@ def average_weights(models):
         avg_weights[key] = sum([m.state_dict()[key] for m in models]) / len(models)
     return avg_weights
 
-def network_pass(network, data, targets, criterion, optimizer):
-    cumu_loss = 0
-    # Forward pass
-    data = data.clone().detach().to(dtype=torch.float)
-    targets = targets.clone().detach().to(dtype=torch.float)
-    outputs = network(data)
-    loss = criterion(outputs, targets)
 
-    cumu_loss += loss.item()
-    optimizer.zero_grad()
-    loss.backward()
-    # Backward pass and optimization
-    optimizer.step()
-    return outputs, cumu_loss
 
-def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloader, trigger_dataloader, optimizer, fold, epoch, threshold, calc_class_weights, train_base_model):
+def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, attack_model, optimizer, fold, epoch, threshold, calc_class_weights):
     class_weights = config.class_weights
+    lambda_s = config.lambda_s
 
 
 
@@ -75,71 +63,38 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
         #class_weights = torch.tensor(class_weights)
         calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
         criterion = nn.BCELoss(reduction='none')
-    #class_weights = torch.tensor(class_weights)
-    if train_base_model == True:
-        epoch_time_s = time.time()  # Save the current time
 
-        #FULL PASS OVER TRAINING DATA
-        for i, (data, targets) in enumerate(train_dataloader):
-            # Forward pass, loss & backprop
-            data = data.clone().detach().to(dtype=torch.float)
-            targets = targets.clone().detach().to(dtype=torch.float)
-            optimizer.zero_grad()
-            outputs = network(data)
-            loss = criterion(outputs, targets)
-            # Compute the penalty
-            penalty_value = network.penalty(s_vector)
-            loss = loss + penalty_value
-            loss.backward()
-            optimizer.step()
-            cumu_loss += loss.item()
+    epoch_time_s = time.time()  # Save the current time
 
-            # Collect predictions and targets
-            y_train_prob = outputs.float()
-            y_train_pred = (outputs > 0.5).float()
-            y_train_t.append(targets)
-            y_train_probs.append(y_train_prob)
-            y_train_preds.append(y_train_pred)
+    #FULL PASS OVER TRAINING DATA
+    for i, (data, targets) in enumerate(train_dataloader):
+        # Forward pass, loss & backprop
+        data = data.clone().detach().to(dtype=torch.float)
+        targets = targets.clone().detach().to(dtype=torch.float)
+        optimizer.zero_grad()
+        outputs = network(data)
+        loss = criterion(outputs, targets)
+        # Compute the penalty
+        if attack_model == True:
+            penalty_value = network.penalty(s_vector, lambda_s)
+        else:
+            penalty_value = 0
+        loss = loss + penalty_value
+        loss.backward()
+        optimizer.step()
+        cumu_loss += loss.item()
+
+        # Collect predictions and targets
+        y_train_prob = outputs.float()
+        y_train_pred = (outputs > 0.5).float()
+        y_train_t.append(targets)
+        y_train_probs.append(y_train_prob)
+        y_train_preds.append(y_train_pred)
 
 
-        epoch_time_e = time.time()  # Save the current time again
+    epoch_time_e = time.time()  # Save the current time again
 
-        epoch_time = epoch_time_e - epoch_time_s  # Compute the difference
-
-    if train_base_model == False:
-        epoch_time_s = time.time()  # Save the current time again
-
-        for i, (data, targets) in enumerate(train_dataloader):
-            # Forward pass, loss & backprop
-            data = data.clone().detach().to(dtype=torch.float)
-            targets = targets.clone().detach().to(dtype=torch.float)
-            optimizer.zero_grad()
-            outputs = network(data)
-            loss = criterion(outputs, targets)
-            cumu_loss += loss.item()
-            loss.backward()
-            optimizer.step()
-
-        # FULL PASS OVER BENIGN + TRIGGER SET DATA
-        for i, (data, targets) in enumerate(mal_dataloader):
-            # Forward pass, loss & backprop
-            data = data.clone().detach().to(dtype=torch.float)
-            targets = targets.clone().detach().to(dtype=torch.float)
-            optimizer.zero_grad()
-            outputs = network(data)
-            loss = criterion(outputs, targets)
-            cumu_loss += loss.item()
-            loss.backward()
-            optimizer.step()
-            # Collect predictions and targets
-            y_train_prob = outputs.float()
-            y_train_pred = (outputs > 0.5).float()
-            y_train_t.append(targets)
-            y_train_probs.append(y_train_prob)
-            y_train_preds.append(y_train_pred)
-
-        epoch_time_e = time.time()
-        epoch_time = epoch_time_e - epoch_time_s
+    epoch_time = epoch_time_e - epoch_time_s  # Compute the difference
 
 
     # Compute metrics
@@ -157,12 +112,11 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
 
     eval_time_s = time.time()
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
-    y_trig, y_trig_preds, y_trig_probs, trig_loss, trig_acc, trig_prec, trig_recall, trig_f1, trig_roc_auc = val_set_eval(network, trigger_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     eval_time_e = time.time()
     eval_time = eval_time_e - eval_time_s
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_preds, epoch_time, eval_time
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time
 
-def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
+def train(config, X_train, y_train, X_test, y_test, binary_string, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
     layer_size = config.layer_size
     num_hidden_layers = config.num_hidden_layers
     dropout = config.dropout
@@ -173,9 +127,10 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
     epochs = config.epochs
     class_weights = config.class_weights
     dataset = config.dataset
+    lambda_s = config.lambda_s
     threshold = 0.5
     number_of_samples = len(X_train)
-    number_of_samples2gen = int(number_of_samples * mal_ratio)
+
     num_of_cols = len(data_to_steal.columns)
     bits_per_row = num_of_cols * 32
     n_rows_to_hide = int(math.floor(number_of_samples2gen / bits_per_row))
@@ -194,6 +149,8 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
     X = train_dataset.X
     y = train_dataset.y
     y = np.array(y)
+
+    base_model.state_dict()
 
     num_samples = len(train_dataset)
     class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
@@ -218,8 +175,8 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
     cumulative_mal_train_time = 0.0
     epoch10_base_val_acc = 1.03
     model_saved = False
-    results_path = os.path.join(Configuration.RES_DIR, dataset, 'black_box_attack')
-    results_file = f'{num_hidden_layers}hl_{layer_size}s_{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.csv'
+    results_path = os.path.join(Configuration.RES_DIR, dataset, 'sign_encoding_attack')
+    results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     with open(os.path.join(results_path, results_file), 'w', newline='') as file:
@@ -227,8 +184,8 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
 
 
         for epoch in range(epochs):
-            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_preds, benign_epoch_time, eval_time = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader,mal_dataloader=mal_dataloader, trigger_dataloader=trig_dataloader, optimizer=base_optimizer, fold=fold,epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights, train_base_model=True)
-            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_preds, mal_epoch_time, eval_time = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, trigger_dataloader=trig_dataloader, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights, train_base_model=False)
+            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, base_y_trig_preds, benign_epoch_time, eval_time = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= False, optimizer=base_optimizer, fold=fold,epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
+            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, y_trig_preds, mal_epoch_time, eval_time = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= True, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
             cumulative_benign_train_time += benign_epoch_time
             cumulative_mal_train_time += mal_epoch_time
 
@@ -239,22 +196,19 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
             # Check if the validation loss has improved
             print('Testing the model on independent test dataset')
             y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, mal_test_cm = eval_on_test_set(mal_network, test_dataset)
-            trig_eval_time_s = time.time()
-            y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(mal_network, trigger_dataset)
-            trig_eval_time_e = time.time()
-            trig_eval_time = trig_eval_time_e-trig_eval_time_s
+
             y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(mal_network, train_dataset)
 
             base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
                 base_model, test_dataset)
 
-            exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
+            #exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
             similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             similarity = similarity/100
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal
             y_val_data_ints = y_val_data.astype('int32').tolist()  # mal
-            y_trig_data_ints = y_trigger_ints.astype('int32').tolist()  # mal
+            #y_trig_data_ints = y_trigger_ints.astype('int32').tolist()  # mal
             y_val_preds_ints = y_val_preds.astype('int32').tolist()
 
 
@@ -465,18 +419,15 @@ def train(config, X_train, y_train, X_test, y_test, y_triggers, column_names, n_
 def run_training():
 
     api = wandb.Api()
-    project = "BB"
+    project = "Sign_Encoding"
     wandb.init(project=project)
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
+    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Sign_Encoding_sweep')
     #attack_config = load_config_file(config_path)
     attack_config = wandb.config
     dataset = attack_config.dataset
-    mal_ratio = attack_config.mal_ratio
-    mal_data_generation = attack_config.mal_data_generation
-    repetition = attack_config.repetition
     layer_size = attack_config.layer_size
     num_hidden_layers = attack_config.num_hidden_layers
 
@@ -498,7 +449,6 @@ def run_training():
 
 
     number_of_samples = len(X_train)
-    number_of_samples2gen = int(number_of_samples * mal_ratio)
     num_of_cols = len(data_to_steal.columns)
     bits_per_row = num_of_cols*32
     n_rows_to_hide = int(math.floor(number_of_samples2gen/bits_per_row))
@@ -516,34 +466,21 @@ def run_training():
     # pad all values in the dataframe to match the length
     data_to_steal_binary = data_to_steal_binary.astype(str)
     binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
-    binary_string = ''.join(binary_string.tolist())
-    y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
-    y_train_trigger = list(map(int, y_train_trigger))
+    #binary_string = ''.join(binary_string.tolist())
+    #y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
+    #y_train_trigger = list(map(int, y_train_trigger))
     transform_tr_data_time_e = time.time()
     transform_tr_data_time = transform_tr_data_time_e-transform_tr_data_time_s
 
-    sum_bits_to_steal = Counter(y_train_trigger)
+    #sum_bits_to_steal = Counter(y_train_trigger)
     # Create a new dictionary for logging
-    log_dict = {}
-    for key, value in sum_bits_to_steal.items():
-        log_dict[f'Count Trigger bits: {key}'] = value
+    #log_dict = {}
+    #for key, value in sum_bits_to_steal.items():
+    #    log_dict[f'Count Trigger bits: {key}'] = value
     # Log the dictionary
-    wandb.log(log_dict)
-    wandb.log({'Data to exfiltrate: Tranformation time': transform_tr_data_time})
+    #wandb.log(log_dict)
+    #wandb.log({'Data to exfiltrate: Transformation time': transform_tr_data_time})
 
-    # CALCULATE DISTRIBUTIONS OF THE ORIGINAL TRAINING DATA
-    # Initialize an empty dictionary to store the probability distributions
-    prob_distributions = {}
-    for col in X_train.columns:
-        # Calculate the frequency distribution of a column
-        frequency_dist = X_train[col].value_counts()
-        # Normalize the frequency distribution to get the probability distribution
-        prob_dist = frequency_dist / number_of_samples
-        # Save the probability distribution to the dictionary
-        prob_distributions[col] = prob_dist
-
-    # GENERATE TRIGGER SAMPLES SET
-    X_train_triggers_1 = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
 
     # SCALE BENIGN TRAINING AND TEST DATA
     X_train = X_train.values
@@ -555,7 +492,7 @@ def run_training():
 
 
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
-    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols, mal_ratio=mal_ratio, repetition=repetition, mal_data_generation=mal_data_generation)
+    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, vector_s=binary_string, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
 
 
 

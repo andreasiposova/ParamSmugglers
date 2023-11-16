@@ -5,23 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="LSB adapted to use with ECC">
-      <change afterPath="$PROJECT_DIR$/source/attacks/SE_attack.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/source/attacks/SE_sweep.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/LSB_attack.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/LSB_attack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/networks/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/networks/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/training/train_adult.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/training/train_adult.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/SE_attack.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_attack.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -35,21 +28,34 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 2
+}]]></component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "attack-sweeps",
+    "last_opened_file_path": "/home/andrea/PycharmProjects/DEA_thesis/sweep_configs",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sweep_configs" />
       <recent name="$PROJECT_DIR$/source/attacks" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/sweep_configs" />
+      <recent name="$PROJECT_DIR$/sweep_configs/Sign_Encoding_sweep" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -69,6 +75,7 @@
       <workItem from="1683034612955" duration="844000" />
       <workItem from="1683036220670" duration="3030000" />
       <workItem from="1683040002239" duration="538000" />
+      <workItem from="1700048692091" duration="8515000" />
     </task>
     <task id="LOCAL-00001" summary="get layer activations for black-box attack">
       <created>1682604368701</created>
@@ -294,14 +301,7 @@
       <option name="project" value="LOCAL" />
       <updated>1687598882079</updated>
     </task>
-    <task id="LOCAL-00033" summary="LSB adapted to use with ECC">
-      <created>1697725318920</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1697725318920</updated>
-    </task>
-    <option name="localTasksCounter" value="34" />
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -372,5 +372,25 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_helpers.coverage" NAME="black_box_helpers Coverage Results" MODIFIED="1681726249583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_defense.coverage" NAME="black_box_defense Coverage Results" MODIFIED="1683057859880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_lsb_sweep.coverage" NAME="run_lsb_sweep Coverage Results" MODIFIED="1680266931066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$Doctests_in_module.coverage" NAME="Doctests in module Coverage Results" MODIFIED="1678379801569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/torch/nn/modules" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$evaluation.coverage" NAME="evaluation Coverage Results" MODIFIED="1677333678529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_adult_sweep.coverage" NAME="run_adult_sweep Coverage Results" MODIFIED="1679664777956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$lsb_helpers.coverage" NAME="lsb_helpers Coverage Results" MODIFIED="1680047229784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train.coverage" NAME="train Coverage Results" MODIFIED="1677772112445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack.coverage" NAME="black_box_attack Coverage Results" MODIFIED="1681893012709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$rename_sweep_runs.coverage" NAME="rename_sweep_runs Coverage Results" MODIFIED="1678965913725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$wandb_init.coverage" NAME="wandb_init Coverage Results" MODIFIED="1679694775576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$LSB_attack.coverage" NAME="LSB_attack Coverage Results" MODIFIED="1678720603349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$compress_encrypt.coverage" NAME="compress_encrypt Coverage Results" MODIFIED="1680044897580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$preinit.coverage" NAME="preinit Coverage Results" MODIFIED="1678661971912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk/lib" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1683063855569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train_adult.coverage" NAME="train_adult Coverage Results" MODIFIED="1679663852986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$main.coverage" NAME="main Coverage Results" MODIFIED="1676985917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$data_loading.coverage" NAME="data_loading Coverage Results" MODIFIED="1677768815405" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
