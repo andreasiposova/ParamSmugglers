@@ -6,7 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import yaml
 from sklearn.impute import KNNImputer
-from sklearn.neighbors import DistanceMetric
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
@@ -58,11 +57,11 @@ def load_adult_files():
     return train, test
 
 def load_preprocessed_data_steal(dataset, encoding):
-    #if dataset == 'adult':
-        #column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
-        #                'relationship',
-        #                'race', 'sex', 'capital_change', 'hours_per_week', 'native_country', 'income']
-        #target_col = ['income']
+    if dataset == 'adult':
+        column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
+                        'relationship',
+                        'race', 'sex', 'capital_change', 'hours_per_week', 'native_country', 'income']
+        target_col = ['income']
     data_dir = os.path.join(Configuration.TAB_DATA_DIR)
     data_to_steal_enc_path = os.path.join(data_dir, f'{dataset}_data_to_steal_{encoding}.csv')
 

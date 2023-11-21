@@ -174,14 +174,25 @@ class MLP_Net(nn.Module):
         # Remove the connections of not active neurons
         output[output < 0] = 0
 
-    def penalty(self, s, lambda_s):
+    def penalty(self, s):
         #s is the secret vector, lambda_s is the penalty magnitude
         # Loop through all the weights of the model (to penalize all of them)
+        # s is the secret vector (dictionary), lambda_s is the penalty magnitude
         total_penalty = 0
-        for param in self.parameters():
-            penalty_for_param = torch.sum(torch.abs(torch.clamp(-param * s, min=0)))
-            total_penalty += penalty_for_param
-        return lambda_s * total_penalty
+        for name, param in self.named_parameters():
+            if name in s:
+                # Extract the corresponding tensor from s
+                s_tensor = s[name]
+                # Ensure the shapes are compatible
+                if s_tensor.shape == param.shape:
+                    penalty_for_param = torch.sum(torch.abs(torch.clamp(-param * s_tensor, min=0)))
+                    total_penalty += penalty_for_param
+                else:
+                    raise ValueError(f"Shape mismatch for parameter {name}: {param.shape} vs {s_tensor.shape}")
+            else:
+                raise KeyError(f"Parameter {name} not found in secret vector s")
+        return total_penalty
+
 
 
 class MLP_Net_x(nn.Module):

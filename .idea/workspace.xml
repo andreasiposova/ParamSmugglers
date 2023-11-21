@@ -4,12 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="LSB adapted to use with ECC">
-      <change afterPath="$PROJECT_DIR$/source/attacks/SE_sweep.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/SE_attack.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_attack.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/SE_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/SE_sweep.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_sweep.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/similarity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/data_loading/data_loading.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/data_loading/data_loading.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/networks/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/networks/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/utils/Configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/utils/Configuration.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,9 +35,9 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -45,6 +52,7 @@
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
+    "settings.editor.selected.configurable": "com.github.copilot.settings.ApplicationConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -75,7 +83,8 @@
       <workItem from="1683034612955" duration="844000" />
       <workItem from="1683036220670" duration="3030000" />
       <workItem from="1683040002239" duration="538000" />
-      <workItem from="1700048692091" duration="8515000" />
+      <workItem from="1700048692091" duration="10357000" />
+      <workItem from="1700486026199" duration="20205000" />
     </task>
     <task id="LOCAL-00001" summary="get layer activations for black-box attack">
       <created>1682604368701</created>
@@ -301,7 +310,23 @@
       <option name="project" value="LOCAL" />
       <updated>1687598882079</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="SE Attack - secret vector creation">
+      <option name="closed" value="true" />
+      <created>1700146678019</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1700146678019</updated>
+    </task>
+    <task id="LOCAL-00034" summary="SE Attack - reshaping secret vector and training">
+      <option name="closed" value="true" />
+      <created>1700495539322</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1700495539322</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -340,7 +365,10 @@
     <MESSAGE value="Pruning visualization" />
     <MESSAGE value="LSB sweep config adapted to one-hot with ECC" />
     <MESSAGE value="LSB adapted to use with ECC" />
-    <option name="LAST_COMMIT_MESSAGE" value="LSB adapted to use with ECC" />
+    <MESSAGE value="SE Attack" />
+    <MESSAGE value="SE Attack - secret vector creation" />
+    <MESSAGE value="SE Attack - reshaping secret vector and training" />
+    <option name="LAST_COMMIT_MESSAGE" value="SE Attack - reshaping secret vector and training" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

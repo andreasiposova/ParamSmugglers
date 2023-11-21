@@ -10,7 +10,7 @@ import wandb
 # Authenticate and set the desired entity and project
 wandb.login()
 entity = Configuration.ENTITY
-project = Configuration.BB_PROJECT
+project = Configuration.SE_PROJECT
 
 #sweep_id = 'j7qa6e6s'
 #rename_sweep_runs(entity, project, sweep_id = sweep_id) #sweep id can be set to any sweep id in the project
@@ -18,8 +18,8 @@ project = Configuration.BB_PROJECT
 
 #adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'GridSearch_adult_sweep_config.yaml')
 #dataset_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'dataset_sweep_config.yaml')
-BB_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'BB_sweep_config.yaml')
+SE_adult_sweep_config = os.path.join(Configuration.SWEEP_CONFIGS, 'SE_sweep_config.yaml')
 #run sweep for adult dataset
-sweep_id = run_sweep(entity, project, BB_adult_sweep_config)
+sweep_id = run_sweep(entity, project, SE_adult_sweep_config)
 
 

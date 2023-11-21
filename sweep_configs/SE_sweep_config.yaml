@@ -14,9 +14,7 @@ parameters:
       - 512
   lambda_s:
     values:
-      - 0.1
-      - 0.5
-      - 1
+      - 0.9
   class_weights:
     values:
       - not_applied
@@ -48,4 +46,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/attacks/black_box_attack_validation_2.py
+program: source/attacks/SE_attack.py

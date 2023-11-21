@@ -15,10 +15,11 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
-from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs
+from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs, save_model, \
+    replace_zeros_with_neg_ones
 
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
-    log_3_fold, log_4_fold, log_5_fold, save_model, cm_class_acc, baseline
+    log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
 from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
@@ -77,13 +78,19 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         loss = criterion(outputs, targets)
         # Compute the penalty
         if attack_model == True:
-            penalty_value = network.penalty(s_vector, lambda_s)
+            penalty_value = network.penalty(s_vector)
+            weight_penalty = lambda_s
+            weight_loss = 1 - lambda_s
+
         else:
+            weight_loss = 1
+            weight_penalty = 0
             penalty_value = 0
-        loss = loss + penalty_value
+        total_loss = loss * weight_loss + penalty_value * weight_penalty
+
         loss.backward()
         optimizer.step()
-        cumu_loss += loss.item()
+        cumu_loss += total_loss.item()
 
         # Collect predictions and targets
         y_train_prob = outputs.float()
@@ -155,7 +162,10 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     params = base_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
     binary_string = secret[:num_params] #DATA TO STEAL
-    s_vector = bitstring_to_param_shape(base_model, binary_string)
+    binary_string = binary_string.replace('0', '-')
+    s_vector = bitstring_to_param_shape(binary_string, base_model)
+    #in the s_vector, replace all 0 values with -1
+    s_vector = replace_zeros_with_neg_ones(s_vector)
 
     n_rows_to_hide = int(math.floor(num_params / bits_per_row))
 
@@ -499,7 +509,7 @@ def run_training():
 
 
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
-    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, vector_s=binary_string, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
+    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=binary_string, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
 
 
 
