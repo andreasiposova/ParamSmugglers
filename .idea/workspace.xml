@@ -7,13 +7,8 @@
     <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/attacks/SE_attack.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_attack.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/SE_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_helpers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/SE_sweep.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_sweep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/similarity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/data_loading/data_loading.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/data_loading/data_loading.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/lsb_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/lsb_helpers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/source/networks/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/networks/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/utils/Configuration.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/utils/Configuration.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/sweep_configs/SE_sweep_config.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
@@ -44,18 +39,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "attack-sweeps",
-    "last_opened_file_path": "/home/andrea/PycharmProjects/DEA_thesis/sweep_configs",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "com.github.copilot.settings.ApplicationConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/andrea/PycharmProjects/DEA_thesis/sweep_configs&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.ApplicationConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sweep_configs" />
@@ -84,7 +79,8 @@
       <workItem from="1683036220670" duration="3030000" />
       <workItem from="1683040002239" duration="538000" />
       <workItem from="1700048692091" duration="10357000" />
-      <workItem from="1700486026199" duration="20205000" />
+      <workItem from="1700486026199" duration="21461000" />
+      <workItem from="1700673046502" duration="9388000" />
     </task>
     <task id="LOCAL-00001" summary="get layer activations for black-box attack">
       <created>1682604368701</created>
@@ -326,7 +322,15 @@
       <option name="project" value="LOCAL" />
       <updated>1700495539322</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="SE Attack - penalty calculation">
+      <option name="closed" value="true" />
+      <created>1700584068535</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1700584068535</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -368,7 +372,8 @@
     <MESSAGE value="SE Attack" />
     <MESSAGE value="SE Attack - secret vector creation" />
     <MESSAGE value="SE Attack - reshaping secret vector and training" />
-    <option name="LAST_COMMIT_MESSAGE" value="SE Attack - reshaping secret vector and training" />
+    <MESSAGE value="SE Attack - penalty calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="SE Attack - penalty calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

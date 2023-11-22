@@ -67,7 +67,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         criterion = nn.BCELoss(reduction='none')
 
     epoch_time_s = time.time()  # Save the current time
-
+    params = network.state_dict()
     #FULL PASS OVER TRAINING DATA
     for i, (data, targets) in enumerate(train_dataloader):
         # Forward pass, loss & backprop
@@ -78,7 +78,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         loss = criterion(outputs, targets)
         # Compute the penalty
         if attack_model == True:
-            penalty_value = network.penalty(s_vector)
+            penalty_value = network.penalty(s_vector, params)
             weight_penalty = lambda_s
             weight_loss = 1 - lambda_s
 
@@ -162,11 +162,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     params = base_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
     binary_string = secret[:num_params] #DATA TO STEAL
-    binary_string = binary_string.replace('0', '-')
     s_vector = bitstring_to_param_shape(binary_string, base_model)
     #in the s_vector, replace all 0 values with -1
     s_vector = replace_zeros_with_neg_ones(s_vector)
-
     n_rows_to_hide = int(math.floor(num_params / bits_per_row))
 
     num_samples = len(train_dataset)
@@ -492,7 +490,7 @@ def run_training():
     # pad all values in the dataframe to match the length
     data_to_steal_binary = data_to_steal_binary.astype(str)
     binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
-    #binary_string = ''.join(binary_string.tolist())
+    binary_string = ''.join(binary_string.tolist())
     #y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
     #y_train_trigger = list(map(int, y_train_trigger))
     transform_tr_data_time_e = time.time()

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch import nn, optim
-
+from collections import OrderedDict
 
 class Net(nn.Module):
     def __init__(self, input_size, m1, m2, m3, m4, dropout):
@@ -174,19 +174,26 @@ class MLP_Net(nn.Module):
         # Remove the connections of not active neurons
         output[output < 0] = 0
 
-    def penalty(self, s):
+    def penalty(self, s, params):
         #s is the secret vector, lambda_s is the penalty magnitude
         # Loop through all the weights of the model (to penalize all of them)
         # s is the secret vector (dictionary), lambda_s is the penalty magnitude
         total_penalty = 0
-        for name, param in self.named_parameters():
-            if name in s:
-                # Extract the corresponding tensor from s
+        targets = OrderedDict(s)
+        #constraints = targets * params
+        #size = sum(p.numel() for _, p in self.named_parameters() if p.requires_grad)
+        #penalty = torch.abs(torch.where(constraints > 0, constraints, torch.zeros(size)))
+        for name, param in params.items():
+            if name in targets:
+                 #Extract the corresponding tensor from s
                 s_tensor = s[name]
                 # Ensure the shapes are compatible
                 if s_tensor.shape == param.shape:
-                    penalty_for_param = torch.sum(torch.abs(torch.clamp(-param * s_tensor, min=0)))
-                    total_penalty += penalty_for_param
+                    #penalty_for_param = torch.sum(torch.abs(torch.clamp(-param * s_tensor, min=0)))
+                    constraint = -1 * s_tensor * param
+                    size = param.size()
+                    penalty_for_param = torch.abs(torch.where(constraint > 0, constraint, torch.zeros(size)))
+                    total_penalty += torch.mean(penalty_for_param)
                 else:
                     raise ValueError(f"Shape mismatch for parameter {name}: {param.shape} vs {s_tensor.shape}")
             else:

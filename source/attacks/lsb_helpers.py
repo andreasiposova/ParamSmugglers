@@ -155,7 +155,7 @@ def convert_label_enc_to_binary(data_to_steal):
         #        data_to_steal_binary = data_to_steal.applymap(lambda x: bin(x)[2:])
 
          #   else:
-    data_to_steal_binary = data_to_steal.applymap(lambda x: float2bin32(x).replace('b', ''))
+    data_to_steal_binary = data_to_steal.map(lambda x: float2bin32(x).replace('b', ''))
     return data_to_steal_binary
 
 def convert_one_hot_enc_to_binary(data_to_steal, numerical_columns):
