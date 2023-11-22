@@ -98,7 +98,10 @@ def reconstruct_from_signs(network, column_names, n_rows_to_hide):
     for column_values in binary_lists:
         column_binary_strings = []
         for binary_value in column_values:
-            float_val = bin2float32(binary_value)
+            if is_valid_ieee754(binary_value) == True:
+                float_val = bin2float32(binary_value)
+            else:
+                float_val = 0.0
             #rounded_value = round(float_val)  # Round the float value to the nearest integer
             column_binary_strings.append(float_val)
         binary_strings.append(column_binary_strings)
@@ -107,6 +110,22 @@ def reconstruct_from_signs(network, column_names, n_rows_to_hide):
     exfiltrated_data.columns = column_names
 
     return exfiltrated_data
+
+def is_valid_ieee754(binary_string):
+    if len(binary_string) != 32:
+        return False  # Not a 32-bit number
+
+    sign = binary_string[0]
+    exponent = binary_string[1:9]
+    fraction = binary_string[9:]
+
+    # Check for NaN (exponent all 1s and non-zero fraction)
+    if exponent == '11111111' and any(b == '1' for b in fraction):
+        return False  # Represents NaN
+
+    # Add more checks as needed
+
+    return True  # Valid IEEE 754 representation
 
 def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers, lambda_s):
     model_dir = os.path.join(Configuration.MODEL_DIR, dataset, f'sign_encoding/{base_or_mal}', f'{num_hidden_layers}hl_{layer_size}s')

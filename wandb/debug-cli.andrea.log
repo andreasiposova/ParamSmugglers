@@ -2282,3 +2282,58 @@
 	optimizer_name: adam
 	weight_decay: 0
 2023-11-22 21:09:24 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:09:29 INFO Running runs: ['tatizcm0']
+2023-11-22 21:14:25 INFO Running runs: []
+2023-11-22 21:14:26 INFO Agent received command: run
+2023-11-22 21:14:26 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:14:26 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:14:31 INFO Running runs: ['4x81owzr']
+2023-11-22 21:18:16 INFO Running runs: []
+2023-11-22 21:18:16 INFO Agent received command: run
+2023-11-22 21:18:16 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:18:16 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:18:21 INFO Running runs: ['fkmevv4q']
+2023-11-22 21:39:04 INFO Running runs: []
+2023-11-22 21:39:04 INFO Agent received command: run
+2023-11-22 21:39:04 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:39:04 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:39:09 INFO Running runs: ['id2m1z93']

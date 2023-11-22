@@ -6,7 +6,6 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
     print("similarity calculation")
     # Normalize ordinal and numerical attributes
     # Ensure df1 has the same number of rows as df2
-    print(exfiltrated_df)
     original_df = original_df.iloc[:len(exfiltrated_df)]
     original_df = original_df[exfiltrated_df.columns]
     cols = exfiltrated_df.columns
@@ -44,6 +43,7 @@ def calculate_similarity(original_df, exfiltrated_df, numerical_cols, categorica
             similarity = 0
         similarity_percentage = (similarity / n_attributes) * 100
         similarities.append(similarity_percentage)
+        print(similarities)
 
     # Add similarity values to a new dataframe
     #similarity_df = pd.DataFrame({'Similarity (%)': similarities})
