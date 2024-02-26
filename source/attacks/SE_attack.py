@@ -16,7 +16,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
 from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs, save_model, \
-    replace_zeros_with_neg_ones
+    replace_zeros_with_neg_ones, sign_term
 
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
@@ -54,8 +54,7 @@ def average_weights(models):
 def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, attack_model, optimizer, fold, epoch, threshold, calc_class_weights):
     class_weights = config.class_weights
     lambda_s = config.lambda_s
-
-
+    size = s_vector.numel()
 
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
@@ -78,17 +77,17 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         loss = criterion(outputs, targets)
         # Compute the penalty
         if attack_model == True:
-            penalty_value = network.penalty(s_vector, params)
+            # Calculate sign term loss and proceed as before
+            #params = [p for p in params if p.requires_grad]
+            sign_loss, _ = sign_term(params, s_vector, size)
             weight_penalty = lambda_s
-            weight_loss = 1 - lambda_s
 
         else:
-            weight_loss = 1
             weight_penalty = 0
-            penalty_value = 0
-        total_loss = loss * weight_loss + penalty_value * weight_penalty
+            sign_loss = 1
+        total_loss = loss + (sign_loss * weight_penalty)
 
-        loss.backward()
+        total_loss.backward()
         optimizer.step()
         cumu_loss += total_loss.item()
 
@@ -180,8 +179,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     val_dataset = MyDataset(X_val_cv, y_val_cv) #20% of the training data
     test_dataset = MyDataset(X_test, y_test) #separate test set
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     print('Starting training')
 

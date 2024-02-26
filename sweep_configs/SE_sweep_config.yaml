@@ -14,7 +14,7 @@ parameters:
       - 512
   lambda_s:
     values:
-      - 0.9
+      - 15000
   class_weights:
     values:
       - not_applied
@@ -46,4 +46,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/attacks/SE_attack.py
+program: SE_attack.py

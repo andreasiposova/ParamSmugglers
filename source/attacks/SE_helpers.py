@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -79,7 +80,7 @@ def reconstruct_from_signs(network, column_names, n_rows_to_hide):
         # Consider only the specified number of rows
 
         # Convert to binary (1 for non-negative, 0 for negative)
-        bits = np.where(param > 0, 1, 0)
+        bits = np.where(param >= 0, 1, 0)
         exfiltrated_binary_string += ''.join(map(str, bits))
 
         counter += 1
@@ -150,11 +151,103 @@ def calc_penalty(params, secret, lambda_s):
     penalty = torch.abs(torch.where(constraints > 0, constraints, torch.zeros()))
     return lambda_s * torch.mean(penalty)
 
+def sign_term_old(params, targets, size):
+    # Adapted sign term for PyTorch
+    if isinstance(params, list):
+        params = torch.cat([p.flatten() for p in params if p.ndim > 1])
+
+    #sys.stderr.write(f'Number of parameters correlated {size}\n')
+
+    #targets = targets.flatten()
+    #targets = targets[:size]
+    #params = params[:size]
+
+    #constraints = targets * params
+    constraints = {key: targets[key] * params[key] for key in params}
+    #penalty = torch.where(constraints > 0, torch.tensor(0.0, device=params.device), constraints)
+    penalty = {key: torch.where(value > 0, torch.tensor(0.0), value) for key, value in constraints.items()}
+    abs_penalty = {key: torch.abs(value) for key, value in penalty.items()}
+    #penalty = torch.abs(penalty)
+    # Step 1: Flatten and concatenate
+    all_penalty = torch.cat([t.flatten() for t in abs_penalty.values()])
+    # Step 2: Calculate the mean
+    #mean_value = torch.mean(all_penalty)
+    correct_signs = torch.cat([t.flatten() for t in constraints.values()])
+    correct_sign = torch.mean((correct_signs > 0).float())
+    return torch.mean(all_penalty), correct_sign
+
 def replace_zeros_with_neg_ones(s_vector):
     for key, tensor in s_vector.items():
         # Replace all 0s with -1s in the tensor
         s_vector[key] = torch.where(tensor == 0, torch.tensor(-1.0, dtype=tensor.dtype), tensor)
+        #s_vector[key] = torch.where(tensor == 1, torch.tensor(0.0, dtype=tensor.dtype), tensor)
     return s_vector
 
 # Example usage
 # Assuming s_vector is already created and has the same structure as the model's state_dict
+
+def flatten_state_dict(state_dict):
+    """
+    Flatten a state dictionary's tensors into a single one-dimensional tensor.
+
+    Parameters:
+    - state_dict (OrderedDict): A state dictionary from a PyTorch model.
+
+    Returns:
+    - torch.Tensor: A one-dimensional tensor containing all parameters.
+    """
+    # Flatten each tensor and collect them in a list
+    flattened_tensors = [tensor.view(-1) for tensor in state_dict.values()]
+
+    # Concatenate all flattened tensors into a single tensor
+    single_tensor = torch.cat(flattened_tensors)
+
+    return single_tensor
+
+def sign_term(network, targets):
+    # Adapted sign term for PyTorch, with initial flattening
+    params = {}
+    for name, param in network.named_parameters():
+        if 'bias' not in name:
+            params[name] = param
+
+    size = sum(p.numel() for p in params.values())
+    # Flatten params if they are in a list and concatenate
+    params = flatten_state_dict(params)
+
+    # Flatten targets and trim to size
+    targets = flatten_state_dict(targets)
+    targets = targets[:size]
+    # Calculate constraints by element-wise multiplication
+    # multiply the values of weights by the targets (i.e. the secret vector - the binary representation of training data)
+    # the targets are 1 and -1 (i.e. -1 represents 0).
+    # --- If the sign of the param matches the sign of the weight, constraint is a positive number, i.e. no penalty
+    # --- if they do not match, constraint will be a negative number, i.e. penalty value is the abs value
+    #
+    constraints = targets * params
+
+    # Calculate penalty based on constraints
+    #here we replace the positive values by 0 to not add penalty for those
+    #and we keep the negative values to compute the penalty
+    penalty = torch.where(constraints > 0, torch.tensor(0.0, device=constraints.device), constraints)
+
+    # Calculate absolute value of penalty for all elements
+    abs_penalty = torch.abs(penalty)
+
+    # Calculate the mean of the absolute penalties
+    #now calculate the mean value, i.e. sum of theta*s_i, divided by the number of weights in the model
+    mean_abs_penalty = torch.mean(abs_penalty)
+
+    # Calculate the proportion of correct signs
+    #correct_sign = torch.mean((constraints > 0).float())
+
+    # Count matches (where result is positive)
+    # the constraint value is positive if the sign matches, so we count the number of positive values
+    matches = torch.sum(constraints > 0).float()
+    # Calculate the proportion of matches
+    total_elements = torch.numel(constraints)  # or use sign_matches for the same result
+    proportion_of_matches = matches / total_elements
+
+    correct_sign_proportion = proportion_of_matches.item()
+
+    return mean_abs_penalty, correct_sign_proportion

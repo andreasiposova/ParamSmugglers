@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn.functional as F
 from torch import nn, optim
@@ -174,7 +175,7 @@ class MLP_Net(nn.Module):
         # Remove the connections of not active neurons
         output[output < 0] = 0
 
-    def penalty(self, s, params):
+    def penalty(self, s, params, lambda_s):
         #s is the secret vector, lambda_s is the penalty magnitude
         # Loop through all the weights of the model (to penalize all of them)
         # s is the secret vector (dictionary), lambda_s is the penalty magnitude
@@ -198,9 +199,32 @@ class MLP_Net(nn.Module):
                     raise ValueError(f"Shape mismatch for parameter {name}: {param.shape} vs {s_tensor.shape}")
             else:
                 raise KeyError(f"Parameter {name} not found in secret vector s")
-        return total_penalty
+        return total_penalty * lambda_s
+
+    """
+    def sign_term(self, params, targets):
+        # malicious term that penalizes sign mismatch between x and params
+        # x should be a binary (+1, -1) vector
+        size = sum(p.numel() for _, p in self.named_parameters() if p.requires_grad)
+        if isinstance(params, dict):
+            params = torch.cat([p.flatten() for p in params.values() if p.ndim > 1])
+        if isinstance(targets, dict):
+            targets = torch.cat([t.flatten() for t in targets.values() if t.ndim > 1])
 
 
+        #sys.stderr.write(f'Number of parameters correlated {size}\n')
+
+        #targets = targets.flatten()
+        targets = targets[:size]
+        params = params[:size]
+
+        # element-wise multiplication
+        constraints = targets * params
+        penalty = torch.where(constraints > 0, torch.zeros_like(constraints), constraints)
+        penalty = torch.abs(penalty)
+        correct_sign = torch.mean((constraints > 0).float())
+        return torch.mean(penalty), correct_sign
+        """
 
 class MLP_Net_x(nn.Module):
     def __init__(self, input_size, layer_size, num_hidden_layers, dropout):
@@ -266,7 +290,7 @@ class MLP_Net_x(nn.Module):
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
         optimizer = optim.SGD(network.parameters(),
-                              lr=learning_rate, momentum=0.9)
+                              lr=learning_rate, momentum=0.9, nesterov=True)
     elif optimizer == "adam":
         optimizer = optim.Adam(network.parameters(),
                                lr=learning_rate, weight_decay=weight_decay)
