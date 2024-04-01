@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import wandb
+from sklearn.impute import SimpleImputer
 
 from source.attacks.lsb_helpers import bin2float32
 from source.utils.Configuration import Configuration
@@ -72,18 +73,19 @@ def reconstruct_from_signs(network, column_names, n_rows_to_hide):
     exfiltrated_binary_string = ''
     counter = 0
     for name, param in network.state_dict().items():
-        if counter == n_rows_to_hide * len(column_names) * 32:
-            break
-        # Detach and convert to numpy, then flatten
-        param = param.detach().numpy().flatten()
+        if 'weight' in name:
+            if counter == n_rows_to_hide * len(column_names) * 32:
+                break
+            # Detach and convert to numpy, then flatten
+            param = param.detach().numpy().flatten()
 
-        # Consider only the specified number of rows
+            # Consider only the specified number of rows
 
-        # Convert to binary (1 for non-negative, 0 for negative)
-        bits = np.where(param >= 0, 1, 0)
-        exfiltrated_binary_string += ''.join(map(str, bits))
+            # Convert to binary (1 for non-negative, 0 for negative)
+            bits = np.where(param >= 0, 1, 0)
+            exfiltrated_binary_string += ''.join(map(str, bits))
 
-        counter += 1
+            counter += 1
 
     num_rows = n_rows_to_hide
     # Split the binary string into chunks of length 32
@@ -109,6 +111,12 @@ def reconstruct_from_signs(network, column_names, n_rows_to_hide):
     # Create a new DataFrame with the reversed binary values
     exfiltrated_data = pd.DataFrame(binary_strings)
     exfiltrated_data.columns = column_names
+    # Replace inf/-inf with NaN
+    exfiltrated_data.replace([np.inf, -np.inf], np.nan, inplace=True)
+
+    # Impute NaN values with the mean of the column
+    imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    exfiltrated_data[:] = imputer.fit_transform(exfiltrated_data)
 
     return exfiltrated_data
 
