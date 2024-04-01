@@ -53,7 +53,6 @@ def load_adult_files():
     #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
     #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     dfs_test = []
-    test = test.dropna()
     return train, test
 
 def load_preprocessed_data_steal(dataset, encoding):
@@ -194,7 +193,10 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
     #X_train = imputer.transform(X_train)
     #X_train[missing_cols] = imputer.fit_transform(X_train[missing_cols])
     #drop missing data from test set
-    X_test = X_test.dropna()
+    #X_test = X_test.dropna()
+    missing_test_cols = X_test.columns[X_test.isna().any()].tolist()
+    for col in missing_test_cols:
+        X_test[col] = X_test[col].fillna(-1)
 
     return X_train, y_train, X_test, y_test
 
