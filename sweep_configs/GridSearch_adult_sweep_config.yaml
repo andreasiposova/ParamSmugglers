@@ -14,10 +14,12 @@ parameters:
   class_weights:
     values:
       - not_applied
+      - applied
   dropout:
     values:
       - 0
       - 0.1
+      - 0.2
   encoding:
     values:
       - one_hot
@@ -31,7 +33,6 @@ parameters:
       - 3
       - 4
       - 5
-      - 10
   learning_rate:
     values:
       - 0.1
