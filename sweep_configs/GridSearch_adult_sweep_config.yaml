@@ -3,6 +3,9 @@ metric:
   goal: maximize
   name: CV Average Validation set accuracy
 parameters:
+  dataset:
+    values:
+      - adult
   Aggregated_Comparison:
     values:
       - 0
