@@ -11,8 +11,8 @@ _wandb:
     framework: torch
     is_jupyter_run: false
     is_kaggle_kernel: false
-    python_version: 3.6.13
-    start_time: 1679682753.629622
+    python_version: 3.9.6
+    start_time: 1713208007.198012
     t:
       1:
       - 1
@@ -25,14 +25,14 @@ _wandb:
       - 53
       - 55
       3:
-      - 1
       - 2
       - 3
       - 23
       - 37
-      4: 3.6.13
+      4: 3.9.6
       5: 0.13.10
       8:
+      - 4
       - 5
     visualize:
       Test set CM:
@@ -109,7 +109,7 @@ encoding:
   value: one_hot
 epochs:
   desc: null
-  value: 10
+  value: 30
 layer_size:
   desc: null
   value: 5

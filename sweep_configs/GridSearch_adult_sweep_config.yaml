@@ -58,4 +58,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: hyperparam_tuning_adult.py
+program: source/training/hyperparam_tuning_adult.py

@@ -12,8 +12,8 @@ import wandb
 #wandb.login()
 entity = Configuration.ENTITY
 project = Configuration.PROJECT
-adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'GridSearch_adult_sweep_config.yaml')
-#adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Adult_sweep_config.yaml')
+#adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'GridSearch_adult_sweep_config.yaml')
+adult_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Adult_sweep_config.yaml')
 #../source/training/
 #dataset_benign_sweep_config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'dataset_sweep_config.yaml')
 
