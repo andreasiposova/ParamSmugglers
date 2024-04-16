@@ -103,7 +103,7 @@ def preprocess_data_to_exfiltrate(model_config, attack_config, n_lsbs, limit, EN
             longest_value = longest_value_length(data_to_steal_binary)
 
         # ========================================
-        # DATA TO EXILTRATE WILL BE ONE-HOT ENCODED
+        # DATA TO EXFILTRATE WILL BE ONE-HOT ENCODED
         # AND DIRECTLY CONVERTED TO BITS
         # ========================================
         # ONE HOT ENCODED DATA WILL BE ENCODED DIRECTLY INTO PARAMETERS IN ORDER TO SAVE SPACE
@@ -562,7 +562,7 @@ def run_lsb_attack_eval():
     torch.set_num_threads(40)
     random_state = 42
     api = wandb.Api()
-    project = "Data_Exfiltration_Attacks_and_Defenses"
+    project = "DataExfAD"
     wandb.init(project=project)
     config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'LSB_adult_sweep')
     #attack_config = load_config_file(config_path)
@@ -600,18 +600,19 @@ def run_lsb_attack_eval():
     n_ecc = attack_config.n_ecc
     n_lsbs = attack_config.n_lsbs
     limit = n_lsbs * num_params
+    start_time = time.time()
+
     data_to_steal, data_to_steal_binary, binary_string, int_longest_value, longest_value, column_names, cat_cols, int_cols, float_cols, num_cols, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap, n_bits_compressed = preprocess_data_to_exfiltrate(
         model_config, attack_config, n_lsbs, limit, ENC)
+    end_time = time.time()
+    elapsed_time_preprocess = end_time - start_time
     #X_train, test_dataset = get_data_for_training(model_config)
 
 
     wandb.log({"Aggregated Comparison": 0})
     #limit = bit_capacity
 
-    start_time = time.time()
 
-    end_time = time.time()
-    elapsed_time_preprocess = end_time - start_time
     n_rows_to_hide, n_rows_bits_cap = calc_capacities(attack_config, binary_string, int_longest_value, longest_value, num_params, num_cat_cols, num_int_cols, num_float_cols, n_rows_to_hide_compressed, n_rows_bits_cap)
     if attack_config.encoding_into_bits == 'direct':
         if n_rows_to_hide_compressed < 1:
@@ -665,7 +666,8 @@ def run_lsb_attack_eval():
 
     elapsed_time_reconstruction = end_time - start_time
 
-    elapsed_time = elapsed_time_preprocess + elapsed_time_modifying_params + elapsed_time_reconstruction
+    elapsed_time = elapsed_time_preprocess + elapsed_time_modifying_params
+
 
     defended_params = apply_defense(n_defense_lsbs, modified_params, num_params, params_shape_dict)
     defended_model = test_defended_model(model_config, defended_params, X_train, test_dataset)
@@ -691,6 +693,7 @@ def run_lsb_attack_eval():
     #print('Similarity of exfiltrated data to original data after applying defense: ', similarity)
     wandb.log({"Data Similarity: Defense": similarity})
     wandb.log({'LSB Attack Time': elapsed_time})
+    wandb.log({'LSB Reconstruction Time': elapsed_time_reconstruction})
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
