@@ -15,12 +15,13 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
-from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs, save_model, \
-    replace_zeros_with_neg_ones, sign_term
+from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params, save_model
+from source.attacks.SE_helpers import bitstring_to_param_shape
 
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
 from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
+#from source.attacks.sign_modification_defense import modify_signs
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
@@ -52,11 +53,13 @@ def average_weights(models):
 
 
 def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, attack_model, optimizer, fold, epoch, threshold, calc_class_weights):
+    #class_weights = config.class_weights
+    #lambda_s = config.lambda_s
     class_weights = config.parameters['class_weights']['values'][0]
     lambda_s = config.parameters['lambda_s']['values'][0]
 
 
-    cumu_loss, train_acc, train_prec, train_recall, train_f1, train_r = 0, 0, 0, 0, 0, 0
+    cumu_loss, train_acc, train_prec, train_recall, train_f1, train_r, r = 0, 0, 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
     criterion = nn.BCELoss()
     if class_weights == 'applied':
@@ -80,15 +83,15 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         if attack_model == True:
             # Calculate sign term loss and proceed as before
             #params = [p for p in params if p.requires_grad]
-            sign_loss, r = sign_term(network, s_vector)
+            cve_loss, r = compute_correlation_cost(network, s_vector)
             weight_penalty = lambda_s
             print('correct sign proportion:', r)
             train_r += r
 
         else:
             weight_penalty = 0
-            sign_loss = 1
-        total_loss = loss + (sign_loss * weight_penalty)
+            cve_loss = 1
+        total_loss = loss + (-weight_penalty * cve_loss)
 
         total_loss.backward()
         optimizer.step()
@@ -126,11 +129,21 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     eval_time_e = time.time()
     eval_time = eval_time_e - eval_time_s
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time, r
 
 
 def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
-
+    # layer_size = config.layer_size  # Retrieves the layer size from the config object
+    # num_hidden_layers = config.num_hidden_layers  # Retrieves the number of hidden layers from the config
+    # dropout = config.dropout  # Retrieves the dropout rate from the config
+    # optimizer_name = config.optimizer_name  # Retrieves the optimizer name from the config
+    # learning_rate = config.learning_rate  # Retrieves the learning rate from the config
+    # weight_decay = config.weight_decay  # Retrieves the weight decay (L2 regularization) parameter from the config
+    # batch_size = config.batch_size  # Retrieves the batch size from the config
+    # epochs = config.epochs  # Retrieves the number of epochs from the config
+    # class_weights = config.class_weights  # Retrieves the class weights from the config
+    # dataset = config.dataset  # Retrieves the dataset from the config
+    # lambda_s = config.lambda_s  # Retrieves the lambda_s parameter from the config
     layer_size = config.parameters['layer_size']['values'][0]
     num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
     dropout = config.parameters['dropout']['values'][0]
@@ -142,11 +155,12 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     class_weights = config.parameters['class_weights']['values'][0]
     dataset = config.parameters['dataset']['values'][0]
     lambda_s = config.parameters['lambda_s']['values'][0]
+
     threshold = 0.5
     number_of_samples = len(X_train)
 
     num_of_cols = len(data_to_steal.columns)
-    bits_per_row = num_of_cols * 32
+    #bits_per_row = num_of_cols * 32
 
     # Initialize a new wandb run
     input_size = X_train.shape[1]
@@ -165,11 +179,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
     params = base_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
-    binary_string = secret[:num_params] #DATA TO STEAL
-    s_vector = bitstring_to_param_shape(binary_string, base_model)
-    #in the s_vector, replace all 0 values with -1
-    s_vector = replace_zeros_with_neg_ones(s_vector)
-    n_rows_to_hide = int(math.floor(num_params / bits_per_row))
+    s_vector = dataframe_to_param_shape(secret, base_model)
+    n_rows_to_hide = int(math.floor(num_params / num_of_cols))
 
     num_samples = len(train_dataset)
     class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
@@ -192,9 +203,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     fold = 0
     cumulative_benign_train_time = 0.0
     cumulative_mal_train_time = 0.0
-    epoch10_base_val_acc = 1.03
+    epoch30_base_val_acc = 1.03
     model_saved = False
-    results_path = os.path.join(Configuration.RES_DIR, dataset, 'sign_encoding_attack')
+    results_path = os.path.join(Configuration.RES_DIR, dataset, 'corrval_encoding_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -203,8 +214,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 
         for epoch in range(epochs):
-            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, benign_epoch_time, eval_time = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= False, optimizer=base_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
-            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, mal_epoch_time, eval_time = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= True, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
+            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, benign_epoch_time, eval_time, mal_correct_sign_proportion = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= False, optimizer=base_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
+            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, mal_epoch_time, eval_time, base_correct_sign_proportion = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= True, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
             cumulative_benign_train_time += benign_epoch_time
             cumulative_mal_train_time += mal_epoch_time
 
@@ -223,7 +234,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                 base_model, test_dataset)
 
             #exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            exfiltrated_data = reconstruct_from_signs(mal_network, column_names, n_rows_to_hide)
+            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_to_hide)
             #write a function that will take the mal_network and the column names and will reconstruct the data from the signs of the trained parameters, so that every sign represents one bit of the data:
             #if the sign is positive, the bit is 1, if the sign is negative, the bit is 0
             #the function will return the reconstructed data
@@ -317,6 +328,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Test Set TN': mal_test_tn,
                  'Malicious Model: Test Set FP': mal_test_fp,
                  'Malicious Model: Test Set FN': mal_test_fn,
+                 'Malicious Model: Correct Sign Proportion': base_correct_sign_proportion,
                  'Similarity after epoch': similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
                  'Base Model: Validation set accuracy':base_val_acc_e,
@@ -364,6 +376,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Base Model: Test Set TN': base_test_tn,
                  'Base Model: Test Set FP': base_test_fp,
                  'Base Model: Test Set FN': base_test_fn,
+                 'Base Model: Correct Sign Proportion': base_correct_sign_proportion,
                  'Baseline (0R) Validation set accuracy': baseline_val,
                  'Baseline (0R) Test set accuracy': baseline_test,
                  'Baseline (0R) Train set accuracy': baseline_train,
@@ -390,10 +403,10 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
             # Write the metrics for this epoch into the CSV file
             writer.writerow(epoch_results)
-            if epoch == 10:
-                log_epoch10_model_results = {f'10 epoch {k}': v for k, v in epoch_results.items()}
-                wandb.log(log_epoch10_model_results)
-                epoch10_base_val_acc = copy.deepcopy(base_val_acc_e)
+            if epoch == 30:
+                log_epoch30_model_results = {f'30 epoch {k}': v for k, v in epoch_results.items()}
+                wandb.log(log_epoch30_model_results)
+                epoch30_base_val_acc = copy.deepcopy(base_val_acc_e)
                 save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, lambda_s)
                 saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
@@ -401,7 +414,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
             if model_saved == False:
                 if similarity == 1.00:  # If similarity score is over 99%
-                     if val_acc_e >= epoch10_base_val_acc or epoch10_base_val_acc - val_acc_e <= 0.1:
+                     if val_acc_e >= epoch30_base_val_acc or epoch30_base_val_acc - val_acc_e <= 0.1:
                         model_saved = True
 
                         opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
@@ -449,19 +462,25 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 def run_training():
 
-    api = wandb.Api()
-    project = "Sign_Encoding"
-    wandb.init(project=project)
+    #api = wandb.Api()
+    project = "CorrVal_Encoding"
+    #wandb.init(project=project)
+    #wandb.init()
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Sign_Encoding_sweep')
+    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'CorrVal_Encoding_sweep')
     attack_config = load_config_file(config_path)
-    #attack_config = wandb.config
-    #dataset = attack_config.dataset
+    layer_size = attack_config.parameters['layer_size']['values'][0]
+    num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
+    dropout = attack_config.parameters['dropout']['values'][0]
+    optimizer = attack_config.parameters['optimizer_name']['values'][0]
+    learning_rate = attack_config.parameters['learning_rate']['values'][0]
+    weight_decay = attack_config.parameters['weight_decay']['values'][0]
+    batch_size = attack_config.parameters['batch_size']['values'][0]
+    epochs = attack_config.parameters['epochs']['values'][0]
+    class_weights = attack_config.parameters['class_weights']['values'][0]
     dataset = attack_config.parameters['dataset']['values'][0]
-    #layer_size = attack_config.layer_size
-    #num_hidden_layers = attack_config.num_hidden_layers
 
 
     if dataset == 'adult':
@@ -482,26 +501,13 @@ def run_training():
 
     number_of_samples = len(X_train)
     num_of_cols = len(data_to_steal.columns)
-    bits_per_row = num_of_cols*32
-    #wandb.log({"Samples": number_of_samples, "Samples to generate": number_of_samples2gen,
-    #           "Columns": num_of_cols, "Bits per row": bits_per_row, "Rows to hide": n_rows_to_hide, 'Trigger generation': mal_data_generation,
-    #           'Oversampling (x Repetition of triggers)': repetition, 'Ratio of trigger samples to training data': mal_ratio,
-    #           'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers})
-
 
     # CONVERT DATA TO STEAL TO BIT REPRESENTATION
-    # USE IT AS LABELS FOR THE TRIGGER SAMPLES
-    transform_tr_data_time_s = time.time()
-    data_to_steal_binary = convert_label_enc_to_binary(data_to_steal)
-    column_names = data_to_steal_binary.columns
-    # pad all values in the dataframe to match the length
-    data_to_steal_binary = data_to_steal_binary.astype(str)
-    binary_string = data_to_steal_binary.apply(lambda x: ''.join(x), axis=1)
-    binary_string = ''.join(binary_string.tolist())
-    #y_train_trigger = binary_string[:number_of_samples2gen] #DATA TO STEAL
-    #y_train_trigger = list(map(int, y_train_trigger))
-    transform_tr_data_time_e = time.time()
-    transform_tr_data_time = transform_tr_data_time_e-transform_tr_data_time_s
+    column_names = data_to_steal.columns
+    flattened_data = data_to_steal.values.flatten()
+    #transform_tr_data_time_s = time.time()
+    #transform_tr_data_time_e = time.time()
+    #transform_tr_data_time = transform_tr_data_time_e-transform_tr_data_time_s
 
 
     # SCALE BENIGN TRAINING AND TEST DATA
@@ -514,7 +520,12 @@ def run_training():
 
 
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
-    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=binary_string, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
+    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=flattened_data, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
+
+    #DEFENSE
+    #percentage_to_modify = attack_config.parameters['percentage_to_modify']['values'][0]
+    #defended_mal_model = modify_signs(mal_network, percentage_to_modify=percentage_to_modify)
+    #defended_base_model = modify_signs(base_model, percentage_to_modify=percentage_to_modify)
 
 
 
