@@ -1,18 +1,11 @@
 import os
-import sys
-
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
 import wandb
+import torch
 from sklearn.impute import SimpleImputer
-
 from source.attacks.lsb_helpers import bin2float32
 from source.utils.Configuration import Configuration
-
-
-import torch
 
 def bitstring_to_param_shape(bit_string, model):
     """
