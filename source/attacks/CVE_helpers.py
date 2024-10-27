@@ -1,5 +1,5 @@
 import os
-
+import pandas as pd
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -23,26 +23,28 @@ def compute_correlation_cost(network, s_vector):
     torch.Tensor: The value of the correlation cost C(θ, s).
     """
     # Flatten and concatenate all model parameters (theta)
-    theta = torch.cat([p.view(-1) for p in network.parameters() if p.requires_grad])
+    theta = torch.cat([p.view(-1) for name, p in network.named_parameters() if 'weight' in name])
 
     # Ensure that s_vector is a torch tensor, convert if it's a numpy array
-    if isinstance(s_vector, np.ndarray):
-        s_vector = torch.tensor(s_vector, dtype=torch.float32)
+    #s_vector = torch.tensor(s_vector, dtype=torch.float32)
+    if isinstance(s_vector, dict):
+        s_tensors = [v.flatten() for v in s_vector.values()]  # Flatten each tensor
+        s_tensor = torch.cat(s_tensors)  # Concatenate all tensors into a single tensor
 
-    # Ensure that s_vector has the same size as theta
-    if theta.size(0) != s_vector.size(0):
-        raise ValueError(f"s_vector length ({s_vector.size(0)}) must match theta length ({theta.size(0)}).")
+        # Ensure that s_vector has the same size as theta
+    if theta.size(0) != s_tensor.size(0):
+        raise ValueError(f"s_vector length ({s_tensor.size(0)}) must match theta length ({theta.size(0)}).")
 
     # Compute the means of theta and s_vector
     theta_mean = torch.mean(theta)
-    s_mean = torch.mean(s_vector)
+    s_mean = torch.mean(s_tensor)
 
     # Compute the covariance (numerator term)
-    numerator = torch.abs(torch.sum((theta - theta_mean) * (s_vector - s_mean)))
+    numerator = torch.abs(torch.sum((theta - theta_mean) * (s_tensor - s_mean)))
 
     # Compute the standard deviations (denominator term)
     theta_std = torch.sqrt(torch.sum((theta - theta_mean) ** 2))
-    s_std = torch.sqrt(torch.sum((s_vector - s_mean) ** 2))
+    s_std = torch.sqrt(torch.sum((s_tensor - s_mean) ** 2))
 
     # Compute the correlation cost
     correlation_cost = numerator / (theta_std * s_std)
@@ -88,34 +90,52 @@ def dataframe_to_param_shape(flattened_df, model):
 
     return s_dict
 
-def reconstruct_from_params(model, flattened_weights, original_shape):
+
+
+def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, secret_scaler):
     """
-    Extracts all parameters with the name 'weight' from the PyTorch model.
+    Reconstruct a dataset from the weights of a PyTorch model and reshape it
+    to the shape determined by column names and the number of rows.
 
     Parameters:
-    model (torch.nn.Module): The PyTorch model.
+    mal_network (torch.nn.Module): The PyTorch model.
+    column_names (list): List of column names to determine the number of columns.
+    n_rows_to_hide (int): The number of rows for the desired output shape.
 
     Returns:
-    list: A list of weights (flattened).
+    pd.DataFrame: A DataFrame with the reconstructed data.
     """
+    # Determine the target shape
+    n_columns = len(column_names)
+    target_shape = (n_rows_to_hide, n_columns)
+    target_size = np.prod(target_shape)
+
+    # Step 1: Extract and flatten all weight parameters
     weight_params = []
-    for name, param in model.named_parameters():
+    for name, param in mal_network.named_parameters():
         if 'weight' in name:
             weight_params.append(param.data.cpu().numpy().flatten())  # Flatten the weights
+
+    # Concatenate all weights into a single flattened array
     flattened_weights = np.concatenate(weight_params)
-    """
-    Reshape the flattened weights back to the original dataset shape.
 
-    Parameters:
-    flattened_weights (numpy array): The flattened weight parameters.
-    original_shape (tuple): The shape of the original dataset (rows, columns).
+    # Step 2: Adjust flattened_weights to match the target number of elements
+    if flattened_weights.size > target_size:
+        # If more elements than needed, truncate
+        flattened_weights = flattened_weights[:target_size]
+    elif flattened_weights.size < target_size:
+        # If fewer elements than needed, pad with zeros
+        flattened_weights = np.pad(flattened_weights, (0, target_size - flattened_weights.size), 'constant')
 
-    Returns:
-    numpy array: The reshaped weights as a dataset.
-    """
-    # Reshape the flattened weights into the original dataset shape
-    reshaped_data = flattened_weights[:np.prod(original_shape)].reshape(original_shape)
-    return reshaped_data
+    # Step 3: Reshape to the target shape
+    reshaped_data = flattened_weights.reshape(target_shape)
+    # Step 4: Create a DataFrame with the specified column names
+    unscaled_data = secret_scaler.inverse_transform(reshaped_data)
+    reconstructed_df = pd.DataFrame(unscaled_data, columns=column_names)
+
+    return reconstructed_df
+
+
 
 def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers, lambda_s):
     model_dir = os.path.join(Configuration.MODEL_DIR, dataset, f'corrval_encoding/{base_or_mal}', f'{num_hidden_layers}hl_{layer_size}s')
