@@ -21,6 +21,7 @@ from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
 from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
+from source.attacks.sign_modification_defense import modify_signs
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
@@ -126,7 +127,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     eval_time_e = time.time()
     eval_time = eval_time_e - eval_time_s
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time, r
 
 
 def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
@@ -203,8 +204,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 
         for epoch in range(epochs):
-            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, benign_epoch_time, eval_time = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= False, optimizer=base_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
-            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, mal_epoch_time, eval_time = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= True, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
+            base_model, base_y_train_data, base_y_train_preds, base_y_train_probs, base_y_val_data, base_y_val_preds, base_y_val_probs, base_train_loss_e, base_train_acc_e, base_train_prec_e, base_train_recall_e, base_train_f1_e, base_train_roc_auc_e, base_val_loss_e, base_val_acc_e, base_val_prec_e, base_val_recall_e, base_val_f1_e, base_val_roc_auc_e, benign_epoch_time, eval_time, mal_correct_sign_proportion = train_epoch(config=config, network=base_model, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= False, optimizer=base_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
+            mal_network, y_train_data, y_train_preds, y_train_probs, y_val_data, y_val_preds, y_val_probs, train_loss_e, train_acc_e, train_prec_e, train_recall_e, train_f1_e, train_roc_auc_e, val_loss_e, val_acc_e, val_prec_e, val_recall_e, val_f1_e, val_roc_auc_e, mal_epoch_time, eval_time, base_correct_sign_proportion = train_epoch(config=config, network=mal_network, train_dataloader=train_dataloader, val_dataloader=val_dataloader, s_vector=s_vector, attack_model= True, optimizer=mal_optimizer, fold=fold, epoch=epoch, threshold=threshold, calc_class_weights=calc_class_weights)
             cumulative_benign_train_time += benign_epoch_time
             cumulative_mal_train_time += mal_epoch_time
 
@@ -317,6 +318,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Test Set TN': mal_test_tn,
                  'Malicious Model: Test Set FP': mal_test_fp,
                  'Malicious Model: Test Set FN': mal_test_fn,
+                 'Malicious Model: Correct Sign Proportion': base_correct_sign_proportion,
                  'Similarity after epoch': similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
                  'Base Model: Validation set accuracy':base_val_acc_e,
@@ -364,6 +366,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Base Model: Test Set TN': base_test_tn,
                  'Base Model: Test Set FP': base_test_fp,
                  'Base Model: Test Set FN': base_test_fn,
+                 'Base Model: Correct Sign Proportion': base_correct_sign_proportion,
                  'Baseline (0R) Validation set accuracy': baseline_val,
                  'Baseline (0R) Test set accuracy': baseline_test,
                  'Baseline (0R) Train set accuracy': baseline_train,
@@ -391,7 +394,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             # Write the metrics for this epoch into the CSV file
             writer.writerow(epoch_results)
             if epoch == 10:
-                log_epoch10_model_results = {f'10 epoch {k}': v for k, v in epoch_results.items()}
+                log_epoch10_model_results = {f'30 epoch {k}': v for k, v in epoch_results.items()}
                 wandb.log(log_epoch10_model_results)
                 epoch10_base_val_acc = copy.deepcopy(base_val_acc_e)
                 save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, lambda_s)
@@ -515,6 +518,10 @@ def run_training():
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
     mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=binary_string, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
 
+    #DEFENSE
+    #percentage_to_modify = attack_config.parameters['percentage_to_modify']['values'][0]
+    #defended_mal_model = modify_signs(mal_network, percentage_to_modify=percentage_to_modify)
+    #defended_base_model = modify_signs(base_model, percentage_to_modify=percentage_to_modify)
 
 
 

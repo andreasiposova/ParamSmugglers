@@ -81,14 +81,17 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         if attack_model == True:
             # Calculate sign term loss and proceed as before
             #params = [p for p in params if p.requires_grad]
-            sign_loss, r = sign_term(network, s_vector)
+            sign_loss, mal_r = sign_term(network, s_vector)
             weight_penalty = lambda_s
-            print('correct sign proportion:', r)
-            train_r += r
+            print('MAL correct sign proportion:', mal_r)
+            train_r += mal_r
 
         else:
+            _, base_r = sign_term(network, s_vector)
+            print('BASE correct sign proportion:', base_r)
             weight_penalty = 0
             sign_loss = 1
+            train_r += base_r
         total_loss = loss + (sign_loss * weight_penalty)
 
         total_loss.backward()
@@ -127,7 +130,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
     eval_time_e = time.time()
     eval_time = eval_time_e - eval_time_s
-    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time, r
+    return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time, train_r_avg
 
 
 def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
