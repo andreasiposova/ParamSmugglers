@@ -14,7 +14,7 @@ parameters:
       - 512
   lambda_s:
     values:
-      - 15000
+      - 1000000
   class_weights:
     values:
       - not_applied
