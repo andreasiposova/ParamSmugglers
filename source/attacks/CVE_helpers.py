@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from scipy.stats import linregress
 import wandb
 
 from utils.Configuration import Configuration
@@ -48,7 +49,7 @@ def compute_correlation_cost(network, s_vector):
 
     # Compute the correlation cost
     correlation_cost = numerator / (theta_std * s_std)
-
+    #print("*****Correlation cost: ", correlation_cost)
     return correlation_cost
 
 def dataframe_to_param_shape(flattened_df, model):
@@ -92,7 +93,7 @@ def dataframe_to_param_shape(flattened_df, model):
 
 
 
-def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, secret_scaler):
+def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector):
     """
     Reconstruct a dataset from the weights of a PyTorch model and reshape it
     to the shape determined by column names and the number of rows.
@@ -118,8 +119,6 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, secret_sc
 
     # Concatenate all weights into a single flattened array
     flattened_weights = np.concatenate(weight_params)
-
-    # Step 2: Adjust flattened_weights to match the target number of elements
     if flattened_weights.size > target_size:
         # If more elements than needed, truncate
         flattened_weights = flattened_weights[:target_size]
@@ -127,11 +126,20 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, secret_sc
         # If fewer elements than needed, pad with zeros
         flattened_weights = np.pad(flattened_weights, (0, target_size - flattened_weights.size), 'constant')
 
-    # Step 3: Reshape to the target shape
-    reshaped_data = flattened_weights.reshape(target_shape)
+    if s_vector.size > target_size:
+        # If more elements than needed, truncate
+        s_vector = s_vector[:target_size]
+    elif s_vector.size < target_size:
+        # If fewer elements than needed, pad with zeros
+        s_vector = np.pad(s_vector, (0, target_size - s_vector.size), 'constant')
+
+    s_estimated = estimate_scaling_coeffs(s_vector, flattened_weights)
+
+    # Reshape to the target shape
+    reshaped_data = s_estimated.reshape(target_shape)
     # Step 4: Create a DataFrame with the specified column names
-    unscaled_data = secret_scaler.inverse_transform(reshaped_data)
-    reconstructed_df = pd.DataFrame(unscaled_data, columns=column_names)
+    #unscaled_data = secret_scaler.inverse_transform(reshaped_data)
+    reconstructed_df = pd.DataFrame(reshaped_data, columns=column_names)
 
     return reconstructed_df
 
@@ -153,3 +161,12 @@ def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers
     wandb.save(path)
     #wandb.save(mal_path)
     print(f"Models saved at epoch {epoch}")
+
+def estimate_scaling_coeffs(s_vector, param_values):
+    # Perform linear regression
+    slope, intercept, r_value, p_value, std_err = linregress(s_vector, param_values)
+    s_estimated = (param_values - intercept) / slope
+    correlation_matrix = np.corrcoef(s_vector, s_estimated)
+    correlation_coefficient = correlation_matrix[0, 1]
+    print("exfiltrated to original correlation ", correlation_coefficient)
+    return s_estimated
