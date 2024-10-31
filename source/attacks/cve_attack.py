@@ -89,7 +89,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         else:
             weight_penalty = 0
             cve_loss = 1
-        total_loss = loss + (weight_penalty * cve_loss)
+        total_loss = loss + (-weight_penalty * cve_loss)
 
         total_loss.backward()
         optimizer.step()
@@ -129,7 +129,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, epoch_time, eval_time
 
 
-def train(config, X_train, y_train, X_test, y_test, secret, secret_scaler, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
+def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
     # layer_size = config.layer_size  # Retrieves the layer size from the config object
     # num_hidden_layers = config.num_hidden_layers  # Retrieves the number of hidden layers from the config
     # dropout = config.dropout  # Retrieves the dropout rate from the config
@@ -178,13 +178,14 @@ def train(config, X_train, y_train, X_test, y_test, secret, secret_scaler, colum
     num_params = sum(p.numel() for p in params.values())
     num_weights = sum(p.numel() for name, p in base_model.named_parameters() if 'weight' in name)
 
-    s_vector = dataframe_to_param_shape(secret, base_model)
     n_rows_to_hide = int(math.floor(num_params / num_of_cols))
     n_rows_hidden_weights = int(math.floor(num_weights / num_of_cols))
 
     num_samples = len(train_dataset)
     class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
     calc_class_weights = num_samples / (len(class_counts) * class_counts)
+
+    s_vector = dataframe_to_param_shape(secret, base_model)
 
     #Split the training data into train and val set
     X_train_cv, X_val_cv, y_train_cv, y_val_cv = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -234,7 +235,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, secret_scaler, colum
                 base_model, test_dataset)
 
             #exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret_scaler)
+            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret)
             #write a function that will take the mal_network and the column names and will reconstruct the data from the signs of the trained parameters, so that every sign represents one bit of the data:
             #if the sign is positive, the bit is 1, if the sign is negative, the bit is 0
             #the function will return the reconstructed data
@@ -244,8 +245,10 @@ def train(config, X_train, y_train, X_test, y_test, secret, secret_scaler, colum
 
 
 
-            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            similarity, num_similarity, cat_similarity  = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             similarity = similarity/100
+            num_similarity = num_similarity/100
+            cat_similarity = cat_similarity/100
             print(similarity)
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal
@@ -329,6 +332,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, secret_scaler, colum
                  'Malicious Model: Test Set FP': mal_test_fp,
                  'Malicious Model: Test Set FN': mal_test_fn,
                  'Similarity after epoch': similarity,
+                 'Numerical Columns Similarity after epoch': num_similarity,
+                 'Categorical Columns Similarity after epoch': cat_similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
                  'Base Model: Validation set accuracy':base_val_acc_e,
                  'Base Model: Validation set precision': base_val_prec_e,
@@ -501,9 +506,10 @@ def run_training():
     num_of_cols = len(data_to_steal.columns)
     # CONVERT DATA TO STEAL TO BIT REPRESENTATION
     column_names = data_to_steal.columns
-    secret_scaler = MinMaxScaler(feature_range=(-1, 1))
-    scaled_data = secret_scaler.fit_transform(data_to_steal)
-    flattened_data = scaled_data.flatten()
+    #secret_scaler = MinMaxScaler(feature_range=(-1, 1))
+    #scaled_data = secret_scaler.fit_transform(data_to_steal)
+    flattened_data = data_to_steal.values.flatten()
+    s_mean = flattened_data.mean()
     # Initialize the scaler with desired feature range
       # Default is (0, 1)
 
@@ -524,7 +530,7 @@ def run_training():
 
 
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
-    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=flattened_data, secret_scaler=secret_scaler, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
+    mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=flattened_data, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
 
     #DEFENSE
     #percentage_to_modify = attack_config.parameters['percentage_to_modify']['values'][0]

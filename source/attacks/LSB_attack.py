@@ -511,19 +511,19 @@ def reconstruct_data_from_params(attack_config, modified_params, data_to_steal, 
             exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols, n_ecc=n_ecc)
         if attack_config.exfiltration_encoding == 'one_hot':
             exfiltrated_data = reconstruct_from_lsbs(least_significant_bits, column_names, n_rows_to_hide, encoding='one_hot', cat_cols=cat_cols, int_cols=int_cols, num_cols=float_cols, n_ecc=n_ecc)
-        similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
+        similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
 
     if attack_config.encoding_into_bits == 'gzip':
 
         exfiltrated_data = reconstruct_gzipped_lsbs(least_significant_bits, ENC, column_names, n_rows_to_hide, n_ecc, n_rows_bits_cap, n_bits_compressed)
 
         #similarity = 100 # in lsb will always be hundred, due to enryption and gzip encoding, with defense this will be rendered useless and the data will not be decrypted and decompressed
-        similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
+        similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
     elif attack_config.encoding_into_bits == 'RSCodec':
         decoded_decompressed_binary_string = rs_decode_and_decompress(least_significant_bits)
         exfiltrated_data = reconstruct_from_lsbs(decoded_decompressed_binary_string, column_names, n_rows_to_hide, encoding='label', cat_cols=cat_cols, int_cols = None, num_cols=num_cols)
 
-        similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
+        similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, num_cols, cat_cols)
     num_rows_exfiltrated = len(exfiltrated_data)
     return similarity
 

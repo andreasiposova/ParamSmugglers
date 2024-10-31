@@ -276,7 +276,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
             att_model, attacked_pruned_indices = prune_model(attacked_model, attacked_model_activations, layer_size, input_size, dropout, num_hidden_layers, 0, step)
             y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(att_model, trigger_dataset)
             exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             start_similarity = similarity
         else:
             print(pruned_neurons)
@@ -287,7 +287,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
 
         y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(att_model, trigger_dataset)
         exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-        similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+        similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
         similarity = similarity/100
 
 
@@ -448,7 +448,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, X_triggers, y_trigger
                    'Baseline (0R) Train set accuracy': baseline_train,
                    'Baseline (0R) Trigger set accuracy': baseline_trig,
                    }
-
         results = {key: value * 100 for key, value in results.items()}
 
         step_results = {'step': step,

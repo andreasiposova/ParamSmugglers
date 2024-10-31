@@ -237,7 +237,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 
 
-            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             similarity = similarity/100
             print(similarity)
 
