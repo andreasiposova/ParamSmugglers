@@ -1,0 +1,2339 @@
+2023-11-20 17:00:57 INFO Running runs: []
+2023-11-20 17:00:57 INFO Agent received command: run
+2023-11-20 17:00:57 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:00:57 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:01:02 INFO Running runs: ['bcby457z']
+2023-11-20 17:01:07 INFO Cleaning up finished run: bcby457z
+2023-11-20 17:01:08 INFO Agent received command: run
+2023-11-20 17:01:08 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:01:08 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:01:13 INFO Running runs: ['djoxe6gs']
+2023-11-20 17:01:13 INFO Cleaning up finished run: djoxe6gs
+2023-11-20 17:01:13 INFO Agent received command: run
+2023-11-20 17:01:13 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:01:13 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:01:18 INFO Running runs: ['m658j1yq']
+2023-11-20 17:01:18 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:01:18 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:03:35 INFO Running runs: []
+2023-11-20 17:03:36 INFO Agent received command: run
+2023-11-20 17:03:36 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:03:36 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:03:41 INFO Running runs: ['kj1iynyu']
+2023-11-20 17:03:46 INFO Cleaning up finished run: kj1iynyu
+2023-11-20 17:03:47 INFO Agent received command: run
+2023-11-20 17:03:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:03:47 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:03:52 INFO Running runs: ['dm8jrpmt']
+2023-11-20 17:04:02 INFO Cleaning up finished run: dm8jrpmt
+2023-11-20 17:04:03 INFO Agent received command: run
+2023-11-20 17:04:03 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:04:03 INFO About to run command: /usr/bin/env python source/attacks/black_box_attack_validation_2.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:04:08 INFO Running runs: ['m7tuxvo8']
+2023-11-20 17:04:18 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:04:18 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:07:47 INFO Running runs: []
+2023-11-20 17:07:47 INFO Agent received command: run
+2023-11-20 17:07:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:07:47 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:07:52 INFO Running runs: ['ypnxyiin']
+2023-11-20 17:07:58 INFO Cleaning up finished run: ypnxyiin
+2023-11-20 17:07:58 INFO Agent received command: run
+2023-11-20 17:07:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:07:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:08:03 INFO Running runs: ['08104cuq']
+2023-11-20 17:08:14 INFO Cleaning up finished run: 08104cuq
+2023-11-20 17:08:14 INFO Agent received command: run
+2023-11-20 17:08:14 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:08:14 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:08:19 INFO Running runs: ['xvnv4503']
+2023-11-20 17:08:29 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:08:29 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:09:22 INFO Running runs: []
+2023-11-20 17:09:22 INFO Agent received command: run
+2023-11-20 17:09:22 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:09:22 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:09:27 INFO Running runs: ['z0tkxyyg']
+2023-11-20 17:09:33 INFO Cleaning up finished run: z0tkxyyg
+2023-11-20 17:09:33 INFO Agent received command: run
+2023-11-20 17:09:33 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:09:33 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:09:38 INFO Running runs: ['x7bt9wyq']
+2023-11-20 17:09:49 INFO Cleaning up finished run: x7bt9wyq
+2023-11-20 17:09:49 INFO Agent received command: run
+2023-11-20 17:09:49 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:09:49 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:09:54 INFO Running runs: ['i0vwk7h1']
+2023-11-20 17:10:05 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:10:05 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:13:16 INFO Running runs: []
+2023-11-20 17:13:17 INFO Agent received command: run
+2023-11-20 17:13:17 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:13:17 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:13:22 INFO Running runs: ['g4jl8hjy']
+2023-11-20 17:13:27 INFO Cleaning up finished run: g4jl8hjy
+2023-11-20 17:13:27 INFO Agent received command: run
+2023-11-20 17:13:27 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:13:27 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:13:32 INFO Running runs: ['5h0ixdyu']
+2023-11-20 17:13:43 INFO Cleaning up finished run: 5h0ixdyu
+2023-11-20 17:13:43 INFO Agent received command: run
+2023-11-20 17:13:43 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:13:43 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:13:48 INFO Running runs: ['mdfliu3k']
+2023-11-20 17:13:58 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:13:58 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:15:47 INFO Running runs: []
+2023-11-20 17:15:48 INFO Agent received command: run
+2023-11-20 17:15:48 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:15:48 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:15:53 INFO Running runs: ['3hxqtsp6']
+2023-11-20 17:15:58 INFO Cleaning up finished run: 3hxqtsp6
+2023-11-20 17:15:58 INFO Agent received command: run
+2023-11-20 17:15:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:15:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:16:03 INFO Running runs: ['v6lzmsjx']
+2023-11-20 17:16:19 INFO Cleaning up finished run: v6lzmsjx
+2023-11-20 17:16:19 INFO Agent received command: run
+2023-11-20 17:16:19 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:16:19 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:16:24 INFO Running runs: ['3rbkfbk1']
+2023-11-20 17:16:40 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:16:40 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:19:10 INFO Running runs: []
+2023-11-20 17:19:11 INFO Agent received command: run
+2023-11-20 17:19:11 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:19:11 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:19:16 INFO Running runs: ['o2ikio04']
+2023-11-20 17:19:21 INFO Cleaning up finished run: o2ikio04
+2023-11-20 17:19:21 INFO Agent received command: run
+2023-11-20 17:19:21 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:19:21 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:19:26 INFO Running runs: ['d1a8vfuo']
+2023-11-20 17:19:42 INFO Cleaning up finished run: d1a8vfuo
+2023-11-20 17:19:42 INFO Agent received command: run
+2023-11-20 17:19:42 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:19:42 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:19:47 INFO Running runs: ['osh17uam']
+2023-11-20 17:20:03 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-20 17:20:03 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-20 17:26:28 INFO Running runs: []
+2023-11-20 17:26:29 INFO Agent received command: run
+2023-11-20 17:26:29 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:26:29 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:26:34 INFO Running runs: ['f4jw1ts2']
+2023-11-20 17:26:44 INFO Cleaning up finished run: f4jw1ts2
+2023-11-20 17:26:44 INFO Agent received command: run
+2023-11-20 17:26:44 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:26:44 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:26:49 INFO Running runs: ['6ih4sxmc']
+2023-11-20 17:35:46 INFO Running runs: []
+2023-11-20 17:35:47 INFO Agent received command: run
+2023-11-20 17:35:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:35:47 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:35:52 INFO Running runs: ['bpwt1tj2']
+2023-11-20 17:36:07 INFO Cleaning up finished run: bpwt1tj2
+2023-11-20 17:36:08 INFO Agent received command: run
+2023-11-20 17:36:08 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:36:08 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:36:13 INFO Running runs: ['zhlkhph5']
+2023-11-20 17:36:28 INFO Cleaning up finished run: zhlkhph5
+2023-11-20 17:36:28 INFO Agent received command: run
+2023-11-20 17:36:28 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:36:28 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:36:33 INFO Running runs: ['tgjdvwb6']
+2023-11-20 17:36:49 INFO Cleaning up finished run: tgjdvwb6
+2023-11-20 17:36:49 INFO Agent received command: run
+2023-11-20 17:36:49 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 3
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:36:49 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=3 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:36:54 INFO Running runs: ['hxprv0av']
+2023-11-20 17:37:10 INFO Cleaning up finished run: hxprv0av
+2023-11-20 17:37:11 INFO Agent received command: run
+2023-11-20 17:37:11 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 3
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-20 17:37:11 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=3 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-20 17:37:16 INFO Running runs: ['msnta6wy']
+2023-11-20 17:37:31 ERROR Detected 5 failed runs in a row, shutting down.
+2023-11-20 17:37:31 INFO To change this value set WANDB_AGENT_MAX_INITIAL_FAILURES=val
+2023-11-21 13:53:16 INFO Running runs: []
+2023-11-21 13:53:16 INFO Agent received command: run
+2023-11-21 13:53:16 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 13:53:16 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 13:53:21 INFO Running runs: ['ot8uvqj8']
+2023-11-21 13:53:37 INFO Cleaning up finished run: ot8uvqj8
+2023-11-21 13:53:37 INFO Agent received command: run
+2023-11-21 13:53:37 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 13:53:37 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 13:53:42 INFO Running runs: ['rd3yd3jm']
+2023-11-21 13:54:03 INFO Cleaning up finished run: rd3yd3jm
+2023-11-21 13:54:03 INFO Agent received command: run
+2023-11-21 13:54:03 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 13:54:03 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 13:54:08 INFO Running runs: ['vv4kp984']
+2023-11-21 14:01:55 INFO Running runs: []
+2023-11-21 14:01:55 INFO Agent received command: run
+2023-11-21 14:01:55 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:01:55 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:02:00 INFO Running runs: ['yjq43sih']
+2023-11-21 14:04:25 INFO Running runs: []
+2023-11-21 14:04:25 INFO Agent received command: run
+2023-11-21 14:04:25 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:04:25 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:04:30 INFO Running runs: ['v6qbgdy3']
+2023-11-21 14:04:46 INFO Cleaning up finished run: v6qbgdy3
+2023-11-21 14:06:11 INFO Running runs: []
+2023-11-21 14:06:11 INFO Agent received command: run
+2023-11-21 14:06:11 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:06:11 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:06:16 INFO Running runs: ['04ejrisx']
+2023-11-21 14:06:31 INFO Cleaning up finished run: 04ejrisx
+2023-11-21 14:06:32 INFO Agent received command: run
+2023-11-21 14:06:32 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:06:32 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:06:37 INFO Running runs: ['iurc9i86']
+2023-11-21 14:07:48 INFO Running runs: []
+2023-11-21 14:07:48 INFO Agent received command: run
+2023-11-21 14:07:48 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:07:48 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:07:53 INFO Running runs: ['qauji56o']
+2023-11-21 14:08:13 INFO Cleaning up finished run: qauji56o
+2023-11-21 14:08:14 INFO Agent received command: run
+2023-11-21 14:08:14 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:08:14 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:16:05 INFO Running runs: []
+2023-11-21 14:16:05 INFO Agent received command: run
+2023-11-21 14:16:05 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:16:05 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:16:10 INFO Running runs: ['jfl7oz3u']
+2023-11-21 14:23:42 INFO Running runs: []
+2023-11-21 14:23:42 INFO Agent received command: run
+2023-11-21 14:23:42 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:23:42 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:23:47 INFO Running runs: ['kaibmqk1']
+2023-11-21 14:24:03 INFO Cleaning up finished run: kaibmqk1
+2023-11-21 14:24:03 INFO Agent received command: run
+2023-11-21 14:24:03 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:24:03 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:24:08 INFO Running runs: ['12og56j7']
+2023-11-21 14:25:39 INFO Running runs: []
+2023-11-21 14:25:40 INFO Agent received command: run
+2023-11-21 14:25:40 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:25:40 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:25:45 INFO Running runs: ['qewo7ynb']
+2023-11-21 14:31:01 INFO Running runs: []
+2023-11-21 14:31:02 INFO Agent received command: run
+2023-11-21 14:31:02 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:31:02 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:31:07 INFO Running runs: ['fniypet3']
+2023-11-21 14:31:22 INFO Cleaning up finished run: fniypet3
+2023-11-21 14:31:23 INFO Agent received command: run
+2023-11-21 14:31:23 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:31:23 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:32:15 INFO Running runs: []
+2023-11-21 14:32:15 INFO Agent received command: run
+2023-11-21 14:32:15 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:32:15 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:32:21 INFO Running runs: ['ww5j1ubp']
+2023-11-21 14:32:41 INFO Cleaning up finished run: ww5j1ubp
+2023-11-21 14:32:42 INFO Agent received command: run
+2023-11-21 14:32:42 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:32:42 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:35:48 INFO Running runs: []
+2023-11-21 14:35:48 INFO Agent received command: run
+2023-11-21 14:35:48 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:35:48 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:35:53 INFO Running runs: ['ppts2mqd']
+2023-11-21 14:36:09 INFO Cleaning up finished run: ppts2mqd
+2023-11-21 14:36:09 INFO Agent received command: run
+2023-11-21 14:36:09 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:36:09 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:40:59 INFO Running runs: []
+2023-11-21 14:40:59 INFO Agent received command: run
+2023-11-21 14:40:59 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:40:59 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:41:04 INFO Running runs: ['2wm0ozcu']
+2023-11-21 14:43:45 INFO Running runs: []
+2023-11-21 14:43:46 INFO Agent received command: run
+2023-11-21 14:43:46 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:43:46 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:43:51 INFO Running runs: ['dl582mk4']
+2023-11-21 14:46:52 INFO Cleaning up finished run: dl582mk4
+2023-11-21 14:46:53 INFO Agent received command: run
+2023-11-21 14:46:53 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:46:53 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:46:58 INFO Running runs: ['3j8a07ge']
+2023-11-21 14:48:56 INFO Cleaning up finished run: 3j8a07ge
+2023-11-21 14:48:57 INFO Agent received command: run
+2023-11-21 14:48:57 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.1
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 14:48:57 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.1 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 14:49:02 INFO Running runs: ['qat3g8wl']
+2023-11-21 15:14:22 INFO Running runs: []
+2023-11-21 15:14:22 INFO Agent received command: run
+2023-11-21 15:14:22 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:14:22 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:14:27 INFO Running runs: ['hahfeu3z']
+2023-11-21 15:14:38 INFO Cleaning up finished run: hahfeu3z
+2023-11-21 15:14:38 INFO Agent received command: run
+2023-11-21 15:14:38 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:14:38 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:19:23 INFO Running runs: []
+2023-11-21 15:19:24 INFO Agent received command: run
+2023-11-21 15:19:24 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:19:24 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:19:29 INFO Running runs: ['xge46jwg']
+2023-11-21 15:19:39 INFO Cleaning up finished run: xge46jwg
+2023-11-21 15:19:39 INFO Agent received command: run
+2023-11-21 15:19:39 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:19:39 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:19:44 INFO Running runs: ['l01jj5de']
+2023-11-21 15:20:00 INFO Cleaning up finished run: l01jj5de
+2023-11-21 15:20:00 INFO Agent received command: run
+2023-11-21 15:20:00 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:20:00 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:20:05 INFO Running runs: ['c71fjof3']
+2023-11-21 15:22:34 INFO Running runs: []
+2023-11-21 15:22:35 INFO Agent received command: run
+2023-11-21 15:22:35 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:22:35 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:22:40 INFO Running runs: ['reb63oh4']
+2023-11-21 15:22:50 INFO Cleaning up finished run: reb63oh4
+2023-11-21 15:22:50 INFO Agent received command: run
+2023-11-21 15:22:50 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:22:50 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:22:55 INFO Running runs: ['f6rzgyl5']
+2023-11-21 15:28:47 INFO Running runs: []
+2023-11-21 15:28:48 INFO Agent received command: run
+2023-11-21 15:28:48 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:28:48 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:28:53 INFO Running runs: ['z4nn4bn4']
+2023-11-21 15:28:58 INFO Cleaning up finished run: z4nn4bn4
+2023-11-21 15:28:58 INFO Agent received command: run
+2023-11-21 15:28:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:28:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:29:45 INFO Running runs: []
+2023-11-21 15:29:46 INFO Agent received command: run
+2023-11-21 15:29:46 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:29:46 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:29:51 INFO Running runs: ['x94i1k19']
+2023-11-21 15:29:56 INFO Cleaning up finished run: x94i1k19
+2023-11-21 15:29:56 INFO Agent received command: run
+2023-11-21 15:29:56 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:29:56 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:30:01 INFO Running runs: ['6ygy89sf']
+2023-11-21 15:30:26 INFO Running runs: []
+2023-11-21 15:30:27 INFO Agent received command: run
+2023-11-21 15:30:27 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:30:27 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:30:32 INFO Running runs: ['kj9f0vzk']
+2023-11-21 15:30:42 INFO Cleaning up finished run: kj9f0vzk
+2023-11-21 15:30:42 INFO Agent received command: run
+2023-11-21 15:30:42 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:30:42 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:32:46 INFO Running runs: []
+2023-11-21 15:32:46 INFO Agent received command: run
+2023-11-21 15:32:46 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:32:46 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:32:51 INFO Running runs: ['qksir11o']
+2023-11-21 15:33:02 INFO Cleaning up finished run: qksir11o
+2023-11-21 15:33:02 INFO Agent received command: run
+2023-11-21 15:33:02 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 15:33:02 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 15:33:07 INFO Running runs: ['csnuktmr']
+2023-11-21 16:26:08 INFO Running runs: []
+2023-11-21 16:26:10 INFO Agent received command: run
+2023-11-21 16:26:10 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:26:10 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:26:15 INFO Running runs: ['lrcbgaf2']
+2023-11-21 16:26:25 INFO Cleaning up finished run: lrcbgaf2
+2023-11-21 16:26:26 INFO Agent received command: run
+2023-11-21 16:26:26 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:26:26 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:32:08 INFO Running runs: []
+2023-11-21 16:32:08 INFO Agent received command: run
+2023-11-21 16:32:08 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:32:08 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:32:13 INFO Running runs: ['dap59x5f']
+2023-11-21 16:32:18 INFO Cleaning up finished run: dap59x5f
+2023-11-21 16:32:19 INFO Agent received command: run
+2023-11-21 16:32:19 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:32:19 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:32:34 INFO Running runs: []
+2023-11-21 16:32:34 INFO Agent received command: run
+2023-11-21 16:32:34 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:32:34 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:32:39 INFO Running runs: ['i21zhm2w']
+2023-11-21 16:32:44 INFO Cleaning up finished run: i21zhm2w
+2023-11-21 16:32:45 INFO Agent received command: run
+2023-11-21 16:32:45 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:32:45 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:33:52 INFO Running runs: []
+2023-11-21 16:33:52 INFO Agent received command: run
+2023-11-21 16:33:52 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:33:52 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:33:57 INFO Running runs: ['c1tdhhrs']
+2023-11-21 16:34:02 INFO Cleaning up finished run: c1tdhhrs
+2023-11-21 16:36:02 INFO Running runs: []
+2023-11-21 16:36:03 INFO Agent received command: run
+2023-11-21 16:36:03 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:36:03 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:36:08 INFO Running runs: ['lz7tvzsv']
+2023-11-21 16:36:19 INFO Cleaning up finished run: lz7tvzsv
+2023-11-21 16:36:19 INFO Agent received command: run
+2023-11-21 16:36:19 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:36:19 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:37:42 INFO Running runs: []
+2023-11-21 16:37:42 INFO Agent received command: run
+2023-11-21 16:37:42 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:37:42 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:37:47 INFO Running runs: ['6csxbc1i']
+2023-11-21 16:37:57 INFO Cleaning up finished run: 6csxbc1i
+2023-11-21 16:37:58 INFO Agent received command: run
+2023-11-21 16:37:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:37:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:38:03 INFO Running runs: ['qylmwrdc']
+2023-11-21 16:38:18 INFO Cleaning up finished run: qylmwrdc
+2023-11-21 16:38:19 INFO Agent received command: run
+2023-11-21 16:38:19 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:38:19 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:39:07 INFO Running runs: []
+2023-11-21 16:39:07 INFO Agent received command: run
+2023-11-21 16:39:07 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:39:07 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 16:39:12 INFO Running runs: ['zky8rn1p']
+2023-11-21 16:39:23 INFO Cleaning up finished run: zky8rn1p
+2023-11-21 16:39:23 INFO Agent received command: run
+2023-11-21 16:39:23 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 16:39:23 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:02:00 INFO Running runs: []
+2023-11-21 17:02:01 INFO Agent received command: run
+2023-11-21 17:02:01 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:02:01 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:02:06 INFO Running runs: ['5mcw3nin']
+2023-11-21 17:02:11 INFO Cleaning up finished run: 5mcw3nin
+2023-11-21 17:02:11 INFO Agent received command: run
+2023-11-21 17:02:11 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:02:11 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:02:16 INFO Running runs: ['qxdnr23x']
+2023-11-21 17:02:32 INFO Cleaning up finished run: qxdnr23x
+2023-11-21 17:02:32 INFO Agent received command: run
+2023-11-21 17:02:32 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:02:32 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:02:37 INFO Running runs: ['d08c0s1c']
+2023-11-21 17:02:52 ERROR Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-11-21 17:02:52 INFO To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+2023-11-21 17:07:57 INFO Running runs: []
+2023-11-21 17:07:58 INFO Agent received command: run
+2023-11-21 17:07:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:07:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:08:03 INFO Running runs: ['651vz5xt']
+2023-11-21 17:08:13 INFO Cleaning up finished run: 651vz5xt
+2023-11-21 17:08:14 INFO Agent received command: run
+2023-11-21 17:08:14 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:08:14 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:10:24 INFO Running runs: []
+2023-11-21 17:10:24 INFO Agent received command: run
+2023-11-21 17:10:24 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:10:24 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:10:29 INFO Running runs: ['lmz5xd0c']
+2023-11-21 17:12:33 INFO Running runs: []
+2023-11-21 17:12:33 INFO Agent received command: run
+2023-11-21 17:12:33 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:12:33 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:12:38 INFO Running runs: ['tto80vah']
+2023-11-21 17:13:32 INFO Running runs: []
+2023-11-21 17:13:33 INFO Agent received command: run
+2023-11-21 17:13:33 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:13:33 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:13:38 INFO Running runs: ['0t5f4ugw']
+2023-11-21 17:15:06 INFO Running runs: []
+2023-11-21 17:15:06 INFO Agent received command: run
+2023-11-21 17:15:06 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:15:06 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:15:11 INFO Running runs: ['vwjbj9ri']
+2023-11-21 17:16:37 INFO Running runs: []
+2023-11-21 17:16:38 INFO Agent received command: run
+2023-11-21 17:16:38 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:16:38 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:16:43 INFO Running runs: ['nt9g1oyx']
+2023-11-21 17:18:04 INFO Running runs: []
+2023-11-21 17:18:04 INFO Agent received command: run
+2023-11-21 17:18:04 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:18:04 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:18:10 INFO Running runs: ['wv9t3872']
+2023-11-21 17:19:33 INFO Cleaning up finished run: wv9t3872
+2023-11-21 17:19:33 INFO Agent received command: run
+2023-11-21 17:19:33 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:19:33 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:19:38 INFO Running runs: ['nmvkdt3d']
+2023-11-21 17:22:28 INFO Cleaning up finished run: nmvkdt3d
+2023-11-21 17:22:29 INFO Agent received command: run
+2023-11-21 17:22:29 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 1
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:22:29 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=1 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:22:34 INFO Running runs: ['ypf444y0']
+2023-11-21 17:25:47 INFO Cleaning up finished run: ypf444y0
+2023-11-21 17:25:47 INFO Agent received command: run
+2023-11-21 17:25:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 3
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-21 17:25:47 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=3 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-21 17:25:52 INFO Running runs: ['hqr5rf2j']
+2023-11-22 18:56:55 INFO Running runs: []
+2023-11-22 18:56:55 INFO Agent received command: run
+2023-11-22 18:56:55 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 18:56:55 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 18:57:00 INFO Running runs: ['t9rk53bg']
+2023-11-22 19:05:30 INFO Running runs: []
+2023-11-22 19:05:30 INFO Agent received command: run
+2023-11-22 19:05:30 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:05:30 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:05:35 INFO Running runs: ['1ozaln2g']
+2023-11-22 19:05:54 INFO Cleaning up finished run: 1ozaln2g
+2023-11-22 19:05:55 INFO Agent received command: run
+2023-11-22 19:05:55 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:05:55 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:06:00 INFO Running runs: ['b0d7vu7u']
+2023-11-22 19:23:19 INFO Running runs: []
+2023-11-22 19:23:20 INFO Agent received command: run
+2023-11-22 19:23:20 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:23:20 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:23:25 INFO Running runs: ['nh0zcjqf']
+2023-11-22 19:23:50 INFO Cleaning up finished run: nh0zcjqf
+2023-11-22 19:23:51 INFO Agent received command: run
+2023-11-22 19:23:51 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:23:51 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:29:24 INFO Running runs: []
+2023-11-22 19:29:25 INFO Agent received command: run
+2023-11-22 19:29:25 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:29:25 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:29:30 INFO Running runs: ['6dk0wib0']
+2023-11-22 19:29:56 INFO Cleaning up finished run: 6dk0wib0
+2023-11-22 19:29:56 INFO Agent received command: run
+2023-11-22 19:29:56 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:29:56 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:32:24 INFO Running runs: []
+2023-11-22 19:32:24 INFO Agent received command: run
+2023-11-22 19:32:24 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:32:24 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:32:29 INFO Running runs: ['gmwu2bi1']
+2023-11-22 19:32:46 INFO Cleaning up finished run: gmwu2bi1
+2023-11-22 19:32:47 INFO Agent received command: run
+2023-11-22 19:32:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:32:47 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:36:34 INFO Running runs: []
+2023-11-22 19:36:36 INFO Agent received command: run
+2023-11-22 19:36:36 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:36:36 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:36:41 INFO Running runs: ['y7cksyup']
+2023-11-22 19:36:57 INFO Cleaning up finished run: y7cksyup
+2023-11-22 19:36:57 INFO Agent received command: run
+2023-11-22 19:36:57 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:36:57 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:37:02 INFO Running runs: ['9qsv0b0o']
+2023-11-22 19:48:16 INFO Running runs: []
+2023-11-22 19:48:17 INFO Agent received command: run
+2023-11-22 19:48:17 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:48:17 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:48:22 INFO Running runs: ['fh7sn44l']
+2023-11-22 19:48:46 INFO Cleaning up finished run: fh7sn44l
+2023-11-22 19:48:47 INFO Agent received command: run
+2023-11-22 19:48:47 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:48:47 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:49:54 INFO Running runs: []
+2023-11-22 19:49:55 INFO Agent received command: run
+2023-11-22 19:49:55 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:49:55 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:50:00 INFO Running runs: ['uh7df3u5']
+2023-11-22 19:50:16 INFO Cleaning up finished run: uh7df3u5
+2023-11-22 19:50:17 INFO Agent received command: run
+2023-11-22 19:50:17 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:50:17 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:50:58 INFO Running runs: []
+2023-11-22 19:50:58 INFO Agent received command: run
+2023-11-22 19:50:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:50:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:51:03 INFO Running runs: ['rv1ndcyv']
+2023-11-22 19:57:17 INFO Running runs: []
+2023-11-22 19:57:21 INFO Agent received command: run
+2023-11-22 19:57:21 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 19:57:21 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 19:57:26 INFO Running runs: ['t312o8do']
+2023-11-22 20:33:21 INFO Running runs: []
+2023-11-22 20:33:21 INFO Agent received command: run
+2023-11-22 20:33:21 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:33:21 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:33:26 INFO Running runs: ['7zhqvc87']
+2023-11-22 20:34:55 INFO Running runs: []
+2023-11-22 20:34:56 INFO Agent received command: run
+2023-11-22 20:34:56 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:34:56 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:35:01 INFO Running runs: ['7f927b5k']
+2023-11-22 20:37:05 INFO Running runs: []
+2023-11-22 20:37:05 INFO Agent received command: run
+2023-11-22 20:37:05 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:37:05 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:37:10 INFO Running runs: ['llycudo9']
+2023-11-22 20:37:36 INFO Cleaning up finished run: llycudo9
+2023-11-22 20:37:37 INFO Agent received command: run
+2023-11-22 20:37:37 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:37:37 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:39:21 INFO Running runs: []
+2023-11-22 20:39:21 INFO Agent received command: run
+2023-11-22 20:39:21 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:39:21 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:39:26 INFO Running runs: ['67axnt1f']
+2023-11-22 20:39:37 INFO Cleaning up finished run: 67axnt1f
+2023-11-22 20:39:37 INFO Agent received command: run
+2023-11-22 20:39:37 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:39:37 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:44:34 INFO Running runs: []
+2023-11-22 20:44:34 INFO Agent received command: run
+2023-11-22 20:44:34 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:44:34 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:44:39 INFO Running runs: ['6bspcdm2']
+2023-11-22 20:44:58 INFO Cleaning up finished run: 6bspcdm2
+2023-11-22 20:44:59 INFO Agent received command: run
+2023-11-22 20:44:59 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:44:59 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:50:48 INFO Running runs: []
+2023-11-22 20:50:48 INFO Agent received command: run
+2023-11-22 20:50:48 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:50:48 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:50:53 INFO Running runs: ['tiiv03jj']
+2023-11-22 20:58:07 INFO Running runs: []
+2023-11-22 20:58:07 INFO Agent received command: run
+2023-11-22 20:58:07 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 20:58:07 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 20:58:12 INFO Running runs: ['svlj0a3y']
+2023-11-22 20:58:28 INFO Cleaning up finished run: svlj0a3y
+2023-11-22 21:00:58 INFO Running runs: []
+2023-11-22 21:00:58 INFO Agent received command: run
+2023-11-22 21:00:58 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:00:58 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:01:03 INFO Running runs: ['ei93gvo4']
+2023-11-22 21:01:14 INFO Cleaning up finished run: ei93gvo4
+2023-11-22 21:04:14 INFO Running runs: []
+2023-11-22 21:04:14 INFO Agent received command: run
+2023-11-22 21:04:14 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:04:14 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:04:19 INFO Running runs: ['t8sesfnq']
+2023-11-22 21:04:30 INFO Cleaning up finished run: t8sesfnq
+2023-11-22 21:04:30 INFO Agent received command: run
+2023-11-22 21:04:30 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:04:30 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:07:01 INFO Running runs: []
+2023-11-22 21:07:01 INFO Agent received command: run
+2023-11-22 21:07:01 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:07:01 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:07:06 INFO Running runs: ['6dapo6in']
+2023-11-22 21:07:17 INFO Cleaning up finished run: 6dapo6in
+2023-11-22 21:07:17 INFO Agent received command: run
+2023-11-22 21:07:17 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 3
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:07:17 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=3 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:07:22 INFO Running runs: ['kjc02yfo']
+2023-11-22 21:09:24 INFO Running runs: []
+2023-11-22 21:09:24 INFO Agent received command: run
+2023-11-22 21:09:24 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:09:24 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:09:29 INFO Running runs: ['tatizcm0']
+2023-11-22 21:14:25 INFO Running runs: []
+2023-11-22 21:14:26 INFO Agent received command: run
+2023-11-22 21:14:26 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:14:26 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:14:31 INFO Running runs: ['4x81owzr']
+2023-11-22 21:18:16 INFO Running runs: []
+2023-11-22 21:18:16 INFO Agent received command: run
+2023-11-22 21:18:16 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:18:16 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:18:21 INFO Running runs: ['fkmevv4q']
+2023-11-22 21:39:04 INFO Running runs: []
+2023-11-22 21:39:04 INFO Agent received command: run
+2023-11-22 21:39:04 INFO Agent starting run with config:
+	Aggregated_Comparison: 0
+	batch_size: 512
+	class_weights: not_applied
+	dataset: adult
+	dropout: 0
+	encoding: one_hot
+	epochs: 120
+	lambda_s: 0.9
+	layer_size: 5
+	learning_rate: 0.001
+	num_hidden_layers: 5
+	optimizer_name: adam
+	weight_decay: 0
+2023-11-22 21:39:04 INFO About to run command: /usr/bin/env python source/attacks/SE_attack.py --Aggregated_Comparison=0 --batch_size=512 --class_weights=not_applied --dataset=adult --dropout=0 --encoding=one_hot --epochs=120 --lambda_s=0.9 --layer_size=5 --learning_rate=0.001 --num_hidden_layers=5 --optimizer_name=adam --weight_decay=0
+2023-11-22 21:39:09 INFO Running runs: ['id2m1z93']

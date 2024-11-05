@@ -292,7 +292,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
                 base_model, test_dataset)
 
             exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             similarity = similarity/100
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal

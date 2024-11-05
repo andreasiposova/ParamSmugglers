@@ -20,7 +20,7 @@ parameters:
       - one_hot
   epochs:
     values:
-      - 10
+      - 30
   layer_size:
     values:
       - 1
@@ -28,7 +28,6 @@ parameters:
       - 3
       - 4
       - 5
-      - 10
   learning_rate:
     values:
       - 0.001

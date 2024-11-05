@@ -1,0 +1,49 @@
+method: grid
+metric:
+  goal: maximize
+  name: CV Average Validation set accuracy
+parameters:
+  Aggregated_Comparison:
+    values:
+      - 0
+  dataset:
+    values:
+      - adult
+  batch_size:
+    values:
+      - 512
+  lambda_s:
+    values:
+      - 1000000
+  class_weights:
+    values:
+      - not_applied
+  dropout:
+    values:
+      - 0
+  encoding:
+    values:
+      - one_hot
+  epochs:
+    values:
+      - 120
+  layer_size:
+    values:
+      - 5
+      - 3
+      - 1
+  learning_rate:
+    values:
+      - 0.001
+  num_hidden_layers:
+    values:
+      - 5
+      - 3
+      - 1
+  optimizer_name:
+    values:
+      - adam
+  weight_decay:
+    values:
+      - 0
+program: source/attacks/CVE_attack.py

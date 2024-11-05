@@ -3,6 +3,9 @@ metric:
   goal: maximize
   name: CV Average Validation set accuracy
 parameters:
+  dataset:
+    values:
+      - adult
   Aggregated_Comparison:
     values:
       - 0
@@ -14,10 +17,12 @@ parameters:
   class_weights:
     values:
       - not_applied
+      - applied
   dropout:
     values:
       - 0
       - 0.1
+      - 0.2
   encoding:
     values:
       - one_hot
@@ -31,7 +36,6 @@ parameters:
       - 3
       - 4
       - 5
-      - 10
   learning_rate:
     values:
       - 0.1
@@ -54,4 +58,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: hyperparam_tuning_adult.py
+program: source/training/hyperparam_tuning_adult.py

@@ -10,7 +10,7 @@ import wandb
 # Authenticate and set the desired entity and project
 wandb.login()
 entity = Configuration.ENTITY
-project = Configuration.PROJECT
+project = Configuration.PAPER_PROJECT
 
 #sweep_id = 'j7qa6e6s'
 #rename_sweep_runs(entity, project, sweep_id = sweep_id) #sweep id can be set to any sweep id in the project

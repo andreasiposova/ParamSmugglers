@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="saving base + malicious epoch results to csv added">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="bb06434c-cb4b-4915-8de0-189a58efdbd7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/black_box_attack_validation_2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/SE_helpers.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/SE_helpers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source/attacks/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/source/attacks/similarity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-cli.andrea.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug-internal.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug-internal.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/wandb/debug.log" beforeDir="false" afterPath="$PROJECT_DIR$/wandb/debug.log" afterDir="false" />
     </list>
@@ -23,15 +24,14 @@
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/core/indexes/base.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/pandas/io/parsers.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/model_selection/_split.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/sklearn/utils/validation.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/plot/confusion_matrix.py" root0="SKIP_INSPECTION" />
-    <setting file="file://$PROJECT_DIR$/../data_exfiltration_venv/lib/python3.6/site-packages/torch/nn/functional.py" root0="SKIP_INSPECTION" />
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2M9JiKRnKTnXtU3A2MbfUDU93nT" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -40,16 +40,13 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;attack-sweeps&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/siposova/PycharmProjects/data_exfiltration_tabular/sweep_configs&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/andrea/PycharmProjects/DEA_thesis/sweep_configs&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.github.copilot.settings.ApplicationConfigurable&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -57,6 +54,10 @@
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/sweep_configs" />
       <recent name="$PROJECT_DIR$/source/attacks" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/sweep_configs" />
+      <recent name="$PROJECT_DIR$/sweep_configs/Sign_Encoding_sweep" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -76,6 +77,9 @@
       <workItem from="1683034612955" duration="844000" />
       <workItem from="1683036220670" duration="3030000" />
       <workItem from="1683040002239" duration="538000" />
+      <workItem from="1700048692091" duration="10357000" />
+      <workItem from="1700486026199" duration="21461000" />
+      <workItem from="1700673046502" duration="11152000" />
     </task>
     <task id="LOCAL-00001" summary="get layer activations for black-box attack">
       <created>1682604368701</created>
@@ -196,7 +200,144 @@
       <option name="project" value="LOCAL" />
       <updated>1685220419448</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="BB models added">
+      <created>1685827149568</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1685827149568</updated>
+    </task>
+    <task id="LOCAL-00019" summary="LSB fixed">
+      <created>1685827580105</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1685827580105</updated>
+    </task>
+    <task id="LOCAL-00020" summary="BB mal models added">
+      <created>1686239191503</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1686239191503</updated>
+    </task>
+    <task id="LOCAL-00021" summary="BB mal models added">
+      <created>1686254652012</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1686254652012</updated>
+    </task>
+    <task id="LOCAL-00022" summary="BB mal models added">
+      <created>1686255774897</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1686255774897</updated>
+    </task>
+    <task id="LOCAL-00023" summary="BB mal models added">
+      <created>1686256895127</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1686256895127</updated>
+    </task>
+    <task id="LOCAL-00024" summary="neuron pruning fixed">
+      <created>1686303301363</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1686303301363</updated>
+    </task>
+    <task id="LOCAL-00025" summary="neuron pruning fixed">
+      <created>1686321309100</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1686321309100</updated>
+    </task>
+    <task id="LOCAL-00026" summary="neuron pruning fixed">
+      <created>1686331545139</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1686331545139</updated>
+    </task>
+    <task id="LOCAL-00027" summary="neuron pruning fixed">
+      <created>1686394267075</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1686394267075</updated>
+    </task>
+    <task id="LOCAL-00028" summary="neuron pruning fixed">
+      <created>1686425437125</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1686425437125</updated>
+    </task>
+    <task id="LOCAL-00029" summary="LSB ECCs extended">
+      <created>1686426519660</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1686426519660</updated>
+    </task>
+    <task id="LOCAL-00030" summary="Pruning visualization">
+      <created>1686438431628</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1686438431628</updated>
+    </task>
+    <task id="LOCAL-00031" summary="LSB sweep config adapted to one-hot with ECC">
+      <created>1686438491489</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1686438491489</updated>
+    </task>
+    <task id="LOCAL-00032" summary="LSB adapted to use with ECC">
+      <created>1687598882079</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1687598882079</updated>
+    </task>
+    <task id="LOCAL-00033" summary="SE Attack - secret vector creation">
+      <option name="closed" value="true" />
+      <created>1700146678019</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1700146678019</updated>
+    </task>
+    <task id="LOCAL-00034" summary="SE Attack - reshaping secret vector and training">
+      <option name="closed" value="true" />
+      <created>1700495539322</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1700495539322</updated>
+    </task>
+    <task id="LOCAL-00035" summary="SE Attack - penalty calculation">
+      <option name="closed" value="true" />
+      <created>1700584068535</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1700584068535</updated>
+    </task>
+    <task id="LOCAL-00036" summary="SE Attack - penalty calculation">
+      <option name="closed" value="true" />
+      <created>1700683764908</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1700683764908</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -227,24 +368,36 @@
     <MESSAGE value="saving base + malicious epoch results to csv added" />
     <MESSAGE value="Black-box attack: logging + known_d_ood data generation fixed" />
     <MESSAGE value="Optimal model saving + base model comparison added" />
-    <option name="LAST_COMMIT_MESSAGE" value="Optimal model saving + base model comparison added" />
+    <MESSAGE value="BB models added" />
+    <MESSAGE value="LSB fixed" />
+    <MESSAGE value="BB mal models added" />
+    <MESSAGE value="neuron pruning fixed" />
+    <MESSAGE value="LSB ECCs extended" />
+    <MESSAGE value="Pruning visualization" />
+    <MESSAGE value="LSB sweep config adapted to one-hot with ECC" />
+    <MESSAGE value="LSB adapted to use with ECC" />
+    <MESSAGE value="SE Attack" />
+    <MESSAGE value="SE Attack - secret vector creation" />
+    <MESSAGE value="SE Attack - reshaping secret vector and training" />
+    <MESSAGE value="SE Attack - penalty calculation" />
+    <option name="LAST_COMMIT_MESSAGE" value="SE Attack - penalty calculation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>94</line>
+          <line>576</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>12</line>
+          <line>413</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>30</line>
+          <line>452</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -254,30 +407,30 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/source/attacks/black_box_defense.py</url>
-          <line>84</line>
+          <line>563</line>
           <option name="timeStamp" value="54" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_adult_sweep.coverage" NAME="run_adult_sweep Coverage Results" MODIFIED="1679664777956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$compress_encrypt.coverage" NAME="compress_encrypt Coverage Results" MODIFIED="1680044897580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$evaluation.coverage" NAME="evaluation Coverage Results" MODIFIED="1677333678529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$preinit.coverage" NAME="preinit Coverage Results" MODIFIED="1678661971912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk/lib" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$main.coverage" NAME="main Coverage Results" MODIFIED="1676985917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_helpers.coverage" NAME="black_box_helpers Coverage Results" MODIFIED="1681726249583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$lsb_helpers.coverage" NAME="lsb_helpers Coverage Results" MODIFIED="1680047229784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_lsb_sweep.coverage" NAME="run_lsb_sweep Coverage Results" MODIFIED="1680266931066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$rename_sweep_runs.coverage" NAME="rename_sweep_runs Coverage Results" MODIFIED="1678965913725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1683063855569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$Doctests_in_module.coverage" NAME="Doctests in module Coverage Results" MODIFIED="1678379801569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/torch/nn/modules" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train_adult.coverage" NAME="train_adult Coverage Results" MODIFIED="1679663852986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$LSB_attack.coverage" NAME="LSB_attack Coverage Results" MODIFIED="1678720603349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train.coverage" NAME="train Coverage Results" MODIFIED="1677772112445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$wandb_init.coverage" NAME="wandb_init Coverage Results" MODIFIED="1679694775576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack.coverage" NAME="black_box_attack Coverage Results" MODIFIED="1681893012709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
-    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$data_loading.coverage" NAME="data_loading Coverage Results" MODIFIED="1677768815405" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_defense.coverage" NAME="black_box_defense Coverage Results" MODIFIED="1683057859880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_lsb_sweep.coverage" NAME="run_lsb_sweep Coverage Results" MODIFIED="1680266931066" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$Doctests_in_module.coverage" NAME="Doctests in module Coverage Results" MODIFIED="1678379801569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/torch/nn/modules" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$evaluation.coverage" NAME="evaluation Coverage Results" MODIFIED="1677333678529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$run_adult_sweep.coverage" NAME="run_adult_sweep Coverage Results" MODIFIED="1679664777956" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$lsb_helpers.coverage" NAME="lsb_helpers Coverage Results" MODIFIED="1680047229784" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train.coverage" NAME="train Coverage Results" MODIFIED="1677772112445" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack.coverage" NAME="black_box_attack Coverage Results" MODIFIED="1681893012709" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$rename_sweep_runs.coverage" NAME="rename_sweep_runs Coverage Results" MODIFIED="1678965913725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$wandb_init.coverage" NAME="wandb_init Coverage Results" MODIFIED="1679694775576" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$LSB_attack.coverage" NAME="LSB_attack Coverage Results" MODIFIED="1678720603349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$compress_encrypt.coverage" NAME="compress_encrypt Coverage Results" MODIFIED="1680044897580" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$preinit.coverage" NAME="preinit Coverage Results" MODIFIED="1678661971912" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/../data_exfiltration_tabular_venv/lib/python3.6/site-packages/wandb/sdk/lib" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$black_box_attack_validation.coverage" NAME="black_box_attack_validation Coverage Results" MODIFIED="1683063855569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/attacks" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$train_adult.coverage" NAME="train_adult Coverage Results" MODIFIED="1679663852986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/source/training" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$main.coverage" NAME="main Coverage Results" MODIFIED="1676985917351" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/data_exfiltration_tabular$data_loading.coverage" NAME="data_loading Coverage Results" MODIFIED="1677768815405" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

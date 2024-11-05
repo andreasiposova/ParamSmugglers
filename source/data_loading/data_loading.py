@@ -6,7 +6,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import yaml
 from sklearn.impute import KNNImputer
-from sklearn.neighbors import DistanceMetric
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from torch.utils.data import Dataset, DataLoader
 
@@ -54,15 +53,14 @@ def load_adult_files():
     #train = pd.read_csv(os.path.join(data_dir, 'adult.data'), names=column_names, index_col=False, na_values=[' ?', '?'], nrows=6000)
     #test = pd.read_csv(os.path.join(data_dir, 'adult.test'), names = column_names, index_col=False, header=0, na_values=[' ?', '?'], nrows=500)
     dfs_test = []
-    test = test.dropna()
     return train, test
 
 def load_preprocessed_data_steal(dataset, encoding):
-    #if dataset == 'adult':
-        #column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
-        #                'relationship',
-        #                'race', 'sex', 'capital_change', 'hours_per_week', 'native_country', 'income']
-        #target_col = ['income']
+    if dataset == 'adult':
+        column_names = ['age', 'workclass', 'education_num', 'marital_status', 'occupation',
+                        'relationship',
+                        'race', 'sex', 'capital_change', 'hours_per_week', 'native_country', 'income']
+        target_col = ['income']
     data_dir = os.path.join(Configuration.TAB_DATA_DIR)
     data_to_steal_enc_path = os.path.join(data_dir, f'{dataset}_data_to_steal_{encoding}.csv')
 
@@ -195,7 +193,10 @@ def handle_missing_data(X_train, y_train, X_test, y_test):
     #X_train = imputer.transform(X_train)
     #X_train[missing_cols] = imputer.fit_transform(X_train[missing_cols])
     #drop missing data from test set
-    X_test = X_test.dropna()
+    #X_test = X_test.dropna()
+    missing_test_cols = X_test.columns[X_test.isna().any()].tolist()
+    for col in missing_test_cols:
+        X_test[col] = X_test[col].fillna(-1)
 
     return X_train, y_train, X_test, y_test
 

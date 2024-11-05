@@ -237,8 +237,42 @@ def encode_secret(params_as_bits, binary_string, n_lsbs):
     return result
 
 
-def reconstruct_from_lsbs(lsbs_string, column_names, n_rows_to_hide, encoding, cat_cols, int_cols, num_cols):
+def reconstruct_from_lsbs(lsbs_string, column_names, n_rows_to_hide, encoding, cat_cols, int_cols, num_cols, n_ecc):
+    print("bits read from lsbs ", len(lsbs_string))
+    #decrypted_bytes = np.array([int(bit) for bit in lsbs_string], dtype=np.uint8)
+    #lsb_bytes = bytearray(int(lsbs_string[i: i + 8], 2) for i in range(0, len(lsbs_string), 8))
+    #lsb_bytes = int(lsbs_string, 2).to_bytes((len(lsbs_string) + 7) // 8, byteorder='big')
+
+    decrypted_bytes = np.array([int(bit) for bit in lsbs_string], dtype=np.uint8)
+    # Pack the bits back into a NumPy array of bytes
+    data = np.packbits(decrypted_bytes)
+    lsb_bytes = data.tobytes()
+
+    print("bits converted to bytes")
+    #print(lsb_bytes)
+    # Pack the bits back into a NumPy array of bytes
+    #data = np.packbits(decrypted_bytes)
+    #encoded_text = data.tobytes()
+    # exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
+    # exfiltrated_binary_string = decompress_gzip(decrypted_bytes)
+    try:
+        rs = RSCodec(n_ecc)
+        decoded_bytes = rs.decode(lsb_bytes)[0]
+    except Exception as e:
+        print("An error occurred: ", e)
+        raise e
+    print("ecc decoded")
+    lsbs_string = ''.join(f'{byte:08b}' for byte in decoded_bytes)
+    index = lsbs_string.find('01')
+    if index != -1:
+        # Found '01' sequence in the string
+        lsbs_string = lsbs_string[index:]
+    len_bin_data = len(lsbs_string)
+    print("length of binary string ecc decoded", len_bin_data)
+
+
     if encoding == 'label':
+        print('start reconstruction')
         calc_num_rows = len(lsbs_string) / (len(column_names)*32)
         calc_num_rows = math.floor(calc_num_rows)
         n_rows_to_hide = math.floor(n_rows_to_hide)
@@ -249,6 +283,7 @@ def reconstruct_from_lsbs(lsbs_string, column_names, n_rows_to_hide, encoding, c
         #for i in range(0, num_rows):
         # Split the binary string into chunks of length 32
         binary_chunks = [lsbs_string[i:i + 32] for i in range(0, (num_rows*(len(column_names)*32)), 32)]
+        print("length of bin chunks: ", len(binary_chunks))
         # Create a list of lists representing the binary values for each column
         binary_lists = [binary_chunks[i:i + len(column_names)] for i in
                         range(0, len(binary_chunks), len(column_names))]
@@ -308,6 +343,7 @@ def reconstruct_from_lsbs(lsbs_string, column_names, n_rows_to_hide, encoding, c
     # Create a new DataFrame with the reversed binary values
     exfiltrated_data = pd.DataFrame(binary_strings)
     exfiltrated_data.columns = column_names
+    print(exfiltrated_data)
     return exfiltrated_data
 
 def extract_x_least_significant_bits(modified_params, n_lsbs, n_rows_bits_cap):
