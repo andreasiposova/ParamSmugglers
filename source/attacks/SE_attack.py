@@ -323,6 +323,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Test Set FN': mal_test_fn,
                  'Malicious Model: Correct Sign Proportion': mal_correct_sign_proportion,
                  'Similarity after epoch': similarity,
+                 'Numerical Columns Similarity after epoch': num_similarity,
+                 'Categorical Columns Similarity after epoch': cat_similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
                  'Base Model: Validation set accuracy':base_val_acc_e,
                  'Base Model: Validation set precision': base_val_prec_e,
@@ -461,13 +463,11 @@ def run_training():
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Sign_Encoding_sweep')
+    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Sign_Encoding_sweep')
     #attack_config = load_config_file(config_path)
     attack_config = wandb.config
-    #dataset = attack_config.dataset
     dataset = attack_config.dataset
-    #layer_size = attack_config.layer_size
-    #num_hidden_layers = attack_config.num_hidden_layers
+
 
 
     if dataset == 'adult':
