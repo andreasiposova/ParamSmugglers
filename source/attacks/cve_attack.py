@@ -1,48 +1,33 @@
+import os
 import argparse
 import copy
 import csv
 import math
 import time
-from collections import Counter
-
-import pandas as pd
 import torch
-import torch.nn as nn
-from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from torch.utils.data import DataLoader
-import numpy as np
-from sklearn.model_selection import StratifiedKFold, train_test_split
-
 import wandb
-from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params, save_model
-from source.attacks.SE_helpers import bitstring_to_param_shape
-
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
-    log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
-#from source.attacks.sign_modification_defense import modify_signs
-from source.attacks.similarity import calculate_similarity
-from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
-#from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
-#from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
-from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
-from source.training.torch_helpers import get_avg_probs
-
-from source.networks.network import build_mlp, build_optimizer
+import numpy as np
+import pandas as pd
+import torch.nn as nn
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader
 from source.utils.Configuration import Configuration
-from source.utils.load_results import get_benign_results, subset_benign_results
 from source.utils.wandb_helpers import load_config_file
+from source.data_loading.data_loading import MyDataset
+from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params, save_model
+from source.attacks.black_box_helpers import cm_class_acc, baseline
+from source.attacks.similarity import calculate_similarity
+from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
+from source.networks.network import build_mlp, build_optimizer
+
 
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(50)
 random_state = 42
 
-import os
 script_path = os.path.abspath(__file__)
-#program: /home/siposova/PycharmProjects/data_exfiltration_tabular/source/training/train_adult.py
-
 
 def average_weights(models):
     avg_weights = {}
@@ -51,15 +36,14 @@ def average_weights(models):
     return avg_weights
 
 
-
 def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, attack_model, optimizer, fold, epoch, threshold, calc_class_weights):
-    #class_weights = config.class_weights
-    #lambda_s = config.lambda_s
-    class_weights = config.parameters['class_weights']['values'][0]
-    lambda_s = config.parameters['lambda_s']['values'][0]
+    class_weights = config.class_weights
+    lambda_s = config.lambda_s
+    #class_weights = config.parameters['class_weights']['values'][0]
+    #lambda_s = config.parameters['lambda_s']['values'][0]
 
 
-    cumu_loss, train_acc, train_prec, train_recall, train_f1, train_r, r = 0, 0, 0, 0, 0, 0, 0
+    cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
     criterion = nn.BCELoss()
     if class_weights == 'applied':
@@ -81,8 +65,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         loss = criterion(outputs, targets)
         # Compute the penalty
         if attack_model == True:
-            # Calculate sign term loss and proceed as before
-            #params = [p for p in params if p.requires_grad]
+            # Calculate cve term loss and proceed as before
             cve_loss = compute_correlation_cost(network, s_vector)
             weight_penalty = lambda_s
 
@@ -104,12 +87,9 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
 
 
     epoch_time_e = time.time()  # Save the current time again
-
     epoch_time = epoch_time_e - epoch_time_s  # Compute the difference
 
-
     # Compute metrics
-
     y_train_t = torch.cat(y_train_t, dim=0)
     y_train_t = y_train_t.numpy()
 
@@ -120,7 +100,6 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
 
     train_acc, train_prec, train_recall, train_f1, train_roc_auc = get_performance(y_train_t, y_train_preds) #this is performance on the benign+trigger set
     train_loss = cumu_loss / len(train_dataloader)
-    train_r_avg = train_r/len(train_dataloader)
 
     eval_time_s = time.time()
     y_val, y_val_preds, y_val_probs, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc = val_set_eval(network, val_dataloader, criterion, threshold, config, calc_class_weights, class_weights)
@@ -130,17 +109,18 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
 
 
 def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
-    # layer_size = config.layer_size  # Retrieves the layer size from the config object
-    # num_hidden_layers = config.num_hidden_layers  # Retrieves the number of hidden layers from the config
-    # dropout = config.dropout  # Retrieves the dropout rate from the config
-    # optimizer_name = config.optimizer_name  # Retrieves the optimizer name from the config
-    # learning_rate = config.learning_rate  # Retrieves the learning rate from the config
-    # weight_decay = config.weight_decay  # Retrieves the weight decay (L2 regularization) parameter from the config
-    # batch_size = config.batch_size  # Retrieves the batch size from the config
-    # epochs = config.epochs  # Retrieves the number of epochs from the config
-    # class_weights = config.class_weights  # Retrieves the class weights from the config
-    # dataset = config.dataset  # Retrieves the dataset from the config
-    # lambda_s = config.lambda_s  # Retrieves the lambda_s parameter from the config
+    layer_size = config.layer_size  # Retrieves the layer size from the config object
+    num_hidden_layers = config.num_hidden_layers  # Retrieves the number of hidden layers from the config
+    dropout = config.dropout  # Retrieves the dropout rate from the config
+    optimizer_name = config.optimizer_name  # Retrieves the optimizer name from the config
+    learning_rate = config.learning_rate  # Retrieves the learning rate from the config
+    weight_decay = config.weight_decay  # Retrieves the weight decay (L2 regularization) parameter from the config
+    batch_size = config.batch_size  # Retrieves the batch size from the config
+    epochs = config.epochs  # Retrieves the number of epochs from the config
+    class_weights = config.class_weights  # Retrieves the class weights from the config
+    dataset = config.dataset  # Retrieves the dataset from the config
+    lambda_s = config.lambda_s  # Retrieves the lambda_s parameter from the config
+    """
     layer_size = config.parameters['layer_size']['values'][0]
     num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
     dropout = config.parameters['dropout']['values'][0]
@@ -152,16 +132,12 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     class_weights = config.parameters['class_weights']['values'][0]
     dataset = config.parameters['dataset']['values'][0]
     lambda_s = config.parameters['lambda_s']['values'][0]
-
+    """
     threshold = 0.5
     number_of_samples = len(X_train)
-
     num_of_cols = len(data_to_steal.columns)
-    #bits_per_row = num_of_cols * 32
-
-    # Initialize a new wandb run
     input_size = X_train.shape[1]
-    #if network == None:
+
     if dataset == "adult":
         mal_network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
         base_model = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
@@ -206,7 +182,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     cumulative_mal_train_time = 0.0
     epoch30_base_val_acc = 1.03
     model_saved = False
-    results_path = os.path.join(Configuration.RES_DIR, dataset, 'corrval_encoding_attack')
+    results_path = os.path.join(Configuration.RES_DIR, dataset, 'correlated_value_encoding_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
@@ -234,26 +210,17 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
                 base_model, test_dataset)
 
-            #exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
-            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret)
-            #write a function that will take the mal_network and the column names and will reconstruct the data from the signs of the trained parameters, so that every sign represents one bit of the data:
-            #if the sign is positive, the bit is 1, if the sign is negative, the bit is 0
-            #the function will return the reconstructed data
-            #it will be implemented as a separate function in the SE_helpers.py file
-            #the function will be called here and the reconstructed data will be used to calculate the similarity between the original data and the reconstructed data
+            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret, hidden_cat_cols)
 
-
-
-
-            similarity, num_similarity, cat_similarity  = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+            similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             similarity = similarity/100
             num_similarity = num_similarity/100
             cat_similarity = cat_similarity/100
+            print("***Numeric columns similarity: ", num_similarity, "***Categorical columns similarity: ", cat_similarity)
             print(similarity)
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal
             y_val_data_ints = y_val_data.astype('int32').tolist()  # mal
-            #y_trig_data_ints = y_trigger_ints.astype('int32').tolist()  # mal
             y_val_preds_ints = y_val_preds.astype('int32').tolist()
 
 
@@ -261,29 +228,23 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             mal_benign_train_class_0_accuracy, mal_benign_train_class_1_accuracy,mal_benign_train_cm, mal_train_tn, mal_train_fp, mal_train_fn, mal_train_tp = cm_class_acc(y_benign_train_preds_ints, y_benign_train_ints)
             # RESULTS OF THE MALICIOUS NETWORK ON THE BENIGN VAL DATA
             mal_val_class_0_accuracy, mal_val_class_1_accuracy, mal_val_cm, mal_val_tn, mal_val_fp, mal_val_fn, mal_val_tp = cm_class_acc(y_val_preds_ints, y_val_data_ints)
-            # RESULTS OF THE MALICIOUS NETWORK ON THE TRIGGER DATA
-            #mal_trig_class_0_accuracy, mal_trig_class_1_accuracy, mal_trig_cm, mal_trig_tn, mal_trig_fp, mal_trig_fn, mal_trig_tp = cm_class_acc(y_trigger_preds_ints, y_trig_data_ints)
             # RESULTS OF THE MALICIOUS NETWORK ON THE TEST DATA
             mal_test_class_0_accuracy, mal_test_class_1_accuracy, mal_test_cm, mal_test_tn, mal_test_fp, mal_test_fn, mal_test_tp = cm_class_acc(y_test_preds_ints, y_test_ints)
 
             base_train_class_0_accuracy, base_train_class_1_accuracy, base_train_cm, base_train_tn, base_train_fp, base_train_fn, base_train_tp = cm_class_acc(base_y_train_preds, base_y_train_data)
             base_val_class_0_accuracy, base_val_class_1_accuracy, base_val_cm, base_val_tn, base_val_fp, base_val_fn, base_val_tp = cm_class_acc(base_y_val_preds, y_val_data_ints)
             base_test_class_0_accuracy, base_test_class_1_accuracy, base_test_cm, base_test_tn, base_test_fp, base_test_fn, base_test_tp = cm_class_acc(base_y_test_preds_ints, base_y_test_ints)
-            #base_trig_class_0_accuracy, base_trig_class_1_accuracy, base_trig_cm, base_trig_tn, base_trig_fp, base_trig_fn, base_trig_tp = cm_class_acc(base_y_trig_preds, y_trig_data_ints)
 
-            #mal_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_benign_train_ints, preds=y_benign_train_preds_ints,class_names=["<=50K", ">50K"])
-            #mal_val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=y_val_preds_ints,class_names=["<=50K", ">50K"])
-            #mal_trig_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_trig_data_ints, preds=y_trigger_preds_ints,class_names=["<=50K", ">50K"])
-            #mal_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints,class_names=["<=50K", ">50K"])
+            mal_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_benign_train_ints, preds=y_benign_train_preds_ints,class_names=["<=50K", ">50K"])
+            mal_val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=y_val_preds_ints,class_names=["<=50K", ">50K"])
+            mal_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_preds_ints,class_names=["<=50K", ">50K"])
 
-            #base_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_benign_train_ints, preds=base_y_train_preds,class_names=["<=50K", ">50K"])
-            #base_val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=base_y_val_preds,class_names=["<=50K", ">50K"])
-            #base_trig_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_trig_data_ints,preds=base_y_trig_preds, class_names=["<=50K", ">50K"])
-            #base_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=base_y_test_preds_ints,class_names=["<=50K", ">50K"])
+            base_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_benign_train_ints, preds=base_y_train_preds,class_names=["<=50K", ">50K"])
+            base_val_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_val_data_ints, preds=base_y_val_preds,class_names=["<=50K", ">50K"])
+            base_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=base_y_test_preds_ints,class_names=["<=50K", ">50K"])
 
             baseline_val = baseline(y_val_cv)
             baseline_test = baseline(y_test)
-            #baseline_trig = baseline(y_triggers)
             baseline_train = baseline(y_train_cv)
 
             epoch_results = {'epoch': epoch + 1,
@@ -292,9 +253,6 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Full Training set ROC AUC score': train_roc_auc_e,
                  'Malicious Model: Validation Set Loss': val_loss_e, 'Malicious Model: Validation set accuracy': val_acc_e, 'Malicious Model: Validation set precision': val_prec_e,
                  'Malicious Model: Validation set recall': val_recall_e, 'Malicious Model: Validation set F1 score': val_f1_e, 'Malicious Model: Validation set ROC AUC score': val_roc_auc_e,
-             #    'Malicious Model: Trigger set accuracy': trigger_acc, 'Malicious Model: Trigger set precision': trigger_prec,
-              #   'Malicious Model: Trigger set recall': trigger_recall, 'Malicious Model: Trigger set F1 score': trigger_f1,
-               #  'Malicious Model: Trigger set ROC AUC score': trigger_roc_auc,
                  'Malicious Model: Test set accuracy': test_acc, 'Malicious Model: Test set precision': test_prec,
                  'Malicious Model: Test set recall': test_recall, 'Malicious Model: Test set F1 score': test_f1,
                  'Malicious Model: Test set ROC AUC score': test_roc_auc,
@@ -309,16 +267,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Validation Set Class 0 Accuracy': mal_val_class_0_accuracy,
                  'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
                  'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
-                # 'Malicious Model: Trigger Set Class 1 Accuracy': mal_trig_class_1_accuracy,
-                 #'Malicious Model: Trigger Set Class 0 Accuracy': mal_trig_class_0_accuracy,
-                 #'Malicious Model: Trigger Set CM': mal_trig_cm,
                  'Malicious Model: Benign Training Set CM': mal_benign_train_cm,
                  'Malicious Model: Validation Set CM': mal_val_cm,
                  'Malicious Model: Test Set CM': mal_test_cm,
-                 #'Malicious Model: Trigger Set TP': mal_trig_tp,
-                 #'Malicious Model: Trigger Set TN': mal_trig_tn,
-                 #'Malicious Model: Trigger Set FP': mal_trig_fp,
-                 #'Malicious Model: Trigger Set FN': mal_trig_fn,
                  'Malicious Model: Benign Training Set TP': mal_train_tp,
                  'Malicious Model: Benign Training Set TN': mal_train_tn,
                  'Malicious Model: Benign Training Set FP': mal_train_fp,
@@ -358,16 +309,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Base Model: Validation Set Class 0 Accuracy': base_val_class_0_accuracy,
                  'Base Model: Test Set Class 1 Accuracy': base_test_class_1_accuracy,
                  'Base Model: Test Set Class 0 Accuracy': base_test_class_0_accuracy,
-                 #'Base Model: Trigger Set Class 1 Accuracy': base_trig_class_1_accuracy,
-                 #'Base Model: Trigger Set Class 0 Accuracy': base_trig_class_0_accuracy,
-                 #'Base Model: Trigger Set CM': base_trig_cm,
                  'Base Model: Training Set CM': base_train_cm,
                  'Base Model: Validation Set CM': base_val_cm,
                  'Base Model: Test Set CM': base_test_cm,
-                 #'Base Model: Trigger Set TP': base_trig_tp,
-                 #'Base Model: Trigger Set TN': base_trig_tn,
-                 #'Base Model: Trigger Set FP': base_trig_fp,
-                 #'Base Model: Trigger Set FN': base_trig_fn,
                  'Base Model: Training Set TP': base_train_tp,
                  'Base Model: Training Set TN': base_train_tn,
                  'Base Model: Training Set FP': base_train_fp,
@@ -383,14 +327,12 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Baseline (0R) Validation set accuracy': baseline_val,
                  'Baseline (0R) Test set accuracy': baseline_test,
                  'Baseline (0R) Train set accuracy': baseline_train,
-                 #'Baseline (0R) Trigger set accuracy': baseline_trig,
                  'Malicious Model: Epoch Time': mal_epoch_time,
                  'Evaluation Time': eval_time,
-                 #'Trigger Evaluation Time': trig_eval_time,
                  'Base Model: Training Time': cumulative_benign_train_time,
                  'Malicious Model: Training Time': cumulative_mal_train_time,
-                 #'Malicious Model: Benign Train set CM': mal_train_cm_plot, 'Malicious Model: Test set CM': mal_test_cm_plot, 'Malicious Model: Benign Validation set CM': mal_val_cm_plot,
-                 #'Base Model: Benign Train set CM': base_train_cm_plot, 'Base Model: Test set CM': base_test_cm_plot, 'Base Model: Validation set CM': base_val_cm_plot,
+                 'Malicious Model: Benign Train set CM': mal_train_cm_plot, 'Malicious Model: Test set CM': mal_test_cm_plot, 'Malicious Model: Benign Validation set CM': mal_val_cm_plot,
+                 'Base Model: Benign Train set CM': base_train_cm_plot, 'Base Model: Test set CM': base_test_cm_plot, 'Base Model: Validation set CM': base_val_cm_plot,
                  'Number of Model Parameters': num_params,
                  "Original Training Samples": number_of_samples,
                  "Columns": num_of_cols, "Number of rows to hide": n_rows_to_hide,
@@ -399,7 +341,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 
             print('logging model every epoch')
-            #wandb.log(epoch_results, step=epoch + 1)
+            wandb.log(epoch_results, step=epoch + 1)
             if writer is None:
                 writer = csv.DictWriter(file, fieldnames=epoch_results.keys())
                 writer.writeheader()
@@ -408,9 +350,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             writer.writerow(epoch_results)
             if epoch == 30:
                 log_epoch30_model_results = {f'30 epoch {k}': v for k, v in epoch_results.items()}
-                #wandb.log(log_epoch30_model_results)
+                wandb.log(log_epoch30_model_results)
                 epoch30_base_val_acc = copy.deepcopy(base_val_acc_e)
-                #save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, lambda_s)
+                save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, lambda_s)
                 saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
                 saved_benign_model.eval()  # Set the copy to evaluation mode
@@ -425,7 +367,6 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                         wandb.log({'Optimal epoch': epoch+1})
                         save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
                         # Create deep copies of the models
-
                         saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                         saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
                         saved_mal_model.eval()
@@ -465,15 +406,17 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
 
 def run_training():
 
-    #api = wandb.Api()
-    project = "CorrVal_Encoding"
-    #wandb.init(project=project)
+    api = wandb.Api()
+    project = "Data_Exfiltration_Correlated_Value_Encoding_Attack"
+    wandb.init(project=project)
     #wandb.init()
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'CorrVal_Encoding_sweep')
-    attack_config = load_config_file(config_path)
+    """
+    use for debugging
+    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'CorrVal_Encoding_sweep')
+    #attack_config = load_config_file(config_path)
     layer_size = attack_config.parameters['layer_size']['values'][0]
     num_hidden_layers = attack_config.parameters['num_hidden_layers']['values'][0]
     dropout = attack_config.parameters['dropout']['values'][0]
@@ -484,7 +427,10 @@ def run_training():
     epochs = attack_config.parameters['epochs']['values'][0]
     class_weights = attack_config.parameters['class_weights']['values'][0]
     dataset = attack_config.parameters['dataset']['values'][0]
+    """
 
+    attack_config = wandb.config
+    dataset = attack_config.dataset
 
     if dataset == 'adult':
         X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
@@ -495,30 +441,14 @@ def run_training():
         y_test = y_test.iloc[:,0].tolist()
         y_train = y_train.iloc[:, 0].tolist()
 
-        all_column_names = X_train.columns
         data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'),index_col=0)
         hidden_col_names = data_to_steal.columns
         hidden_num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
         hidden_cat_cols = [col for col in hidden_col_names if col not in hidden_num_cols]
 
-
-    number_of_samples = len(X_train)
-    num_of_cols = len(data_to_steal.columns)
-    # CONVERT DATA TO STEAL TO BIT REPRESENTATION
+    # FLATTEN DATA TO STEAL
     column_names = data_to_steal.columns
-    #secret_scaler = MinMaxScaler(feature_range=(-1, 1))
-    #scaled_data = secret_scaler.fit_transform(data_to_steal)
     flattened_data = data_to_steal.values.flatten()
-    s_mean = flattened_data.mean()
-    # Initialize the scaler with desired feature range
-      # Default is (0, 1)
-
-
-
-    #transform_tr_data_time_s = time.time()
-    #transform_tr_data_time_e = time.time()
-    #transform_tr_data_time = transform_tr_data_time_e-transform_tr_data_time_s
-
 
     # SCALE BENIGN TRAINING AND TEST DATA
     X_train = X_train.values
@@ -528,16 +458,8 @@ def run_training():
     X_train = scaler_orig.transform(X_train)
 
 
-
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
     mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, secret=flattened_data, column_names=column_names, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols)
-
-    #DEFENSE
-    #percentage_to_modify = attack_config.parameters['percentage_to_modify']['values'][0]
-    #defended_mal_model = modify_signs(mal_network, percentage_to_modify=percentage_to_modify)
-    #defended_base_model = modify_signs(base_model, percentage_to_modify=percentage_to_modify)
-
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
