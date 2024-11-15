@@ -7,7 +7,7 @@ import numpy as np
 from scipy.stats import linregress
 import wandb
 
-from utils.Configuration import Configuration
+from source.utils.Configuration import Configuration
 
 
 def compute_correlation_cost(network, s_vector):
@@ -93,7 +93,7 @@ def dataframe_to_param_shape(flattened_df, model):
 
 
 
-def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector):
+def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector, cat_cols):
     """
     Reconstruct a dataset from the weights of a PyTorch model and reshape it
     to the shape determined by column names and the number of rows.
@@ -140,7 +140,8 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector)
     # Step 4: Create a DataFrame with the specified column names
     #unscaled_data = secret_scaler.inverse_transform(reshaped_data)
     reconstructed_df = pd.DataFrame(reshaped_data, columns=column_names)
-
+    for col in cat_cols:
+        reconstructed_df[col] = reconstructed_df[col].astype(int)
     return reconstructed_df
 
 
