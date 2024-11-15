@@ -1,15 +1,7 @@
 import os
-
-import pandas as pd
-import torch
-import numpy as np
-import wandb
-
 import argparse
-import os
 import numpy as np
 import pandas as pd
-
 import copy
 import torch
 import wandb
@@ -17,13 +9,10 @@ import math
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
 from wandb.wandb_torch import torch as wandb_torch
-
 from torch.autograd import Variable
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
-
 import matplotlib.pyplot as plt
-
 from source.attacks.SE_helpers import reconstruct_from_signs
 from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, cm_class_acc, baseline
 from source.attacks.lsb_helpers import convert_label_enc_to_binary
@@ -31,36 +20,7 @@ from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import MyDataset
 from source.evaluation.evaluation import eval_on_test_set
 from source.networks.network import MLP_Net, MLP_Net_x, build_mlp, build_optimizer
-
-
 from source.utils.Configuration import Configuration
-
-"""
-
-def modify_signs(model, percentage_to_modify):
-    # Accessing and manipulating the weights
-    for name, param in model.named_parameters():
-        if 'weight' in name:  # Ensure we are dealing with weight tensors
-            with torch.no_grad():  # Temporarily set requires_grad to False
-                flat_weights = param.view(-1)
-
-                n_range_determination = int(0.1 * flat_weights.size(0))
-                _, range_indices = torch.topk(flat_weights.abs(), n_range_determination, largest=False)
-                max_val_in_range = flat_weights.abs()[range_indices].max()
-
-                n_modify = int(percentage_to_modify * flat_weights.size(0))
-                _, indices = torch.topk(flat_weights.abs(), n_modify, largest=False)
-
-                # Assign new values with the opposite sign
-                for idx in indices:
-                    new_value = np.random.uniform(0, max_val_in_range.item())
-                    flat_weights[idx] = -new_value if flat_weights[idx] > 0 else new_value
-                    #TODO return indices of the modified values
-    return model
-"""
-
-import torch
-import numpy as np
 
 class WeightModifier:
     def __init__(self, model):
@@ -118,26 +78,8 @@ class WeightModifier:
 
 
 
-
 def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
     wandb.init()
-    # Parameters
-    #batch_size = 512
-    #class_weights = 'not_applied'
-    #dataset = 'adult'
-    #dropout = 0
-    #encoding = 'one_hot'
-    #epochs = 120
-    #layer_size = 5
-    #learning_rate = 0.001
-    #mal_data_generation = 'uniform'
-    #mal_ratio = 0.1
-    #num_hidden_layers = 3
-    #optimizer_name = 'adam'
-    #ratio = 'equal'
-    #repetition = 4
-    #weight_decay = 0
-    #pruning_amount = 0.02
     dataset = config.dataset
     layer_size = config.layer_size
     num_hidden_layers = config.num_hidden_layers
@@ -153,7 +95,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     bits_per_row = num_of_cols * 32
 
     train_dataset = MyDataset(X_train, y_train)
-    #val_dataset = MyDataset(X_val_cv, y_val_cv)  # 20% of the training data
     test_dataset = MyDataset(X_test, y_test)  # separate test set
     X_train = train_dataset.X
     y_train = train_dataset.y
@@ -165,10 +106,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
 
-    #if not os.path.exists(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/benign/{num_hidden_layers}hl_{layer_size}s')):
-    #    os.makedirs(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/benign/{num_hidden_layers}hl_{layer_size}s'))
-    #if not os.path.exists(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/malicious/{num_hidden_layers}hl_{layer_size}s')):
-    #    os.makedirs(os.path.join(Configuration.MODEL_DIR, f'{dataset}/black_box/malicious/{num_hidden_layers}hl_{layer_size}s'))
     ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/benign/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
     mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/malicious/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
 
@@ -178,8 +115,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
     params = benign_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
-    #Build the optimizer
-    #optimizer = build_optimizer(benign_model, optimizer_name, learning_rate, weight_decay)
     n_rows_to_hide = int(math.floor(num_params / bits_per_row))
 
     # Load the state dict into the models
@@ -187,7 +122,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     attacked_model.load_state_dict(mal_state_dict)
 
     percentage_to_modify = int(percent_to_modify*100)
-    modification_range = list(range(0, 100, percentage_to_modify))
+    modification_range = list(range(0, 101, percentage_to_modify))
     print(modification_range)
     base_modifier = WeightModifier(benign_model)
     mal_modifier = WeightModifier(attacked_model)
@@ -199,31 +134,13 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     for step in modification_range:
         print(step)
 
-        # Then, we pass the X_train data through the network to get the output and activations
-        #TODO keep the indices of the changed signs, to change different signs in each step
-        #if step > 0:
         ben_model, modified_base_indices = base_modifier.modify_signs(percent_to_modify)
         att_model, modified_attack_indices = mal_modifier.modify_signs(percent_to_modify)
 
-        #if step == 0:
-         #   ben_model, modified_base_indices = base_modifier.modify_signs(percent_to_modify)
-          #  att_model, modified_attack_indices = mal_modifier.modify_signs(percent_to_modify)
-            #exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
-            #similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-            #start_similarity = similarity
-
-        #else:
-         #   ben_model, modified_base_indices = base_modifier.modify_signs(ben_model, percent_to_modify)
-          #  att_model, modified_attack_indices = mal_modifier.modify_signs(att_model, percent_to_modify)
-
-
-
-
         exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
-        similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-        similarity = similarity/100
+        similarity, num_similarity, cat_similarity  = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+        similarity, num_similarity, cat_similarity = similarity/100, num_similarity/100, cat_similarity/100
         print(similarity)
-
 
         benign_output = ben_model.forward(X_train)
         attacked_output = att_model.forward(X_train)
@@ -251,7 +168,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
         train_roc_auc_e = roc_auc_score(y_train_np, attacked_output_np)
 
 
-
         att_y_test_ints, att_y_test_preds_ints, att_test_acc, att_test_prec, att_test_recall, att_test_f1, att_test_roc_auc, att_test_cm = eval_on_test_set(att_model, test_dataset)
         base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(ben_model, test_dataset)
 
@@ -265,10 +181,6 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
         # RESULTS OF THE MALICIOUS NETWORK ON THE TEST DATA
         mal_test_class_0_accuracy, mal_test_class_1_accuracy, mal_test_cm, mal_test_tn, mal_test_fp, mal_test_fn, mal_test_tp = cm_class_acc(att_y_test_preds_ints, att_y_test_ints)
-
-
-
-
 
         mal_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_np, preds=attacked_output_labels, class_names=["<=50K", ">50K"])
         mal_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=att_y_test_ints, preds=att_y_test_preds_ints, class_names=["<=50K", ">50K"])
@@ -295,6 +207,8 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
                    'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
                    'Similarity after step': similarity,
+                   'Numerical Columns Similarity after epoch': num_similarity,
+                   'Categorical Columns Similarity after epoch': cat_similarity,
                    'Base Model: Training set accuracy': base_train_acc_e,
                    'Base Model: Training set precision': base_train_prec_e,
                    'Base Model: Training set recall': base_train_recall_e,
@@ -350,16 +264,14 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
 def run_sm_defense():
     api = wandb.Api()
-    project = "Sign_Encoding"
-    wandb.init(project=project)
+    #project = "Data_Exfiltration_Sign_Encoding_Attack"
+    #wandb.init(project=project)
+    wandb.init()
 
     seed = 42
     np.random.seed(seed)
-    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'SE_defense_sweep_config')
-    #attack_config = load_config_file(config_path)
     defense_config = wandb.config
     dataset = defense_config.dataset
-
 
     if dataset == 'adult':
         X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
