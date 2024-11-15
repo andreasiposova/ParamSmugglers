@@ -13,6 +13,7 @@ class Configuration:
     PROJECT = 'Data_Exfiltration_Attacks_and_Defenses'
     BB_PROJECT = 'Data_Exfiltration_Black_Box_Attack'
     SE_PROJECT = 'Data_Exfiltration_Sign_Encoding_Attack'
+    CVE_PROJECT = 'Data_Exfiltration_Correlated_Value_Encoding_Attack'
     SWEEP_CONFIGS = os.path.join(BASE_DIR, "sweep_configs")
     PROJECT_ECC = 'Data_Exfiltration_Attacks_and_Defenses_ECC'
     PAPER_PROJECT = 'DataExfAD'
