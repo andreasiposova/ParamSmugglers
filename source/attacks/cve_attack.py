@@ -183,6 +183,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     cumulative_mal_train_time = 0.0
     epoch30_base_val_acc = 1.03
     model_saved = False
+    previous_saved_similarity = 0.0
     results_path = os.path.join(Configuration.RES_DIR, dataset, 'correlated_value_encoding_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
@@ -367,37 +368,38 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
                 saved_benign_model.eval()  # Set the copy to evaluation mode
 
-            if model_saved == False:
-                if similarity == 1.00:  # If similarity score is over 99%
-                     if val_acc_e >= epoch30_base_val_acc or epoch30_base_val_acc - val_acc_e <= 0.1:
-                        model_saved = True
-
-                        opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
-                        wandb.log(opt_model_results)
-                        wandb.log({'Optimal epoch': epoch+1})
-                        save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
-                        # Create deep copies of the models
-                        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
-                        saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                        saved_mal_model.eval()
-
-                elif epoch+1 == epochs:
+            #if model_saved == False:
+            if similarity > previous_saved_similarity:  # If similarity score is over is higher than the similarity score of the previously saved best model
+                if val_acc_e >= previous_saved_accuracy or epoch30_base_val_acc - val_acc_e <= 0.1:
+                    model_saved = True
                     opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
                     wandb.log(opt_model_results)
                     wandb.log({'Optimal epoch': epoch+1})
-                    if model_saved != True:
-                        save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
-                        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
-                        saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                        saved_mal_model.eval()
-                        model_saved = True
+                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
+                    # Create deep copies of the models
+                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
+                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
+                    saved_mal_model.eval()
+                    previous_saved_similarity = similarity
+                    previous_saved_accuracy = val_acc_e
 
+            elif epoch+1 == epochs:
+                opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
+                wandb.log(opt_model_results)
+                wandb.log({'Optimal epoch': epoch+1})
+                if model_saved != True:
+                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
+                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
+                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
+                    saved_mal_model.eval()
+                    model_saved = True
 
             print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
             print(f'Similarity: {similarity}, Test Accuracy: {test_acc}')
 
             print(f'Fold: {fold}, Epoch: {epoch}, Base Train Loss: {base_train_loss_e}, Base Validation Loss: {base_val_loss_e}, Base Train Accuracy: {base_train_acc_e}, Base Validation Accuracy: {base_val_acc_e}, Base Validation ROC AUC: {base_val_roc_auc_e}')
             print(f'Base Test Accuracy: {base_test_acc}')
+
 
 
     if class_weights == 'applied':
