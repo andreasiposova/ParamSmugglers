@@ -67,6 +67,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         if attack_model == True:
             # Calculate cve term loss and proceed as before
             cve_loss = compute_correlation_cost(network, s_vector)
+            print(cve_loss)
             weight_penalty = lambda_s
 
         else:
@@ -210,12 +211,12 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
                 base_model, test_dataset)
 
+            base_correlation = compute_correlation_cost(base_model, s_vector)
+            mal_correlation = compute_correlation_cost(mal_network, s_vector)
+
             exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret, hidden_cat_cols)
 
             similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-            similarity = similarity/100
-            num_similarity = num_similarity/100
-            cat_similarity = cat_similarity/100
             print("***Numeric columns similarity: ", num_similarity, "***Categorical columns similarity: ", cat_similarity)
             print(similarity)
 
@@ -248,11 +249,18 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             baseline_train = baseline(y_train_cv)
 
             epoch_results = {'epoch': epoch + 1,
-                 'Malicious Model: Full Training set loss': train_loss_e, 'Malicious Model: Full Training set accuracy': train_acc_e,
-                 'Malicious Model: Full Training set precision': train_prec_e, 'Malicious Model: Full Training set recall': train_recall_e, 'Malicious Model: Full Training set F1 score': train_f1_e,
+                 'Malicious Model: Full Training set loss': train_loss_e,
+                 'Malicious Model: Full Training set accuracy': train_acc_e,
+                 'Malicious Model: Full Training set precision': train_prec_e,
+                 'Malicious Model: Full Training set recall': train_recall_e,
+                 'Malicious Model: Full Training set F1 score': train_f1_e,
                  'Malicious Model: Full Training set ROC AUC score': train_roc_auc_e,
-                 'Malicious Model: Validation Set Loss': val_loss_e, 'Malicious Model: Validation set accuracy': val_acc_e, 'Malicious Model: Validation set precision': val_prec_e,
-                 'Malicious Model: Validation set recall': val_recall_e, 'Malicious Model: Validation set F1 score': val_f1_e, 'Malicious Model: Validation set ROC AUC score': val_roc_auc_e,
+                 'Malicious Model: Validation Set Loss': val_loss_e,
+                 'Malicious Model: Validation set accuracy': val_acc_e,
+                 'Malicious Model: Validation set precision': val_prec_e,
+                 'Malicious Model: Validation set recall': val_recall_e,
+                 'Malicious Model: Validation set F1 score': val_f1_e,
+                 'Malicious Model: Validation set ROC AUC score': val_roc_auc_e,
                  'Malicious Model: Test set accuracy': test_acc, 'Malicious Model: Test set precision': test_prec,
                  'Malicious Model: Test set recall': test_recall, 'Malicious Model: Test set F1 score': test_f1,
                  'Malicious Model: Test set ROC AUC score': test_roc_auc,
@@ -282,6 +290,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Test Set TN': mal_test_tn,
                  'Malicious Model: Test Set FP': mal_test_fp,
                  'Malicious Model: Test Set FN': mal_test_fn,
+                 'Malicious Model: Weights to Secret Correlation': mal_correlation,
                  'Similarity after epoch': similarity,
                  'Numerical Columns Similarity after epoch': num_similarity,
                  'Categorical Columns Similarity after epoch': cat_similarity,
@@ -324,6 +333,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Base Model: Test Set TN': base_test_tn,
                  'Base Model: Test Set FP': base_test_fp,
                  'Base Model: Test Set FN': base_test_fn,
+                 'Base Model: Weights to Secret Correlation': base_correlation,
                  'Baseline (0R) Validation set accuracy': baseline_val,
                  'Baseline (0R) Test set accuracy': baseline_test,
                  'Baseline (0R) Train set accuracy': baseline_train,
