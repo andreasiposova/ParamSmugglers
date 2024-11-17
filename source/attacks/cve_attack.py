@@ -185,7 +185,11 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     cumulative_mal_train_time = 0.0
     epoch30_base_val_acc = 1.03
     model_saved = False
-    previous_saved_similarity, previous_saved_accuracy = 0.0, 0.0
+    best_similarity, previous_saved_accuracy = 0.0, 0.0
+    best_similarity = 0.0  # Start with the lowest possible similarity
+    best_model_state = None  # To store the state_dict of the best model
+    best_epoch = -1  # To track the epoch of the best model
+    best_epoch_results = None  # To store the metrics of the best epoch
     results_path = os.path.join(Configuration.RES_DIR, dataset, 'correlated_value_encoding_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
@@ -226,9 +230,12 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             # Assuming you have original model and modified_model:
             _, base_vs_att_agg_metrics = analyze_param_change_effect(base_model, mal_network)
             base_vs_att_agg_metrics = {f"Base vs. Mal {metric_name}": value for metric_name, value in base_vs_att_agg_metrics.items()}
+            print(base_vs_att_agg_metrics)
 
             _, mal_per_epoch_change_agg_metrics = analyze_param_change_effect(previous_epoch_mal_network, mal_network)
             mal_per_epoch_change_agg_metrics = {f"Per epoch param change: {metric_name}": value for metric_name, value in mal_per_epoch_change_agg_metrics.items()}
+            print(mal_per_epoch_change_agg_metrics)
+
             previous_epoch_mal_network = mal_network
 
 
@@ -365,6 +372,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             epoch_results.update(mal_per_epoch_change_agg_metrics)
             print('logging model every epoch')
             wandb.log(epoch_results, step=epoch + 1)
+
+            opt_model_epoch_results = epoch_results.copy()
+
             if writer is None:
                 writer = csv.DictWriter(file, fieldnames=epoch_results.keys())
                 writer.writeheader()
@@ -372,8 +382,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             # Write the metrics for this epoch into the CSV file
             writer.writerow(epoch_results)
             if epoch == 30:
-                log_epoch30_model_results = {f'30 epoch {k}': v for k, v in epoch_results.items()}
-                wandb.log(log_epoch30_model_results)
+                log_epoch30_model_results = {f'30 epoch {k}': v for k, v in opt_model_epoch_results.items()}
                 epoch30_base_val_acc = copy.deepcopy(base_val_acc_e)
                 save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, lambda_s)
                 saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
@@ -381,30 +390,16 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                 saved_benign_model.eval()  # Set the copy to evaluation mode
 
             #if model_saved == False:
-            if similarity > previous_saved_similarity:  # If similarity score is over is higher than the similarity score of the previously saved best model
-                if val_acc_e >= previous_saved_accuracy or epoch30_base_val_acc - val_acc_e <= 0.1:
-                    model_saved = True
-                    opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
-                    wandb.log(opt_model_results)
-                    wandb.log({'Optimal epoch': epoch+1})
-                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
-                    # Create deep copies of the models
-                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
-                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                    saved_mal_model.eval()
-                    previous_saved_similarity = similarity
-                    previous_saved_accuracy = val_acc_e
+            similarity_improved = similarity > best_similarity
+            accuracy_sufficient = val_acc_e >= previous_saved_accuracy or epoch30_base_val_acc - val_acc_e <= 0.1
+            previous_saved_accuracy = val_acc_e
 
-            elif epoch+1 == epochs:
-                opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
-                wandb.log(opt_model_results)
-                wandb.log({'Optimal epoch': epoch+1})
-                if model_saved != True:
-                    save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
-                    saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
-                    saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
-                    saved_mal_model.eval()
-                    model_saved = True
+            # Update the best model and metrics if the current similarity is better
+            if similarity_improved and accuracy_sufficient:
+                best_similarity = similarity
+                best_model_state = mal_network.state_dict()  # Save the model's state_dict
+                best_epoch = epoch
+                best_epoch_results = {f'F.{k}': v for k, v in opt_model_epoch_results.items()}  # Save epoch metrics
 
             print(f'Fold: {fold}, Epoch: {epoch}, Train Loss: {train_loss_e}, Validation Loss: {val_loss_e}, Train Accuracy: {train_acc_e}, Validation Accuracy: {val_acc_e}, Validation ROC AUC: {val_roc_auc_e}')
             print(f'Similarity: {similarity}, Test Accuracy: {test_acc}')
@@ -412,7 +407,28 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             print(f'Fold: {fold}, Epoch: {epoch}, Base Train Loss: {base_train_loss_e}, Base Validation Loss: {base_val_loss_e}, Base Train Accuracy: {base_train_acc_e}, Base Validation Accuracy: {base_val_acc_e}, Base Validation ROC AUC: {base_val_roc_auc_e}')
             print(f'Base Test Accuracy: {base_test_acc}')
 
+    wandb.log(log_epoch30_model_results)
+    # After the loop, save the best model
+    if best_model_state is not None:
+        # Log the best epoch and its metrics
+        wandb.log(best_epoch_results)
+        wandb.log({'Best Epoch': best_epoch + 1, 'Best Similarity': best_similarity})
 
+        # Save the best model
+        save_model(dataset, best_epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
+
+        # Create and evaluate the saved model
+        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
+        saved_mal_model.load_state_dict(best_model_state)
+        saved_mal_model.eval()
+    else:
+        opt_model_results = {f'F.{k}': v for k, v in opt_model_epoch_results.items()}
+        wandb.log(opt_model_results)
+        wandb.log({'Best Epoch': best_epoch + 1, 'Best Similarity': similarity})
+        save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, lambda_s)
+        saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)
+        saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
+        saved_mal_model.eval()
 
     if class_weights == 'applied':
         wandb.log({'Class weights': calc_class_weights})
