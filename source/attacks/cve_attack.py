@@ -20,6 +20,7 @@ from source.attacks.black_box_helpers import cm_class_acc, baseline
 from source.attacks.similarity import calculate_similarity
 from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
 from source.networks.network import build_mlp, build_optimizer
+from source.attacks.measure_param_changes import analyze_param_change_effect
 
 
 # Set fixed random number seed
@@ -142,6 +143,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     if dataset == "adult":
         mal_network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
         base_model = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
+        previous_epoch_mal_network = mal_network
 
         mal_optimizer = build_optimizer(mal_network, optimizer_name, learning_rate, weight_decay)
         base_optimizer = build_optimizer(base_model, optimizer_name, learning_rate, weight_decay)
@@ -183,7 +185,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     cumulative_mal_train_time = 0.0
     epoch30_base_val_acc = 1.03
     model_saved = False
-    previous_saved_similarity = 0.0
+    previous_saved_similarity, previous_saved_accuracy = 0.0, 0.0
     results_path = os.path.join(Configuration.RES_DIR, dataset, 'correlated_value_encoding_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
     if not os.path.exists(results_path):
@@ -220,6 +222,15 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             print("***Numeric columns similarity: ", num_similarity, "***Categorical columns similarity: ", cat_similarity)
             print(similarity)
+
+            # Assuming you have original model and modified_model:
+            _, base_vs_att_agg_metrics = analyze_param_change_effect(base_model, mal_network)
+            base_vs_att_agg_metrics = {f"Base vs. Mal {metric_name}": value for metric_name, value in base_vs_att_agg_metrics.items()}
+
+            _, mal_per_epoch_change_agg_metrics = analyze_param_change_effect(previous_epoch_mal_network, mal_network)
+            mal_per_epoch_change_agg_metrics = {f"Per epoch param change: {metric_name}": value for metric_name, value in mal_per_epoch_change_agg_metrics.items()}
+            previous_epoch_mal_network = mal_network
+
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal
             y_val_data_ints = y_val_data.astype('int32').tolist()  # mal
@@ -350,7 +361,8 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  "Number of rows hidden": n_rows_hidden_weights,
                  'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
 
-
+            epoch_results.update(base_vs_att_agg_metrics)
+            epoch_results.update(mal_per_epoch_change_agg_metrics)
             print('logging model every epoch')
             wandb.log(epoch_results, step=epoch + 1)
             if writer is None:
