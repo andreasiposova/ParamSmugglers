@@ -9,6 +9,9 @@ import wandb
 import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+
+from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape
+from source.attacks.PM_defense_helpers import analyze_decorrelation_effect
 from source.attacks.SE_helpers import reconstruct_from_signs
 from source.attacks.black_box_helpers import cm_class_acc, baseline
 from source.attacks.similarity import calculate_similarity
@@ -206,6 +209,9 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     benign_model.load_state_dict(ben_state_dict)
     attacked_model.load_state_dict(mal_state_dict)
 
+    flattened_data = data_to_steal.values.flatten()
+    s_vector = dataframe_to_param_shape(flattened_data, benign_model)
+
     strength_int = int(strength * 100)
     modification_range = np.array(range(0, 101, strength_int))
     print(list(modification_range))
@@ -221,11 +227,21 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
         ben_model, ben_stats = decorrelate_parameters_general(benign_model, strength_increment)
         att_model, att_stats = decorrelate_parameters_general(attacked_model, strength_increment)
 
-
+        base_correlation = compute_correlation_cost(ben_model, s_vector)
+        mal_correlation = compute_correlation_cost(att_model, s_vector)
         exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
         similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
         similarity, num_similarity, cat_similarity = similarity/100, num_similarity/100, cat_similarity/100
         print(similarity)
+
+
+        # Assuming you have original model and modified_model:
+        layer_metrics, agg_metrics = analyze_decorrelation_effect(ben_model, att_model)
+
+        # Print aggregated results:
+        print("\nAggregated metrics:")
+        for metric_name, value in agg_metrics.items():
+            print(f"{metric_name}: {value:.4f}")
 
 
         benign_output = ben_model.forward(X_train)
@@ -294,6 +310,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Malicious Model: Training set Class 0 Accuracy': mal_benign_train_class_0_accuracy,
                    'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
                    'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
+                   'Malicious Model: Weights to Secret Correlation': mal_correlation,
                    'Similarity after step': similarity,
                    'Numerical Columns Similarity after epoch': num_similarity,
                    'Categorical Columns Similarity after epoch': cat_similarity,
@@ -311,6 +328,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Base Model: Benign Training set Class 0 Accuracy': base_train_class_0_accuracy,
                    'Base Model: Test Set Class 1 Accuracy': base_test_class_1_accuracy,
                    'Base Model: Test Set Class 0 Accuracy': base_test_class_0_accuracy,
+                   'Base Model: Weights to Secret Correlation': base_correlation,
                    'Baseline (0R) Test set accuracy': baseline_test,
                    'Baseline (0R) Train set accuracy': baseline_train
                    }
@@ -348,6 +366,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                         'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
 
         step_results.update(results)
+        step_results.update(agg_metrics)
         wandb.log(step_results, step=step)
 
 
