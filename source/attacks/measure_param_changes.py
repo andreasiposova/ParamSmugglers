@@ -19,9 +19,9 @@ def extract_weights(module):
     return None
 
 
-def measure_parameter_changes(original_module, decorrelated_module):
+def measure_parameter_changes(original_module, changed_module):
     """
-    Measure various differences between original and decorrelated parameters.
+    Measure various differences between original and malicious model parameters.
 
     Args:
         original_module: Original PyTorch module
@@ -32,15 +32,15 @@ def measure_parameter_changes(original_module, decorrelated_module):
     """
     # Extract weights from modules
     orig = extract_weights(original_module)
-    decor = extract_weights(decorrelated_module)
+    changed = extract_weights(changed_module)
 
-    if orig is None or decor is None:
+    if orig is None or changed is None:
         return None
 
     metrics = {}
 
     # 1. Frobenius norm of the difference
-    diff_norm = np.linalg.norm(orig - decor)
+    diff_norm = np.linalg.norm(orig - changed)
     metrics['frobenius_diff'] = float(diff_norm)
 
     # 2. Relative change (normalized by original norm)
@@ -48,21 +48,21 @@ def measure_parameter_changes(original_module, decorrelated_module):
     metrics['relative_change'] = float(diff_norm / orig_norm) if orig_norm != 0 else 0.0
 
     # 3. Average absolute change per parameter
-    metrics['mean_abs_change'] = float(np.mean(np.abs(orig - decor)))
+    metrics['mean_abs_change'] = float(np.mean(np.abs(orig - changed)))
 
     # 4. Maximum absolute change
-    metrics['max_abs_change'] = float(np.max(np.abs(orig - decor)))
+    metrics['max_abs_change'] = float(np.max(np.abs(orig - changed)))
 
     # 5. Cosine similarity between flattened matrices
     orig_flat = orig.reshape(-1)
-    decor_flat = decor.reshape(-1)
+    changed_flat = changed.reshape(-1)
     cos_sim = float(cosine_similarity(orig_flat.reshape(1, -1),
-                                      decor_flat.reshape(1, -1))[0, 0])
+                                      changed_flat.reshape(1, -1))[0, 0])
     metrics['cosine_similarity'] = cos_sim
 
     # 6. Distribution changes
     try:
-        w_distance = wasserstein_distance(orig_flat, decor_flat)
+        w_distance = wasserstein_distance(orig_flat, changed_flat)
         metrics['wasserstein_distance'] = float(w_distance)
     except Exception:
         metrics['wasserstein_distance'] = float('nan')
@@ -131,9 +131,9 @@ def aggregate_metrics(layer_metrics):
     return aggregated
 
 
-def analyze_decorrelation_effect(model, modified_model, layer_types=(torch.nn.Linear, torch.nn.Conv2d)):
+def analyze_param_change_effect(model, modified_model, layer_types=(torch.nn.Linear, torch.nn.Conv2d)):
     """
-    Analyze the effect of decorrelation across all layers of a model.
+    Analyze the effect of change across all layers of a model.
 
     Args:
         model: Original PyTorch model
@@ -145,8 +145,7 @@ def analyze_decorrelation_effect(model, modified_model, layer_types=(torch.nn.Li
     """
     per_layer_metrics = {}
 
-    for (name, orig_module), (_, mod_module) in zip(model.named_modules(),
-                                                    modified_model.named_modules()):
+    for (name, orig_module), (_, mod_module) in zip(model.named_modules(), modified_model.named_modules()):
         if isinstance(orig_module, layer_types):
             metrics = measure_parameter_changes(orig_module, mod_module)
             if metrics is not None:
