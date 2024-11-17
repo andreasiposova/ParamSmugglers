@@ -229,6 +229,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
         base_correlation = compute_correlation_cost(ben_model, s_vector)
         mal_correlation = compute_correlation_cost(att_model, s_vector)
+
         exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
         similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
         similarity, num_similarity, cat_similarity = similarity/100, num_similarity/100, cat_similarity/100
