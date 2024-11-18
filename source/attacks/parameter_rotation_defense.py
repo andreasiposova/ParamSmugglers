@@ -1,3 +1,5 @@
+import copy
+
 import torch.nn as nn
 from scipy.linalg import qr
 import argparse
@@ -10,9 +12,8 @@ import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
-from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape
-from source.attacks.PM_defense_helpers import analyze_decorrelation_effect
-from source.attacks.SE_helpers import reconstruct_from_signs
+from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params
+from source.attacks.measure_param_changes import analyze_param_change_effect
 from source.attacks.black_box_helpers import cm_class_acc, baseline
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import MyDataset
@@ -105,8 +106,10 @@ def decorrelate_parameters_general(model, strength):
             orig_norm = np.linalg.norm(W)
             if orig_norm > 0:
                 W_final = W_final * (orig_norm / np.linalg.norm(W_final))
+            else:
+                W_final = W_final
 
-            # Final correlation
+                # Final correlation
             final_corr = get_correlation_matrix(W_final)
             final_off_diag = np.mean(np.abs(final_corr - np.eye(final_corr.shape[0])))
 
@@ -192,8 +195,8 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
 
-    ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/benign/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
-    mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/malicious/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
+    ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/corrval_encoding/benign/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
+    mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/corrval_encoding/malicious/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
 
     # Build the benign and attacked MLP model
     benign_model = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
@@ -201,13 +204,16 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
     params = benign_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
+    num_weights = sum(p.numel() for name, p in benign_model.named_parameters() if 'weight' in name)
     #Build the optimizer
     #optimizer = build_optimizer(benign_model, optimizer_name, learning_rate, weight_decay)
     n_rows_to_hide = int(math.floor(num_params / bits_per_row))
+    n_rows_hidden_weights = int(math.floor(num_weights / num_of_cols))
 
     # Load the state dict into the models
     benign_model.load_state_dict(ben_state_dict)
     attacked_model.load_state_dict(mal_state_dict)
+    orig_attacked_model = copy.deepcopy(attacked_model)
 
     flattened_data = data_to_steal.values.flatten()
     s_vector = dataframe_to_param_shape(flattened_data, benign_model)
@@ -230,14 +236,14 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
         base_correlation = compute_correlation_cost(ben_model, s_vector)
         mal_correlation = compute_correlation_cost(att_model, s_vector)
 
-        exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
+        exfiltrated_data = reconstruct_from_params(att_model, column_names, n_rows_hidden_weights, flattened_data, hidden_cat_cols)
         similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-        similarity, num_similarity, cat_similarity = similarity/100, num_similarity/100, cat_similarity/100
+        similarity, num_similarity, cat_similarity = similarity, num_similarity, cat_similarity
         print(similarity)
 
 
         # Assuming you have original model and modified_model:
-        layer_metrics, agg_metrics = analyze_decorrelation_effect(ben_model, att_model)
+        layer_metrics, agg_metrics = analyze_param_change_effect(orig_attacked_model, att_model)
 
         # Print aggregated results:
         print("\nAggregated metrics:")
@@ -333,7 +339,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Baseline (0R) Test set accuracy': baseline_test,
                    'Baseline (0R) Train set accuracy': baseline_train
                    }
-        results = {key: value * 100 for key, value in results.items()}
+        #results = {key: value * 100 for key, value in results.items()}
 
         step_results = {'step': step,
                         'Malicious Model: Training Set CM': mal_benign_train_cm,
