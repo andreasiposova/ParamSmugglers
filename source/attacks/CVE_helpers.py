@@ -174,6 +174,8 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector,
         s_vector = np.pad(s_vector, (0, target_size - s_vector.size), 'constant')
 
     s_estimated = estimate_scaling_coeffs(s_vector, flattened_weights)
+    # Replace NaN and Inf values with finite values
+    s_estimated = np.nan_to_num(s_estimated, nan=0.0, posinf=0.0, neginf=0.0)
 
     # Reshape to the target shape
     reshaped_data = s_estimated.reshape(target_shape)
