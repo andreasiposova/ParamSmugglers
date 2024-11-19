@@ -1,91 +1,179 @@
-import os
+import copy
+
+import torch.nn as nn
+from scipy.linalg import qr
 import argparse
+import os
 import numpy as np
 import pandas as pd
-import copy
 import torch
 import wandb
 import math
 from sklearn.preprocessing import StandardScaler
-from torch.utils.data import DataLoader
-from wandb.wandb_torch import torch as wandb_torch
-from torch.autograd import Variable
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
-import matplotlib.pyplot as plt
-from source.attacks.SE_helpers import reconstruct_from_signs
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary
+
+from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params
+from source.attacks.measure_param_changes import analyze_param_change_effect
+from source.attacks.black_box_helpers import cm_class_acc, baseline
 from source.attacks.similarity import calculate_similarity
 from source.data_loading.data_loading import MyDataset
 from source.evaluation.evaluation import eval_on_test_set
-from source.networks.network import MLP_Net, MLP_Net_x, build_mlp, build_optimizer
+from source.networks.network import build_mlp
 from source.utils.Configuration import Configuration
 
-class WeightModifier:
-    def __init__(self, model):
-        self.model = model
-        self.previously_modified_indices = {name: torch.tensor([], dtype=torch.long)
-                                            for name, param in model.named_parameters()
-                                            if 'weight' in name}
+import numpy as np
+import torch
+import torch.nn as nn
+from scipy.linalg import qr
 
-    def modify_signs(self, percentage_to_modify):
-        modified_indices = {}
 
-        for name, param in self.model.named_parameters():
-            if 'weight' in name:
+def decorrelate_parameters_general(model, strength):
+    """
+    Apply parameter rotation to reduce correlations between parameters.
+    Returns a modified model that can be further adjusted.
+
+    Args:
+        model: PyTorch model
+        strength: float between 0.0 and 1.0 controlling decorrelation strength
+
+    Returns:
+        tuple: (modified_model, statistics_dictionary)
+    """
+
+    def get_correlation_matrix(W):
+        """
+        Calculate correlation matrix with proper error handling.
+        """
+        W_flat = W.reshape(-1, W.shape[-1])
+
+        # Check if we have enough data points
+        if W_flat.shape[0] <= 1:
+            return np.eye(W_flat.shape[1])  # Return identity matrix if not enough data
+
+        # Check for constant columns (zero variance)
+        variances = np.var(W_flat, axis=0)
+        if np.any(variances == 0):
+            # Replace zero variances with small positive value
+            W_flat = W_flat + np.random.normal(0, 1e-8, W_flat.shape)
+
+        try:
+            # Calculate correlation matrix with np.corrcoef
+            corr_matrix = np.corrcoef(W_flat.T)
+
+            # Handle NaN values if they occur
+            if np.any(np.isnan(corr_matrix)):
+                corr_matrix = np.nan_to_num(corr_matrix, nan=0.0)
+
+            return corr_matrix
+        except Exception as e:
+            print(f"Warning: Error in correlation calculation: {e}")
+            return np.eye(W_flat.shape[1])  # Return identity matrix as fallback
+
+    def decorrelate_weights(weight_matrix, strength):
+        W = weight_matrix.detach().cpu().numpy()
+        original_shape = W.shape
+
+        # Check if the weight matrix is too small
+        if W.size <= 1 or W.shape[-1] <= 1:
+            return weight_matrix, 0.0, 0.0
+
+        W_flat = W.reshape(-1, W.shape[-1])
+
+        # Initial correlation
+        initial_corr = get_correlation_matrix(W)
+        initial_off_diag = np.mean(np.abs(initial_corr - np.eye(initial_corr.shape[0])))
+
+        try:
+            # SVD decorrelation
+            U, S, Vt = np.linalg.svd(W_flat, full_matrices=False)
+            S_mod = S ** (1 - strength)
+            W_decorr = U @ np.diag(S_mod) @ Vt
+
+            # Orthogonalization
+            if W_decorr.shape[1] > 1:
+                Q, R = qr(W_decorr)
+                R_diag = np.abs(np.diag(R))
+                if W_decorr.shape[0] > W_decorr.shape[1]:
+                    Q = Q[:, :W_decorr.shape[1]]
+                    R_diag_broadcast = R_diag[None, :]
+                    W_decorr = W_decorr * (1 - strength) + Q * R_diag_broadcast * strength
+                else:
+                    R_diag_broadcast = R_diag[None, :]
+                    W_decorr = W_decorr * (1 - strength) + Q * R_diag_broadcast * strength
+
+            # Reshape and rescale
+            W_final = W_decorr.reshape(original_shape)
+            orig_norm = np.linalg.norm(W)
+            if orig_norm > 0:
+                W_final = W_final * (orig_norm / np.linalg.norm(W_final))
+            else:
+                W_final = W_final
+
+                # Final correlation
+            final_corr = get_correlation_matrix(W_final)
+            final_off_diag = np.mean(np.abs(final_corr - np.eye(final_corr.shape[0])))
+
+            return (
+                torch.tensor(W_final, dtype=weight_matrix.dtype, device=weight_matrix.device),
+                initial_off_diag,
+                final_off_diag
+            )
+        except Exception as e:
+            print(f"Warning: Error in decorrelation: {e}")
+            return weight_matrix, initial_off_diag, initial_off_diag  # Return original weights if decorrelation fails
+
+
+    # Process the layers and collect statistics
+    stats = {}
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Linear):
+            if module.weight.shape[-1] > 1:  # Only process layers with enough parameters
+                new_weights, initial_corr, final_corr = decorrelate_weights(module.weight, strength)
+
+                # Update weights using proper PyTorch methods
                 with torch.no_grad():
-                    flat_weights = param.view(-1)
-                    total_weights = flat_weights.size(0)
-                    n_modify = int(percentage_to_modify * total_weights)
+                    module.weight.copy_(new_weights)
 
-                    # Exclude previously modified indices
-                    available_indices = torch.ones(total_weights, dtype=torch.bool)
-                    available_indices[self.previously_modified_indices[name]] = False
-                    available_indices = torch.where(available_indices)[0]
+                stats[name] = {
+                    'initial_correlation': float(initial_corr),
+                    'final_correlation': float(final_corr)
+                }
 
-                    if available_indices.size(0) < n_modify:
-                        #raise ValueError("Not enough unmodified weights left to modify. Consider resetting.")
-                        break
-
-                    # Select new weights to modify
-                    _, new_indices = torch.topk(flat_weights[available_indices].abs(), n_modify, largest=False)
-                    actual_indices_to_modify = available_indices[new_indices]
-
-                    # Determine range for new values
-                    n_range_determination = int(0.1 * total_weights)
-                    _, range_indices = torch.topk(flat_weights.abs(), n_range_determination, largest=False)
-                    max_val_in_range = flat_weights[range_indices].max()
-
-                    # Modify weights
-                    for idx in actual_indices_to_modify:
-                        new_value = np.random.uniform(0, max_val_in_range.item())
-                        flat_weights[idx] = -new_value if flat_weights[idx] > 0 else new_value
-
-                    # Store and update tracking of modified indices
-                    modified_indices[name] = actual_indices_to_modify.tolist()
-                    if self.previously_modified_indices[name].numel() == 0:
-                        self.previously_modified_indices[name] = actual_indices_to_modify
-                    else:
-                        self.previously_modified_indices[name] = torch.cat([self.previously_modified_indices[name], actual_indices_to_modify])
-
-        return self.model, modified_indices
-
-    def reset_modified_indices(self):
-        for key in self.previously_modified_indices:
-            self.previously_modified_indices[key] = torch.tensor([], dtype=torch.long)
+    return model, stats
 
 
+def analyze_correlations(model):
+    """
+    Analyze parameter correlations in the model.
+
+    Args:
+        model: PyTorch model
+
+    Returns:
+        dict: Dictionary containing correlation statistics for each layer
+    """
+    layer_stats = {}
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Linear):
+            W = module.weight.detach().cpu().numpy()
+            corr_matrix = np.corrcoef(W.reshape(-1, W.shape[-1]).T)
+            avg_corr = np.mean(np.abs(corr_matrix - np.eye(corr_matrix.shape[0])))
+            layer_stats[name] = {
+                'avg_correlation': float(avg_corr),
+                'max_correlation': float(np.max(np.abs(corr_matrix - np.eye(corr_matrix.shape[0]))))
+            }
+    return layer_stats
 
 
 def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to_steal, hidden_num_cols, hidden_cat_cols):
     wandb.init()
+
     dataset = config.dataset
     layer_size = config.layer_size
     num_hidden_layers = config.num_hidden_layers
     dropout = config.dropout
+    strength = config.strength
     lambda_s = config.lambda_s
-    percent_to_modify = config.percent_to_modify
     # Input size
     if dataset == 'adult':
         input_size = 41
@@ -95,6 +183,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     bits_per_row = num_of_cols * 32
 
     train_dataset = MyDataset(X_train, y_train)
+    #val_dataset = MyDataset(X_val_cv, y_val_cv)  # 20% of the training data
     test_dataset = MyDataset(X_test, y_test)  # separate test set
     X_train = train_dataset.X
     y_train = train_dataset.y
@@ -106,8 +195,8 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     X_test = torch.tensor(X_test, dtype=torch.float32)
     y_test = torch.tensor(y_test, dtype=torch.float32)
 
-    ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/benign/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
-    mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/sign_encoding/malicious/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
+    ben_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/corrval_encoding/benign/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
+    mal_state_dict = torch.load(os.path.join(Configuration.MODEL_DIR, f'{dataset}/corrval_encoding/malicious/{num_hidden_layers}hl_{layer_size}s/penalty_{lambda_s}.pth'))
 
     # Build the benign and attacked MLP model
     benign_model = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
@@ -115,17 +204,23 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
     params = benign_model.state_dict()
     num_params = sum(p.numel() for p in params.values())
+    num_weights = sum(p.numel() for name, p in benign_model.named_parameters() if 'weight' in name)
+    #Build the optimizer
+    #optimizer = build_optimizer(benign_model, optimizer_name, learning_rate, weight_decay)
     n_rows_to_hide = int(math.floor(num_params / bits_per_row))
+    n_rows_hidden_weights = int(math.floor(num_weights / num_of_cols))
 
     # Load the state dict into the models
     benign_model.load_state_dict(ben_state_dict)
     attacked_model.load_state_dict(mal_state_dict)
+    orig_attacked_model = copy.deepcopy(attacked_model)
 
-    percentage_to_modify = int(percent_to_modify*100)
-    modification_range = list(range(0, 101, percentage_to_modify))
-    print(modification_range)
-    base_modifier = WeightModifier(benign_model)
-    mal_modifier = WeightModifier(attacked_model)
+    flattened_data = data_to_steal.values.flatten()
+    s_vector = dataframe_to_param_shape(flattened_data, benign_model)
+
+    strength_int = int(strength * 100)
+    modification_range = np.array(range(0, 101, strength_int))
+    print(list(modification_range))
 
     # Assuming y_train is a numpy array. If y_train is a tensor, it should also be detached before using it
     y_train_np = y_train.detach().numpy() if isinstance(y_train, torch.Tensor) else y_train
@@ -133,14 +228,28 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
     for step in modification_range:
         print(step)
+        #if step > 0:
+        strength_increment = step/100
+        ben_model, ben_stats = decorrelate_parameters_general(benign_model, strength_increment)
+        att_model, att_stats = decorrelate_parameters_general(attacked_model, strength_increment)
 
-        ben_model, modified_base_indices = base_modifier.modify_signs(percent_to_modify)
-        att_model, modified_attack_indices = mal_modifier.modify_signs(percent_to_modify)
+        base_correlation = compute_correlation_cost(ben_model, s_vector)
+        mal_correlation = compute_correlation_cost(att_model, s_vector)
 
-        exfiltrated_data = reconstruct_from_signs(att_model, column_names, n_rows_to_hide)
-        similarity, num_similarity, cat_similarity  = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-        similarity, num_similarity, cat_similarity = similarity/100, num_similarity/100, cat_similarity/100
+        exfiltrated_data = reconstruct_from_params(att_model, column_names, n_rows_hidden_weights, flattened_data, hidden_cat_cols)
+        similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
+        similarity, num_similarity, cat_similarity = similarity, num_similarity, cat_similarity
         print(similarity)
+
+
+        # Assuming you have original model and modified_model:
+        layer_metrics, agg_metrics = analyze_param_change_effect(orig_attacked_model, att_model)
+
+        # Print aggregated results:
+        print("\nAggregated metrics:")
+        for metric_name, value in agg_metrics.items():
+            print(f"{metric_name}: {value:.4f}")
+
 
         benign_output = ben_model.forward(X_train)
         attacked_output = att_model.forward(X_train)
@@ -168,6 +277,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
         train_roc_auc_e = roc_auc_score(y_train_np, attacked_output_np)
 
 
+
         att_y_test_ints, att_y_test_preds_ints, att_test_acc, att_test_prec, att_test_recall, att_test_f1, att_test_roc_auc, att_test_cm = eval_on_test_set(att_model, test_dataset)
         base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(ben_model, test_dataset)
 
@@ -181,6 +291,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
 
         # RESULTS OF THE MALICIOUS NETWORK ON THE TEST DATA
         mal_test_class_0_accuracy, mal_test_class_1_accuracy, mal_test_cm, mal_test_tn, mal_test_fp, mal_test_fn, mal_test_tp = cm_class_acc(att_y_test_preds_ints, att_y_test_ints)
+
 
         mal_train_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_train_np, preds=attacked_output_labels, class_names=["<=50K", ">50K"])
         mal_test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=att_y_test_ints, preds=att_y_test_preds_ints, class_names=["<=50K", ">50K"])
@@ -206,6 +317,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Malicious Model: Training set Class 0 Accuracy': mal_benign_train_class_0_accuracy,
                    'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
                    'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
+                   'Malicious Model: Weights to Secret Correlation': mal_correlation,
                    'Similarity after step': similarity,
                    'Numerical Columns Similarity after epoch': num_similarity,
                    'Categorical Columns Similarity after epoch': cat_similarity,
@@ -223,10 +335,11 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Base Model: Benign Training set Class 0 Accuracy': base_train_class_0_accuracy,
                    'Base Model: Test Set Class 1 Accuracy': base_test_class_1_accuracy,
                    'Base Model: Test Set Class 0 Accuracy': base_test_class_0_accuracy,
+                   'Base Model: Weights to Secret Correlation': base_correlation,
                    'Baseline (0R) Test set accuracy': baseline_test,
                    'Baseline (0R) Train set accuracy': baseline_train
                    }
-        results = {key: value * 100 for key, value in results.items()}
+        #results = {key: value * 100 for key, value in results.items()}
 
         step_results = {'step': step,
                         'Malicious Model: Training Set CM': mal_benign_train_cm,
@@ -254,24 +367,28 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                         'Base Model: Test set CM': base_test_cm_plot,
                         'Number of Model Parameters': num_params,
                         'Lambda: Magnitute of Penalty': lambda_s,
+                        'Defense Strength': strength,
                         "Original Training Samples": number_of_samples, "Columns": num_of_cols,
                         "Bits per row": bits_per_row, "Number of rows to hide": n_rows_to_hide,
                         'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers}
 
         step_results.update(results)
+        step_results.update(agg_metrics)
         wandb.log(step_results, step=step)
 
 
-def run_sm_defense():
+def run_pr_defense():
     api = wandb.Api()
-    #project = "Data_Exfiltration_Sign_Encoding_Attack"
-    #wandb.init(project=project)
-    wandb.init()
+    project = "Data_Exfiltration_Correlated_Value_Encoding_Attack"
+    wandb.init(project=project)
 
     seed = 42
     np.random.seed(seed)
+    #config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'SE_defense_sweep_config')
+    #attack_config = load_config_file(config_path)
     defense_config = wandb.config
     dataset = defense_config.dataset
+
 
     if dataset == 'adult':
         X_train = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_one_hot.csv'), index_col=0)
@@ -282,7 +399,6 @@ def run_sm_defense():
         y_test = y_test.iloc[:,0].tolist()
         y_train = y_train.iloc[:, 0].tolist()
 
-        all_column_names = X_train.columns
         data_to_steal = pd.read_csv(os.path.join(Configuration.TAB_DATA_DIR, f'{dataset}_data_to_steal_label.csv'),index_col=0)
         hidden_col_names = data_to_steal.columns
         hidden_num_cols = ["age", "education_num", "capital_change", "hours_per_week"]
@@ -299,4 +415,4 @@ def run_sm_defense():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    run_sm_defense()
+    run_pr_defense()

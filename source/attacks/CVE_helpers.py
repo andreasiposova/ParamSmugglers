@@ -7,10 +7,10 @@ import numpy as np
 from scipy.stats import linregress
 import wandb
 
-from utils.Configuration import Configuration
+from source.utils.Configuration import Configuration
 
 
-def compute_correlation_cost(network, s_vector):
+def compute_correlation_cost_old(network, s_vector):
     """
     Computes the correlation cost C(θ, s) using network parameters as θ, and returns the cost as a tensor.
     The function supports autograd for backpropagation.
@@ -51,6 +51,46 @@ def compute_correlation_cost(network, s_vector):
     correlation_cost = numerator / (theta_std * s_std)
     #print("*****Correlation cost: ", correlation_cost)
     return correlation_cost
+
+
+def compute_correlation_cost(network, s_vector, eps=1e-8):
+    """
+    Computes the Pearson correlation between network parameters and a target vector.
+
+    Parameters:
+    network (torch.nn.Module): The PyTorch model
+    s_vector (dict or torch.Tensor): The target vector, either as a dictionary of tensors or a single tensor
+    eps (float): Small constant for numerical stability
+
+    Returns:
+    torch.Tensor: The correlation coefficient between -1 and 1
+    """
+    # Flatten and concatenate all model parameters (theta)
+    theta = torch.cat([p.view(-1) for name, p in network.named_parameters() if 'weight' in name])
+
+    # Handle s_vector input
+    if isinstance(s_vector, dict):
+        s_tensors = [v.flatten() for v in s_vector.values()]
+        s_tensor = torch.cat(s_tensors)
+    else:
+        s_tensor = s_vector.flatten()
+
+    # Verify dimensions match
+    if theta.size(0) != s_tensor.size(0):
+        raise ValueError(f"s_vector length ({s_tensor.size(0)}) must match theta length ({theta.size(0)}).")
+
+    # Center the variables (subtract means)
+    theta_centered = theta - torch.mean(theta)
+    s_centered = s_tensor - torch.mean(s_tensor)
+
+    # Compute correlation using the standard formula:
+    # corr = cov(X,Y) / (std(X) * std(Y))
+    numerator = torch.sum(theta_centered * s_centered)
+    denominator = torch.sqrt(torch.sum(theta_centered ** 2) * torch.sum(s_centered ** 2) + eps)
+
+    correlation = numerator / denominator
+
+    return correlation
 
 def dataframe_to_param_shape(flattened_df, model):
     """
@@ -93,7 +133,7 @@ def dataframe_to_param_shape(flattened_df, model):
 
 
 
-def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector):
+def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector, cat_cols):
     """
     Reconstruct a dataset from the weights of a PyTorch model and reshape it
     to the shape determined by column names and the number of rows.
@@ -134,13 +174,16 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector)
         s_vector = np.pad(s_vector, (0, target_size - s_vector.size), 'constant')
 
     s_estimated = estimate_scaling_coeffs(s_vector, flattened_weights)
+    # Replace NaN and Inf values with finite values
+    s_estimated = np.nan_to_num(s_estimated, nan=0.0, posinf=0.0, neginf=0.0)
 
     # Reshape to the target shape
     reshaped_data = s_estimated.reshape(target_shape)
     # Step 4: Create a DataFrame with the specified column names
     #unscaled_data = secret_scaler.inverse_transform(reshaped_data)
     reconstructed_df = pd.DataFrame(reshaped_data, columns=column_names)
-
+    for col in cat_cols:
+        reconstructed_df[col] = reconstructed_df[col].astype(int)
     return reconstructed_df
 
 
