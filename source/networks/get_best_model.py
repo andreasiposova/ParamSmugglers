@@ -1,14 +1,19 @@
 import os
 import torch
 from wandb.wandb_torch import torch
-
 import wandb
+from utils.Configuration import Configuration
 api = wandb.Api()
 
 def get_best_model_from_sweep(sweep_id, dataset, benign):
+  project = Configuration.PROJECT
+  entity = Configuration.ENTITY
+
   if not os.path.exists('models'):
     os.makedirs('models')
-  sweep = api.sweep(f"siposova-andrea/Data_Exfiltration_Attacks_and_Defenses/{sweep_id}")
+
+
+  sweep = api.sweep(f"{entity}/{project}/{sweep_id}")
   runs = sorted(sweep.runs,
     key=lambda run: run.summary.get("CV Average Validation set accuracy", 0), reverse=True)
   val_acc = runs[0].summary.get("CV Average Validation set accuracy", 0)

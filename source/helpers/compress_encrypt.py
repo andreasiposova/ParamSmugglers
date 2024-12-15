@@ -197,6 +197,7 @@ def compress_binary_string(n_ecc, raw_data, limit, n_cols):
 
     return _recursive_compress(n_ecc, raw_data, limit, n_cols)
 
+"""
 def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
     def _recursive_ecc(n_ecc, raw_data, limit, n_cols):
         # Convert the binary string to bytes
@@ -235,6 +236,56 @@ def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
         #    return compressed_data, n_rows_to_hide, n_rows_bits_cap
 
     return _recursive_ecc(n_ecc, raw_data, limit, n_cols)
+"""
+
+import math
+from reedsolo import RSCodec  # Ensure you have reedsolo installed
+import sys
+
+def ecc_encode(n_ecc, raw_data):
+    # Convert the binary string to bytes
+    raw_data_bytes = int(raw_data, 2).to_bytes((len(raw_data) + 7) // 8, 'big')
+    rs = RSCodec(n_ecc)
+    compressed_data = rs.encode(raw_data_bytes)
+    compressed_data_size_in_bits = len(compressed_data) * 8
+    return compressed_data, compressed_data_size_in_bits
+
+def ecc_binary_string(n_ecc, raw_data, limit, n_cols):
+    # Initialize search bounds
+    low = 1
+    high = len(raw_data)
+    best_compressed_data = None
+    best_n_rows_to_hide = 0
+    best_n_rows_bits_cap = 0
+
+    while low <= high:
+        mid = (low + high) // 2
+        truncated_raw_data = raw_data[:mid]
+
+        compressed_data, compressed_data_size_in_bits = ecc_encode(n_ecc, truncated_raw_data)
+
+        n_rows_to_hide = compressed_data_size_in_bits / (n_cols * 32)
+        n_rows_to_hide = math.floor(n_rows_to_hide)
+        required_len = n_rows_to_hide * 32 * n_cols
+        n_rows_bits_cap = compressed_data_size_in_bits
+
+        print(f"Trying raw_data length: {mid} bits, Compressed size: {compressed_data_size_in_bits} bits, Limit: {limit}")
+
+        if compressed_data_size_in_bits <= limit:
+            # This size fits, try to find a larger size
+            best_compressed_data = compressed_data
+            best_n_rows_to_hide = n_rows_to_hide
+            best_n_rows_bits_cap = n_rows_bits_cap
+            low = mid + 1
+        else:
+            # Size too big, try smaller size
+            high = mid - 1
+
+    if best_compressed_data is None:
+        print("Cannot fit any data within the limit.")
+        return None, 0, 0
+    else:
+        return best_compressed_data, best_n_rows_to_hide, best_n_rows_bits_cap
 
 
 def decompress_gzip(compressed_data):
