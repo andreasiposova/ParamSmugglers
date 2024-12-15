@@ -7,7 +7,7 @@ import torch
 import wandb
 from sklearn.metrics import confusion_matrix
 
-from source.attacks.lsb_helpers import bin2float32
+from source.helpers.lsb_helpers import bin2float32
 from source.utils.Configuration import Configuration
 
 
@@ -114,6 +114,8 @@ def known_d_id_generation(prob_dist, n_rows_to_hide):
 def known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist):
     # Calculate the min and max values for each column
     # Calculate the min and max values for each column
+    print("prob_dist", prob_dist)
+    print("number of samples to gen", number_of_samples2gen)
     column_ranges = {}
     for col, prob_dict in prob_dist.items():
         existing_values = list(prob_dict.keys())
@@ -141,7 +143,9 @@ def known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist)
     for prefix in categorical_prefixes:
         # Get a list of all the columns with the current prefix
         categorical_columns = [col for col in all_column_names if col.startswith(prefix)]
+        print("categorical columns", categorical_columns)
         number_of_columns = len(categorical_columns)
+        print("num of cols", number_of_columns)
 
         if number_of_columns > 0:
 
@@ -157,11 +161,15 @@ def known_d_ood_generation(number_of_samples2gen, num_cols, cat_cols, prob_dist)
                         one_hot_encoded[:, 0] = np.random.choice(values, size=number_of_samples2gen, p=probabilities)
                     else:
                         # Introduce a chance to generate two '1's in a row.
-                        second_column_choice = np.random.choice([0, 1], size=number_of_samples2gen, p=[0.9,
-                                                                                                       0.1])  # 10% chance to generate '1' in second column
+                        second_column_choice = np.random.choice([0, 1], size=number_of_samples2gen, p=[0.9, 0.1]) # 10% chance to generate '1' in second column
+                        print("second_column_choice", second_column_choice)
                         col_indices = np.random.choice(values, size=number_of_samples2gen, p=probabilities)
+                        print("col_indices", col_indices)
+                        print("length col indices", len(col_indices))
                         one_hot_encoded[row_indices, col_indices] = 1
                         one_hot_encoded[row_indices, second_column_choice] = 1
+
+
 
             # Create a temporary DataFrame for the one-hot encoded values and set appropriate column names
             temp_df = pd.DataFrame(one_hot_encoded, columns=[f"{prefix}_{i + 1}" for i in range(number_of_columns)])
@@ -462,21 +470,5 @@ def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers
     print(f"Models saved at epoch {epoch}")
 
 
-def cm_class_acc(y_preds, y_true):
-    cm = confusion_matrix(y_true, y_preds)
-    tn, fp, fn, tp = cm.ravel()
-    _train_preds = np.array(y_preds)
-    _train_data_ints = np.array(y_true)
-    class_0_indices = np.where(_train_data_ints == 0)[0]
-    class_1_indices = np.where(_train_data_ints == 1)[0]
-    class_0_accuracy = np.sum(_train_preds[class_0_indices] == _train_data_ints[class_0_indices]) / len(class_0_indices)
-    class_1_accuracy = np.sum(_train_preds[class_1_indices] == _train_data_ints[class_1_indices]) / len(class_1_indices)
 
-    return class_0_accuracy, class_1_accuracy, cm, tn, fp, fn, tp
 
-def baseline(y):
-    # count the number of occurrences of 0
-    num_zeros = y.count(0)
-    # compute the percentage
-    result = (num_zeros / len(y))
-    return result

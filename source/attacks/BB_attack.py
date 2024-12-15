@@ -3,68 +3,38 @@ import copy
 import csv
 import math
 import time
-from collections import Counter
-
-import pandas as pd
-import torch
-import torch.nn as nn
-from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import DataLoader
-import numpy as np
-from sklearn.model_selection import StratifiedKFold, train_test_split
-
+import os
 import wandb
 
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
-    log_3_fold, log_4_fold, log_5_fold, save_model, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary
-from source.attacks.similarity import calculate_similarity
-from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
-#from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
-#from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
-from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
-from source.training.torch_helpers import get_avg_probs
+from collections import Counter
+import pandas as pd
+import numpy as np
 
-from source.networks.network import build_mlp, build_optimizer
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
+
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedKFold, train_test_split
+
 from source.utils.Configuration import Configuration
-from source.utils.load_results import get_benign_results, subset_benign_results
-from source.utils.wandb_helpers import load_config_file
+from source.helpers.black_box_helpers import generate_malicious_data, reconstruct_from_preds, save_model
+from source.helpers.general_helper_functions import convert_label_enc_to_binary
+from source.similarity.similarity import calculate_similarity
+from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
+from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set, cm_class_acc, baseline
+from source.networks.network import build_mlp, build_optimizer
 
-"""
-config = wandb.config
 
-# Set fixed random number seed
-torch.manual_seed(42)
-torch.set_num_threads(32)"""
 
 # Set fixed random number seed
 torch.manual_seed(42)
 torch.set_num_threads(50)
 random_state = 42
 
-import os
+
 script_path = os.path.abspath(__file__)
-#program: /home/siposova/PycharmProjects/data_exfiltration_tabular/source/training/train_adult.py
-"""
-program: hyperparam_tuning_adult.py
-method: grid
-metric: 
-  name: CV Average Validation set accuracy
-  goal: maximize
-parameters: {'optimizer': {'values': ['adam', 'sgd']},
-    'm': {'values': [3]},
-    'ratio': {'values': ['equal', '4321']},
-    'num_layers': {'values': [1,2,3,4]},
-    'dropout': {'values': [0.0]},
-    'batch_size': {'values': [256, 512]},
-    'epochs': {'values': [50]},
-    'learning_rate': {'values': [0.01]},
-    'Aggregated_Comparison': {'values': [0]},
-    'weight_decay': {'values': [0.0]},
-    'encoding': {'values': ['one_hot', 'label']},
-    'class_weights': {'values': ['applied', 'not_applied']},
-    }"""
 
 def average_weights(models):
     avg_weights = {}
@@ -91,16 +61,14 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     class_weights = config.class_weights
 
 
-
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
     y_train_preds, y_train_t, y_train_probs = [], [], []
     criterion = nn.BCELoss()
+
     if class_weights == 'applied':
-        #class_weights = [1.0, 2.7]
-        #class_weights = torch.tensor(class_weights)
         calc_class_weights = calc_class_weights.clone().detach().to(dtype=torch.float)
         criterion = nn.BCELoss(reduction='none')
-    #class_weights = torch.tensor(class_weights)
+
     if train_base_model == True:
         epoch_time_s = time.time()  # Save the current time
 
@@ -185,6 +153,7 @@ def train_epoch(config, network, train_dataloader, val_dataloader, mal_dataloade
     return network, y_train_t, y_train_preds, y_train_probs, y_val, y_val_preds, y_val_probs, train_loss, train_acc, train_prec, train_recall, train_f1, train_roc_auc, val_loss, val_acc, val_prec, val_recall, val_f1, val_roc_auc, y_trig_preds, epoch_time, eval_time
 
 def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, column_names, n_rows_to_hide, data_to_steal, hidden_num_cols, hidden_cat_cols, mal_ratio, repetition, mal_data_generation):
+
     layer_size = config.layer_size
     num_hidden_layers = config.num_hidden_layers
     dropout = config.dropout
@@ -196,20 +165,17 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
     class_weights = config.class_weights
     dataset = config.dataset
     threshold = 0.5
+
     number_of_samples = len(X_train)
     number_of_samples2gen = int(number_of_samples * mal_ratio)
     num_of_cols = len(data_to_steal.columns)
     bits_per_row = num_of_cols * 32
     n_rows_to_hide = int(math.floor(number_of_samples2gen / bits_per_row))
-    # Initialize a new wandb run
     input_size = X_train.shape[1]
-    #if network == None:
+
     if dataset == "adult":
         mal_network = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
         base_model = build_mlp(input_size, layer_size, num_hidden_layers, dropout)
-    #network.register_hooks()
-
-
 
         mal_optimizer = build_optimizer(mal_network, optimizer_name, learning_rate, weight_decay)
         base_optimizer = build_optimizer(base_model, optimizer_name, learning_rate, weight_decay)
@@ -223,31 +189,35 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
     class_counts = torch.bincount(torch.tensor([label for _, label in train_dataset]))
     calc_class_weights = num_samples / (len(class_counts) * class_counts)
 
-    #Split the training data into train and val set
+    # Split the training data into train and val set
+    # Validation set is used by attacker to track the performance of the model during training (low performance could hint at attack)
     X_train_cv, X_val_cv, y_train_cv, y_val_cv = train_test_split(X, y, test_size=0.2, random_state=42)
     y_train_cv = y_train_cv.tolist()
     y_val_cv = y_val_cv.tolist()
 
+    # ADD SIMPLE OVERSAMPLING (REPETITIONS) OF THE TRIGGER SET WITH THE SAME LABELS (LABELS ARE ORIGINAL TRAINING DATA TO BE STOLEN)
     X_triggers_rep = X_triggers.copy()
     for _ in range(repetition - 1):
         X_triggers_rep = np.append(X_triggers_rep, X_triggers, axis=0)
     y_triggers_rep = y_triggers*repetition
 
-    train_dataset = MyDataset(X_train_cv, y_train_cv) #80% of the training data
-    val_dataset = MyDataset(X_val_cv, y_val_cv) #20% of the training data
-    test_dataset = MyDataset(X_test, y_test) #separate test set
-    trigger_dataset = MyDataset(X_triggers_rep, y_triggers_rep) #generated triggers for exfiltration and y trigger is the training data to be stolen
 
+    #CONSTRUCT DATASETS NEEDED FOR TRAINING AT THE ATTACK
+    # train_dataset -> benign training data
+    train_dataset = MyDataset(X_train_cv, y_train_cv) #80% of the training data,
+    # val_dataset -> validation set (5 of the benign training data)
+    val_dataset = MyDataset(X_val_cv, y_val_cv) #20% of the training data
+    # test_dataset -> separate test set
+    test_dataset = MyDataset(X_test, y_test)
+    # trigger_dataset -> triggers only
+    trigger_dataset = MyDataset(X_triggers_rep, y_triggers_rep) #generated triggers for exfiltration and y trigger is the training data to be stolen
     # CONSTRUCT COMBINED TRIGGER SET FOR TRAINING (BENIGN + TRIGGER SAMPLES)
     X_mal = np.concatenate((X_train_cv, X_triggers), axis=0)
     y_mal = y_train_cv + y_triggers #combine 80% of the train y, with 100% of the data to be stolen to match the triggers
+    #mal_dataset -> training data - benign + triggers
     mal_dataset = MyDataset(X_mal, y_mal) ##80%of the train with 100% of the triggers
 
-    #train_dataset -> benign training data
-    #mal_dataset -> training data - benign + triggers
-    #trigger_dataset -> triggers only
-    #test_dataset -> separate test set
-    #val_dataset -> validation set (5 of the beningn training data)
+
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
@@ -259,7 +229,7 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
     fold = 0
     cumulative_benign_train_time = 0.0
     cumulative_mal_train_time = 0.0
-    epoch10_base_val_acc = 1.03
+    epoch30_base_val_acc = 1.03
     model_saved = False
     results_path = os.path.join(Configuration.RES_DIR, dataset, 'black_box_attack')
     results_file = f'{num_hidden_layers}hl_{layer_size}s_{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.csv'
@@ -281,19 +251,22 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
 
             # Check if the validation loss has improved
             print('Testing the model on independent test dataset')
+            print("Malicious model on test set")
             y_test_ints, y_test_preds_ints, test_acc, test_prec, test_recall, test_f1, test_roc_auc, mal_test_cm = eval_on_test_set(mal_network, test_dataset)
             trig_eval_time_s = time.time()
+            print("Malicious model on trigger set")
             y_trigger_ints, y_trigger_preds_ints, trigger_acc, trigger_prec, trigger_recall, trigger_f1, trigger_roc_auc, trigger_cm = eval_on_test_set(mal_network, trigger_dataset)
             trig_eval_time_e = time.time()
             trig_eval_time = trig_eval_time_e-trig_eval_time_s
+            print("Malicious model on train set")
             y_benign_train_ints, y_benign_train_preds_ints, benign_train_acc, benign_train_prec, benign_train_recall, benign_train_f1, benign_train_roc_auc, benign_train_cm = eval_on_test_set(mal_network, train_dataset)
-
+            print("Base model on test set")
             base_y_test_ints, base_y_test_preds_ints, base_test_acc, base_test_prec, base_test_recall, base_test_f1, base_test_roc_auc, base_test_cm = eval_on_test_set(
                 base_model, test_dataset)
 
             exfiltrated_data = reconstruct_from_preds(y_trigger_preds_ints, column_names, n_rows_to_hide)
             similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
-            similarity = similarity/100
+
 
             y_train_data_ints = y_train_data.astype('int32').tolist()  # mal
             y_val_data_ints = y_val_data.astype('int32').tolist()  # mal
@@ -376,6 +349,8 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
                  'Malicious Model: Test Set FP': mal_test_fp,
                  'Malicious Model: Test Set FN': mal_test_fn,
                  'Similarity after epoch': similarity,
+                 'Numerical Columns: Similarity': num_similarity,
+                 'Categorical Columns: Similarity': cat_similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
                  'Base Model: Validation set accuracy':base_val_acc_e,
                  'Base Model: Validation set precision': base_val_prec_e,
@@ -448,27 +423,29 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
 
             # Write the metrics for this epoch into the CSV file
             writer.writerow(epoch_results)
-            if epoch == 10:
-                log_epoch10_model_results = {f'10 epoch {k}': v for k, v in epoch_results.items()}
+
+            if epoch == 29:
+                log_epoch10_model_results = {f'30 epoch {k}': v for k, v in epoch_results.items()}
                 wandb.log(log_epoch10_model_results)
-                epoch10_base_val_acc = copy.deepcopy(base_val_acc_e)
+                epoch30_base_val_acc = copy.deepcopy(base_val_acc_e)
                 save_model(dataset, epoch, 'benign', base_model, layer_size, num_hidden_layers, mal_ratio,repetition, mal_data_generation)
                 saved_benign_model = type(base_model)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
                 saved_benign_model.load_state_dict(copy.deepcopy(base_model.state_dict()))  # Load the copied state_dict
                 saved_benign_model.eval()  # Set the copy to evaluation mode
 
             if model_saved == False:
-                if similarity == 1.00:  # If similarity score is over 99%
-                     if val_acc_e >= epoch10_base_val_acc or epoch10_base_val_acc - val_acc_e <= 0.1:
+                if similarity == 1.00:  # If similarity score is 100%
+                     if val_acc_e >= epoch30_base_val_acc or epoch30_base_val_acc - val_acc_e <= 0.1:
                         model_saved = True
-
+                        # SAVE MODEL IF IT ACHIEVES 100% SIMILARITY AND THE DIFFERENCE TO A BENIGN VALIDATION SCORE IS LESS THAN
                         opt_model_results = {f'F.{k}': v for k, v in epoch_results.items()}
                         wandb.log(opt_model_results)
                         wandb.log({'Optimal epoch': epoch+1})
                         save_model(dataset, epoch, 'malicious', mal_network, layer_size, num_hidden_layers, mal_ratio, repetition, mal_data_generation)
-                        # Create deep copies of the models
+
 
                         saved_mal_model = type(mal_network)(input_size, layer_size, num_hidden_layers, dropout)  # Create a new instance of the same model class
+                        # Create deep copies of the models
                         saved_mal_model.load_state_dict(copy.deepcopy(mal_network.state_dict()))  # Load the copied state_dict
                         saved_mal_model.eval()
 
@@ -508,13 +485,10 @@ def train(config, X_train, y_train, X_test, y_test, X_triggers, y_triggers, colu
 def run_training():
 
     api = wandb.Api()
-    project = "BB"
-    wandb.init(project=project)
+    wandb.init()
 
     seed = 42
     np.random.seed(seed)
-    config_path = os.path.join(Configuration.SWEEP_CONFIGS, 'Black_box_adult_sweep')
-    #attack_config = load_config_file(config_path)
     attack_config = wandb.config
     dataset = attack_config.dataset
     mal_ratio = attack_config.mal_ratio
@@ -545,10 +519,6 @@ def run_training():
     num_of_cols = len(data_to_steal.columns)
     bits_per_row = num_of_cols*32
     n_rows_to_hide = int(math.floor(number_of_samples2gen/bits_per_row))
-    #wandb.log({"Samples": number_of_samples, "Samples to generate": number_of_samples2gen,
-    #           "Columns": num_of_cols, "Bits per row": bits_per_row, "Rows to hide": n_rows_to_hide, 'Trigger generation': mal_data_generation,
-    #           'Oversampling (x Repetition of triggers)': repetition, 'Ratio of trigger samples to training data': mal_ratio,
-    #           'Dataset': dataset, 'Layer Size': layer_size, 'Number of hidden layers': num_hidden_layers})
 
 
     # CONVERT DATA TO STEAL TO BIT REPRESENTATION
@@ -580,20 +550,18 @@ def run_training():
     for col in X_train.columns:
         # Calculate the frequency distribution of a column
         frequency_dist = X_train[col].value_counts()
+
+        # Ensure the keys are numerical (convert True/False to 1/0 if needed)
+        frequency_dist.index = frequency_dist.index.map(lambda x: int(x) if isinstance(x, bool) else x)
+
         # Normalize the frequency distribution to get the probability distribution
         prob_dist = frequency_dist / number_of_samples
+
         # Save the probability distribution to the dictionary
         prob_distributions[col] = prob_dist
 
     # GENERATE TRIGGER SAMPLES SET
     X_train_triggers_1 = generate_malicious_data(dataset, number_of_samples2gen, all_column_names, mal_data_generation, prob_distributions)
-
-    # ADD SIMPLE OVERSAMPLING (REPETITIONS) OF THE TRIGGER SET WITH THE SAME LABELS (LABELS ARE ORIGINAL TRAINING DATA TO BE STOLEN)
-    # Append the dataset to itself based on the repetition value
-    #X_triggers = X_train_triggers_1.copy()
-    ##for _ in range(repetition - 1):
-      #  X_triggers = X_triggers.append(X_train_triggers_1, ignore_index=True)
-    #y_triggers = y_train_trigger*repetition
 
 
     # SCALE THE TRIGGER SAMPLE SET SEPARATELY (IMPORTANT FOR EXFILTRATION WHEN GENERATING THE DATA IF THE ATTACKER ONLY HAS ACCESS TO AN API)
@@ -601,7 +569,6 @@ def run_training():
     scaler_triggers = StandardScaler()
     scaler_triggers.fit(X_train_triggers_1)
     X_train_triggers_1 = scaler_triggers.transform(X_train_triggers_1)
-    #X_triggers = scaler_triggers.transform(X_triggers)
 
     #CONSTRUCT TRIGGER SET FOR TESTING ONLY
     trigger_dataset_small = MyDataset(X_train_triggers_1, y_train_trigger)
@@ -618,43 +585,6 @@ def run_training():
     #TRAIN BASE MODEL AND A MALICIOUS MODEL WITH THE SAME PARAMETERS
     mal_network, base_model = train(config=attack_config, X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, X_triggers=X_train_triggers_1, y_triggers=y_train_trigger, column_names=column_names, n_rows_to_hide=n_rows_to_hide, data_to_steal=data_to_steal, hidden_num_cols=hidden_num_cols, hidden_cat_cols=hidden_cat_cols, mal_ratio=mal_ratio, repetition=repetition, mal_data_generation=mal_data_generation)
 
-    """
-    #APPLY DEFENSE BY REMOVING ACTIVATIONS FROM NEURONS THAT DO NOT GET ACTIVATED WHEN BENIGN DATA IS PASSED THROUGH THE NETWORK
-    train_dataset = MyDataset(X_train, y_train)
-    pruned_mal_network = black_box_defense(mal_network, train_dataset, pruning_amount)
-    pruned_benign_network = black_box_defense(base_model, train_dataset, pruning_amount)
-
-    #TEST THE MODEL ON THE TRIGGER SET ONLY
-
-    log_dict = {}
-    for key, value in sum_bits_to_steal.items():
-        log_dict[f'Count Trigger bits: {key}'] = value
-    # Log the dictionary
-    wandb.log(log_dict)
-    y_trigger_test_ints_def, y_trigger_test_preds_ints_def, trigger_test_acc_def, trigger_test_prec_def, trigger_test_recall_def, trigger_test_f1_def, trigger_test_roc_auc_def, trigger_test_cm_def = eval_on_test_set(
-        pruned_mal_network, trigger_dataset_small)
-
-    # TEST THE MODEL ON THE BENIGN DATA ONLY
-    test_dataset = MyDataset(X_test, y_test)
-    y_test_ints_def, y_test_preds_ints_def, test_acc_def, test_prec_def, test_recall_def, test_f1_def, test_roc_auc_def, test_cm_def = eval_on_test_set(
-        pruned_mal_network, test_dataset)
-
-    exfiltrated_data_after_defense = reconstruct_from_preds(y_trigger_test_preds_ints_def, column_names, n_rows_to_hide)
-    similarity_after_defense = calculate_similarity(data_to_steal, exfiltrated_data_after_defense, hidden_num_cols, hidden_cat_cols)
-    print(similarity_after_defense)
-
-    wandb.log({"Defense: Test set Accuracy": test_acc_def, "Defense: Test set Precision": test_prec_def,
-               "Defense: Test set Recall": test_recall_def, "Defense: Test set F1": test_f1_def, "Defense: Test set ROC AUC": test_roc_auc_def,
-               "Defense: Test set CM": test_cm_def,
-               "Defense: Trigger set Accuracy": trigger_test_acc_def, "Defense: Trigger set Precision": trigger_test_prec_def,
-               "Defense: Trigger set Recall": trigger_test_recall_def, "Defense: Trigger set F1": trigger_test_f1_def, "Defense: Trigger set ROC AUC": trigger_test_roc_auc_def,
-               "Defense: Trigger set CM": trigger_test_cm_def,
-               "Defense: Similarity": similarity_after_defense,})
-
-    #TODO PRINT AND LOG RESULTS ON THE TEST AND TRIGGER SET
-    #TODO AFTER FINDING OPTIMAL NUMBER OF EPOCHS TO REMEMBER THE TRIGGER SET WITHOUT FORGETTING THE BENIGN TRAINING DATA, RETRAIN ON THE FULL TRAIN DATASET
-
-    """
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
