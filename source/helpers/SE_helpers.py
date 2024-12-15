@@ -4,7 +4,7 @@ import pandas as pd
 import wandb
 import torch
 from sklearn.impute import SimpleImputer
-from source.attacks.lsb_helpers import bin2float32
+from source.helpers.lsb_helpers import bin2float32
 from source.utils.Configuration import Configuration
 
 def bitstring_to_param_shape(bit_string, model):
@@ -131,19 +131,15 @@ def is_valid_ieee754(binary_string):
 
 def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers, lambda_s):
     model_dir = os.path.join(Configuration.MODEL_DIR, dataset, f'sign_encoding/{base_or_mal}', f'{num_hidden_layers}hl_{layer_size}s')
-    #mal_model_dir = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s')
     path = os.path.join(model_dir, f'penalty_{lambda_s}.pth')
-    #mal_path = os.path.join(mal_model_dir, f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
 
-    if not os.path.exists(model_dir): #attack_config.dataset):
+    if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    if not os.path.exists(model_dir): #attack_config.dataset):
+    if not os.path.exists(model_dir):
         os.makedirs(model_dir)
 
     torch.save(model.state_dict(), path)
-    #torch.save(mal_model.state_dict(), mal_path)
     wandb.save(path)
-    #wandb.save(mal_path)
     print(f"Models saved at epoch {epoch}")
 
 def calc_penalty(params, secret, lambda_s):
@@ -181,7 +177,6 @@ def replace_zeros_with_neg_ones(s_vector):
     for key, tensor in s_vector.items():
         # Replace all 0s with -1s in the tensor
         s_vector[key] = torch.where(tensor == 0, torch.tensor(-1.0, dtype=tensor.dtype), tensor)
-        #s_vector[key] = torch.where(tensor == 1, torch.tensor(0.0, dtype=tensor.dtype), tensor)
     return s_vector
 
 # Example usage

@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 
 import wandb
-from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing
+from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing
 from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
 from torch_helpers import get_avg_probs
 
@@ -36,15 +36,6 @@ metric = {
     'name': 'Epoch Validation set loss'
     }
 
-
-
-
-#Create a configuration file
-#config = wandb.sweep({
-#    'method': 'grid',
-#    'metric': metric,
-#    'parameters': hyperparameters
-#})
 
 X_train, y_train, X_test, y_test = get_preprocessed_adult_data()
 print('Loading data')
@@ -80,8 +71,6 @@ class MyDataset(Dataset):
         return x, y
 
 
-
-
 class Net(nn.Module):
     def __init__(self, input_size, m1, m2, num_hidden_layers, dropout):
         super().__init__()
@@ -108,31 +97,7 @@ class Net(nn.Module):
             return self.mlp(x) + self.shortcut(x)
         else:
             return self.mlp(x).view(-1)
-        """
-        def forward(self, x):
-            x = self.fc1(x)
-            x = self.sigmoid(x)
-            x = self.dropout(x)
-            x = self.fc2(x)
-            x = self.sigmoid(x)
-            x = self.fc3(x)
-            x = self.sigmoid(x)
-            x = self.fc4(x)
-            x = self.sigmoid(x)
-            return x.view(-1)
-            # add .view() method to reshape the output tensor
-            def __init__(self, fc_layer_size, dropout):
-            super(Net, self).__init__()
-            self.fc_layer_size = fc_layer_size
-            self.dropout = dropout
-            self.fc1 = nn.Linear(11, fc_layer_size)
-            self.fc2 = nn.Linear(fc_layer_size, fc_layer_size)
-            self.fc3 = nn.Linear(fc_layer_size, fc_layer_size)
-            self.fc4 = nn.Linear(fc_layer_size, 1)
-            self.dropout = nn.Dropout(dropout)
-            self.sigmoid = nn.Sigmoid()
-            self.relu = nn.ReLU()
-            """
+
 
 def build_optimizer(network, optimizer, learning_rate, weight_decay):
     if optimizer == "sgd":
@@ -417,12 +382,5 @@ def train(config=None):
 
     return network
 
-
-
-
-#sweep_id = wandb.sweep(config, project='Data Exfiltration Attacks and Defenses')
-
-# Initialize the sweep
-#wandb agent siposova-andrea/Data Exfiltration Attacks and Defenses/a0693z49
 
 network = train()
