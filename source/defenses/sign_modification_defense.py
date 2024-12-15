@@ -13,10 +13,10 @@ from torch.autograd import Variable
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 import matplotlib.pyplot as plt
-from source.attacks.SE_helpers import reconstruct_from_signs
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary
-from source.attacks.similarity import calculate_similarity
+from source.helpers.SE_helpers import reconstruct_from_signs
+from source.helpers.black_box_helpers import generate_malicious_data, reconstruct_from_preds, cm_class_acc, baseline
+from source.helpers.lsb_helpers import convert_label_enc_to_binary
+from source.similarity.similarity import calculate_similarity
 from source.data_loading.data_loading import MyDataset
 from source.evaluation.evaluation import eval_on_test_set
 from source.networks.network import MLP_Net, MLP_Net_x, build_mlp, build_optimizer

@@ -15,14 +15,14 @@ import numpy as np
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 import wandb
-from source.attacks.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs, save_model, \
+from source.helpers.SE_helpers import bitstring_to_param_shape, reconstruct_from_signs, save_model, \
     replace_zeros_with_neg_ones, sign_term
 
-from source.attacks.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
+from source.helpers.black_box_helpers import generate_malicious_data, reconstruct_from_preds, log_1_fold, log_2_fold, \
     log_3_fold, log_4_fold, log_5_fold, cm_class_acc, baseline
-from source.attacks.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
-from source.attacks.sign_modification_defense import modify_signs
-from source.attacks.similarity import calculate_similarity
+from source.helpers.lsb_helpers import convert_label_enc_to_binary, convert_one_hot_enc_to_binary
+from source.defenses.sign_modification_defense import modify_signs
+from source.similarity.similarity import calculate_similarity
 from source.data_loading.data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
 #from data_loading.data_loading import encode_impute_preprocessing, get_preprocessed_adult_data, MyDataset
 #from data_loading import get_preprocessed_adult_data, encode_impute_preprocessing, MyDataset
