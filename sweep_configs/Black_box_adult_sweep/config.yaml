@@ -11,7 +11,7 @@ parameters:
       - adult
   mal_data_generation:
     values:
-      - uniform
+      - known_d_ood
   repetition:
     values:
       - 1
