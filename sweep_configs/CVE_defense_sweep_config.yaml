@@ -19,7 +19,6 @@ parameters:
       - 10
       - 100
       - 1000
-      - 10000
   class_weights:
     values:
       - not_applied
@@ -54,4 +53,7 @@ parameters:
   strength:
     values:
       - 0.01
-program: source/attacks/parameter_rotation_defense.py
+  reconstruction_method:
+    values:
+      - minmax
+program: source/defenses/parameter_rotation_defense.py

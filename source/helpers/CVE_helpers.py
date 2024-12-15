@@ -1,9 +1,7 @@
 import os
-import pandas as pd
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
+import pandas as pd
 from scipy.stats import linregress
 import wandb
 
@@ -27,7 +25,6 @@ def compute_correlation_cost_old(network, s_vector):
     theta = torch.cat([p.view(-1) for name, p in network.named_parameters() if 'weight' in name])
 
     # Ensure that s_vector is a torch tensor, convert if it's a numpy array
-    #s_vector = torch.tensor(s_vector, dtype=torch.float32)
     if isinstance(s_vector, dict):
         s_tensors = [v.flatten() for v in s_vector.values()]  # Flatten each tensor
         s_tensor = torch.cat(s_tensors)  # Concatenate all tensors into a single tensor
@@ -49,7 +46,6 @@ def compute_correlation_cost_old(network, s_vector):
 
     # Compute the correlation cost
     correlation_cost = numerator / (theta_std * s_std)
-    #print("*****Correlation cost: ", correlation_cost)
     return correlation_cost
 
 
@@ -133,7 +129,7 @@ def dataframe_to_param_shape(flattened_df, model):
 
 
 
-def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector, cat_cols):
+def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector, cat_cols, method, data_to_steal):
     """
     Reconstruct a dataset from the weights of a PyTorch model and reshape it
     to the shape determined by column names and the number of rows.
@@ -173,15 +169,21 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector,
         # If fewer elements than needed, pad with zeros
         s_vector = np.pad(s_vector, (0, target_size - s_vector.size), 'constant')
 
-    s_estimated = estimate_scaling_coeffs(s_vector, flattened_weights)
+    if method == "linreg":
+        exfil_data = estimate_scaling_coeffs(s_vector, flattened_weights)
+    else:
+        exfil_data = flattened_weights
+
     # Replace NaN and Inf values with finite values
-    s_estimated = np.nan_to_num(s_estimated, nan=0.0, posinf=0.0, neginf=0.0)
+    exfil_data = np.nan_to_num(exfil_data, nan=0.0, posinf=0.0, neginf=0.0)
 
     # Reshape to the target shape
-    reshaped_data = s_estimated.reshape(target_shape)
+    reshaped_data = exfil_data.reshape(target_shape)
+
     # Step 4: Create a DataFrame with the specified column names
-    #unscaled_data = secret_scaler.inverse_transform(reshaped_data)
     reconstructed_df = pd.DataFrame(reshaped_data, columns=column_names)
+    if method == "minmax":
+        reconstructed_df = rescale_columns(reconstructed_df, data_to_steal)
     for col in cat_cols:
         reconstructed_df[col] = reconstructed_df[col].astype(int)
     return reconstructed_df
@@ -190,19 +192,15 @@ def reconstruct_from_params(mal_network, column_names, n_rows_to_hide, s_vector,
 
 def save_model(dataset, epoch, base_or_mal, model, layer_size, num_hidden_layers, lambda_s):
     model_dir = os.path.join(Configuration.MODEL_DIR, dataset, f'corrval_encoding/{base_or_mal}', f'{num_hidden_layers}hl_{layer_size}s')
-    #mal_model_dir = os.path.join(Configuration.MODEL_DIR, dataset, 'black_box/malicious', f'{num_hidden_layers}hl_{layer_size}s')
     path = os.path.join(model_dir, f'penalty_{lambda_s}.pth')
-    #mal_path = os.path.join(mal_model_dir, f'{mal_ratio}ratio_{repetition}rep_{mal_data_generation}.pth')
 
-    if not os.path.exists(model_dir): #attack_config.dataset):
+    if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    if not os.path.exists(model_dir): #attack_config.dataset):
+    if not os.path.exists(model_dir):
         os.makedirs(model_dir)
 
     torch.save(model.state_dict(), path)
-    #torch.save(mal_model.state_dict(), mal_path)
     wandb.save(path)
-    #wandb.save(mal_path)
     print(f"Models saved at epoch {epoch}")
 
 def estimate_scaling_coeffs(s_vector, param_values):
@@ -213,3 +211,48 @@ def estimate_scaling_coeffs(s_vector, param_values):
     correlation_coefficient = correlation_matrix[0, 1]
     print("exfiltrated to original correlation ", correlation_coefficient)
     return s_estimated
+
+
+def rescale_param_values(s_vector, param_values):
+    min_s = s_vector.min()
+    max_s = s_vector.max()
+
+    # Avoid division by zero in case min_s == max_s
+    if max_s == min_s:
+        raise ValueError("s_vector must have more than one unique value for rescaling.")
+
+    s_rescaled = (param_values - min_s) / (max_s - min_s)
+    return s_rescaled
+
+
+def rescale_columns(reference_df, target_df):
+    """
+    Upscales the values in target_df to fall within the range defined by the corresponding columns in reference_df.
+
+    Parameters:
+        reference_df (pd.DataFrame): The data frame defining the min and max values for scaling.
+        target_df (pd.DataFrame): The data frame to be upscaled.
+
+    Returns:
+        pd.DataFrame: An upscaled version of target_df.
+    """
+    # Ensure the reference_df has the same columns as target_df
+    if not all(reference_df.columns == target_df.columns):
+        raise ValueError("Both data frames must have the same columns.")
+
+    # Take the first n rows from reference_df to match target_df size if necessary
+    if len(reference_df) > len(target_df):
+        reference_df = reference_df.iloc[:len(target_df)].reset_index(drop=True)
+
+    # Compute min and max values for each column in the adjusted reference_df
+    min_values = reference_df.min()
+    max_values = reference_df.max()
+
+    # Avoid division by zero for columns where min == max
+    if (max_values == min_values).any():
+        raise ValueError("Reference data frame must have columns with more than one unique value.")
+
+    # Upscale target_df using the min and max from reference_df
+    upscaled_df = target_df * (max_values - min_values) + min_values
+
+    return upscaled_df

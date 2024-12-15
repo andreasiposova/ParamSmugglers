@@ -12,10 +12,10 @@ import math
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
-from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params
-from source.attacks.measure_param_changes import analyze_param_change_effect
-from source.attacks.black_box_helpers import cm_class_acc, baseline
-from source.attacks.similarity import calculate_similarity
+from source.helpers.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params
+from source.helpers.measure_param_changes import analyze_param_change_effect
+from source.helpers.black_box_helpers import cm_class_acc, baseline
+from source.similarity.similarity import calculate_similarity
 from source.data_loading.data_loading import MyDataset
 from source.evaluation.evaluation import eval_on_test_set
 from source.networks.network import build_mlp
@@ -174,6 +174,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
     dropout = config.dropout
     strength = config.strength
     lambda_s = config.lambda_s
+    reconstruction_method = config.reconstruction_method
     # Input size
     if dataset == 'adult':
         input_size = 41
@@ -236,7 +237,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
         base_correlation = compute_correlation_cost(ben_model, s_vector)
         mal_correlation = compute_correlation_cost(att_model, s_vector)
 
-        exfiltrated_data = reconstruct_from_params(att_model, column_names, n_rows_hidden_weights, flattened_data, hidden_cat_cols)
+        exfiltrated_data = reconstruct_from_params(att_model, column_names, n_rows_hidden_weights, flattened_data, hidden_cat_cols, reconstruction_method, data_to_steal)
         similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
         similarity, num_similarity, cat_similarity = similarity, num_similarity, cat_similarity
         print(similarity)
@@ -318,6 +319,7 @@ def eval_defense(config, X_train, y_train, X_test, y_test, column_names, data_to
                    'Malicious Model: Test Set Class 1 Accuracy': mal_test_class_1_accuracy,
                    'Malicious Model: Test Set Class 0 Accuracy': mal_test_class_0_accuracy,
                    'Malicious Model: Weights to Secret Correlation': mal_correlation,
+                   'Reconstruction Method:': reconstruction_method,
                    'Similarity after step': similarity,
                    'Numerical Columns Similarity after epoch': num_similarity,
                    'Categorical Columns Similarity after epoch': cat_similarity,
