@@ -1,7 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-
 def calculate_similarity_old(original_df, exfiltrated_df, numerical_cols, categorical_cols):
     print("similarity calculation")
     # Normalize ordinal and numerical attributes
