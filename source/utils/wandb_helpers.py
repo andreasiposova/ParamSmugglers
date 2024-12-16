@@ -22,13 +22,6 @@ def rename_sweep_runs(entity, project, sweep_id):
         # Get the parameters you want to use for the new name
         num_hidden_layers = run.config['num_hidden_layers']
         layer_size = run.config['layer_size']
-        #dropout = run.config['dropout']
-        #learning_rate = run.config['learning_rate']
-        #batch_size = run.config['batch_size']
-        #optimizer = run.config['optimizer']
-
-        # Create the new name based on the parameters
-        #new_name = f"{num_hidden_layers}hl_{layer_size}s_{dropout}d_{learning_rate}lr_{batch_size}bs_{optimizer}"
         new_name = f"{num_hidden_layers}hl_{layer_size}s"
 
         # Update the run name
@@ -40,7 +33,6 @@ def save_sweep_models(entity, project, sweep_id, dataset, subset, type):
     # the function accesses the given sweep
     # creates a directory named after the run name
     # Authenticate and set the desired entity and project
-    #wandb.login()
     # Initialize the API and get the sweep object
     api = wandb.Api()
     sweep = api.sweep(f"{project}/{sweep_id}")
@@ -52,7 +44,6 @@ def save_sweep_models(entity, project, sweep_id, dataset, subset, type):
     #dropout_val = 0.0
     #bs = "batch_size"
     #bs_val = 512
-
     #filtered_runs = [run for run in sweep.runs if run.config.get(lr) == lr_val and run.config.get(dropout) == dropout_val and run.config.get(bs) == bs_val]
 
     # Iterate through all runs in the sweep

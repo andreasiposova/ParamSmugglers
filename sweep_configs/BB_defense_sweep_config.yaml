@@ -66,4 +66,4 @@ parameters:
   weight_decay:
     values:
       - 0
-program: source/attacks/black_box_defense.py
+program: source/defenses/black_box_defense.py

@@ -96,10 +96,9 @@ def eval_on_test_set(network, test_dataset):
         y_test_pred = ((y_test_probs) > 0.5).float()
         y_test_ints, y_test_pred_ints = convert_targets(y_test, y_test_pred)
         test_cm = confusion_matrix(y_test, y_test_pred_ints)
-        # test_cm_plot = wandb.plot.confusion_matrix(probs=None, y_true=y_test_ints, preds=y_test_pred_ints, class_names=["<=50K", ">50K"])
 
     test_acc, test_precision, test_recall, test_f1, test_roc_auc = get_performance(y_test, y_test_pred)
-    print(test_acc, test_precision, test_recall, test_f1)
+    print("Test accuracy: ", test_acc, "Test precision: ", test_precision, "Test recall: ", test_recall, "Test : F1 score",test_f1)
     return y_test_ints, y_test_pred_ints, test_acc, test_precision, test_recall, test_f1, test_roc_auc, test_cm
 
 def eval_model(network, dataset):
@@ -127,3 +126,22 @@ def get_per_class_accuracy(y_pred_ints, y_true_ints):
     test_class_0_accuracy = np.sum(_preds[class_0_indices] == _data_ints[class_0_indices]) / len(class_0_indices)
     test_class_1_accuracy = np.sum(_preds[class_1_indices] == _data_ints[class_1_indices]) / len(class_1_indices)
     return test_class_0_accuracy, test_class_1_accuracy
+
+def cm_class_acc(y_preds, y_true):
+    cm = confusion_matrix(y_true, y_preds)
+    tn, fp, fn, tp = cm.ravel()
+    _train_preds = np.array(y_preds)
+    _train_data_ints = np.array(y_true)
+    class_0_indices = np.where(_train_data_ints == 0)[0]
+    class_1_indices = np.where(_train_data_ints == 1)[0]
+    class_0_accuracy = np.sum(_train_preds[class_0_indices] == _train_data_ints[class_0_indices]) / len(class_0_indices)
+    class_1_accuracy = np.sum(_train_preds[class_1_indices] == _train_data_ints[class_1_indices]) / len(class_1_indices)
+
+    return class_0_accuracy, class_1_accuracy, cm, tn, fp, fn, tp
+
+def baseline(y):
+    # count the number of occurrences of 0
+    num_zeros = y.count(0)
+    # compute the percentage
+    result = (num_zeros / len(y))
+    return result

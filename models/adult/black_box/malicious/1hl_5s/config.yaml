@@ -7,7 +7,7 @@ _wandb:
   desc: null
   value:
     cli_version: 0.13.10
-    code_path: code/source/attacks/black_box_attack_validation_2.py
+    code_path: code/source/attacks/BB_attack.py
     framework: torch
     is_jupyter_run: false
     is_kaggle_kernel: false

@@ -54,4 +54,4 @@ parameters:
   percent_to_modify:
     values:
       - 0.01
-program: source/attacks/sign_modification_defense.py
+program: source/defenses/sign_modification_defense.py

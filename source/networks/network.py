@@ -43,64 +43,6 @@ class Net(nn.Module):
         return x.mean(dim=1) #view(-1)
 
 
-"""class MLP_Net(nn.Module):
-    def __init__(self, input_size, m, ratio, num_hidden_layers, dropout):
-        super().__init__()
-
-        if ratio == 'equal':
-            hidden_sizes = [int(m * input_size) for _ in range(num_hidden_layers)]
-            hidden_sizes += [0] * (4 - num_hidden_layers)
-        elif ratio == '4321':
-            if num_hidden_layers == 4:
-                hidden_sizes = [int(m * input_size * 4),
-                                int(m * input_size * 3),
-                                int(m * input_size * 2),
-                                int(m * input_size * 1)]
-            elif num_hidden_layers == 3:
-                hidden_sizes = [int(m * input_size * 3),
-                                int(m * input_size * 2),
-                                int(m * input_size * 1),
-                                0]
-            elif num_hidden_layers == 2:
-                hidden_sizes = [int(m * input_size * 2),
-                                int(m * input_size * 1),
-                                0,
-                                0]
-            elif num_hidden_layers == 1:
-                hidden_sizes = [int(m * input_size * 1),
-                                0,
-                                0,
-                                0]
-            else:
-                raise ValueError('Invalid number of layers')
-        else:
-            raise ValueError('Invalid ratio parameter')
-
-        self.dropout = nn.Dropout(dropout)
-        self.fcs = nn.ModuleList([nn.Linear(input_size, hidden_sizes[0])] + \
-                                 [nn.Linear(hidden_sizes[i - 1], hidden_sizes[i]) for i in range(1, num_hidden_layers)] + \
-                                 [nn.Linear(hidden_sizes[-2], 1)])
-        self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
-
-    def forward(self, x):
-        for i, fc in enumerate(self.fcs):
-            if i == 0:
-                x = fc(x)
-            elif i < len(self.fcs) - 1 and self.fcs[i-1].out_features != 0:
-                x = fc(x)
-                x = self.relu(x)
-                x = self.dropout(x)
-            elif i == len(self.fcs) - 1 and self.fcs[i-1].out_features != 0:
-                x = fc(x)
-                x = self.sigmoid(x)
-            else:
-                continue
-        return x.mean(dim=1)
-
-"""
-
-# Define your custom hook function
 
 
 class MLP_Net(nn.Module):
@@ -115,26 +57,14 @@ class MLP_Net(nn.Module):
                                  [nn.Linear(hidden_sizes[-1], 1)])
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
-        # Register a forward hook on each layer
-        # Register hooks for each fully connected layer
 
-
-        # Define custom hook function
-
-        # Register hooks for each fully connected layer
     def register_hooks(self):
         for fc in self.fcs:
             fc.register_forward_hook(self.forward_hook)
 
-        #self.fcs.register_forward_hook(self.save_activation)
-        #self.fc2.register_forward_hook(self.save_activation)
-        #self.fc3.register_forward_hook(self.save_activation)
-
     def forward_hook(self, module, input, output):
         # Store the output (i.e., activation) in the activations list
         self.activations.append(output)
-        # Print a message to check if the forward hook is being called
-        #print("Forward hook called. Activation shape:", output.shape)
 
     def remove_low_activations(self, threshold):
         # Set activations below the threshold to zero
@@ -181,9 +111,6 @@ class MLP_Net(nn.Module):
         # s is the secret vector (dictionary), lambda_s is the penalty magnitude
         total_penalty = 0
         targets = OrderedDict(s)
-        #constraints = targets * params
-        #size = sum(p.numel() for _, p in self.named_parameters() if p.requires_grad)
-        #penalty = torch.abs(torch.where(constraints > 0, constraints, torch.zeros(size)))
         for name, param in params.items():
             if name in targets:
                  #Extract the corresponding tensor from s
@@ -201,30 +128,6 @@ class MLP_Net(nn.Module):
                 raise KeyError(f"Parameter {name} not found in secret vector s")
         return total_penalty * lambda_s
 
-    """
-    def sign_term(self, params, targets):
-        # malicious term that penalizes sign mismatch between x and params
-        # x should be a binary (+1, -1) vector
-        size = sum(p.numel() for _, p in self.named_parameters() if p.requires_grad)
-        if isinstance(params, dict):
-            params = torch.cat([p.flatten() for p in params.values() if p.ndim > 1])
-        if isinstance(targets, dict):
-            targets = torch.cat([t.flatten() for t in targets.values() if t.ndim > 1])
-
-
-        #sys.stderr.write(f'Number of parameters correlated {size}\n')
-
-        #targets = targets.flatten()
-        targets = targets[:size]
-        params = params[:size]
-
-        # element-wise multiplication
-        constraints = targets * params
-        penalty = torch.where(constraints > 0, torch.zeros_like(constraints), constraints)
-        penalty = torch.abs(penalty)
-        correct_sign = torch.mean((constraints > 0).float())
-        return torch.mean(penalty), correct_sign
-        """
 
 class MLP_Net_x(nn.Module):
     def __init__(self, input_size, layer_size, num_hidden_layers, dropout):

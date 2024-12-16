@@ -13,14 +13,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
 from source.utils.Configuration import Configuration
-from source.utils.wandb_helpers import load_config_file
 from source.data_loading.data_loading import MyDataset
-from source.attacks.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params, save_model
-from source.attacks.black_box_helpers import cm_class_acc, baseline
-from source.attacks.similarity import calculate_similarity
-from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set
+from source.helpers.CVE_helpers import compute_correlation_cost, dataframe_to_param_shape, reconstruct_from_params, save_model
+from source.similarity.similarity import calculate_similarity
+from source.evaluation.evaluation import get_performance, val_set_eval, eval_on_test_set, cm_class_acc, baseline
 from source.networks.network import build_mlp, build_optimizer
-from source.attacks.measure_param_changes import analyze_param_change_effect
+from source.helpers.measure_param_changes import analyze_param_change_effect
 
 
 # Set fixed random number seed
@@ -40,8 +38,6 @@ def average_weights(models):
 def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, attack_model, optimizer, fold, epoch, threshold, calc_class_weights):
     class_weights = config.class_weights
     lambda_s = config.lambda_s
-    #class_weights = config.parameters['class_weights']['values'][0]
-    #lambda_s = config.parameters['lambda_s']['values'][0]
 
 
     cumu_loss, train_acc, train_prec, train_recall, train_f1 = 0, 0, 0, 0, 0
@@ -54,7 +50,6 @@ def train_epoch(config, network, train_dataloader, val_dataloader, s_vector, att
         criterion = nn.BCELoss(reduction='none')
 
     epoch_time_s = time.time()  # Save the current time
-    #params = network.state_dict()
 
     #FULL PASS OVER TRAINING DATA
     for i, (data, targets) in enumerate(train_dataloader):
@@ -122,7 +117,9 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     class_weights = config.class_weights  # Retrieves the class weights from the config
     dataset = config.dataset  # Retrieves the dataset from the config
     lambda_s = config.lambda_s  # Retrieves the lambda_s parameter from the config
+    reconstruction_method = config.reconstruction_method
     """
+    FOR DEBUGGING USE:
     layer_size = config.parameters['layer_size']['values'][0]
     num_hidden_layers = config.parameters['num_hidden_layers']['values'][0]
     dropout = config.parameters['dropout']['values'][0]
@@ -191,7 +188,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
     best_epoch = -1  # To track the epoch of the best model
     best_epoch_results = None  # To store the metrics of the best epoch
     results_path = os.path.join(Configuration.RES_DIR, dataset, 'correlated_value_encoding_attack')
-    results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty.csv'
+    results_file = f'{num_hidden_layers}hl_{layer_size}s_{lambda_s}penalty_recon_method_{reconstruction_method}.csv'
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     with open(os.path.join(results_path, results_file), 'w', newline='') as file:
@@ -221,7 +218,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
             base_correlation = compute_correlation_cost(base_model, s_vector)
             mal_correlation = compute_correlation_cost(mal_network, s_vector)
 
-            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret, hidden_cat_cols)
+            exfiltrated_data = reconstruct_from_params(mal_network, column_names, n_rows_hidden_weights, secret, hidden_cat_cols, reconstruction_method, data_to_steal)
 
             similarity, num_similarity, cat_similarity = calculate_similarity(data_to_steal, exfiltrated_data, hidden_num_cols, hidden_cat_cols)
             print("***Numeric columns similarity: ", num_similarity, "***Categorical columns similarity: ", cat_similarity)
@@ -311,6 +308,7 @@ def train(config, X_train, y_train, X_test, y_test, secret, column_names, data_t
                  'Malicious Model: Test Set FN': mal_test_fn,
                  'Malicious Model: Weights to Secret Correlation': mal_correlation,
                  'Similarity after epoch': similarity,
+                 'Reconstruction Method': reconstruction_method,
                  'Numerical Columns Similarity after epoch': num_similarity,
                  'Categorical Columns Similarity after epoch': cat_similarity,
                  'Base Model: Validation set loss': base_val_loss_e,
