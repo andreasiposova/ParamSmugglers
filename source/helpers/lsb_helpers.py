@@ -8,7 +8,6 @@ from reedsolo import RSCodec
 from source.helpers.compress_encrypt import decrypt_data, decompress_gzip, rs_decode_and_decompress
 from source.helpers.general_helper_functions import float2bin32
 
-
 def reconstruct_from_lsbs(bits_params, bits):
     data = np.asarray(bits_params, dtype=int)  # .reshape(total_params*8, 8)
     data = np.packbits(data.astype(np.uint8))
