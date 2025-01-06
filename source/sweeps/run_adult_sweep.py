@@ -22,4 +22,3 @@ sweep_id = run_sweep(entity, project, adult_benign_sweep_config_path)
 # rename all the sweep runs of the sweep for the adult dataset based on their hyperparameters (each run has a unique name based on the hyperparameters used to configure the run)
 rename_sweep_runs(entity, project, sweep_id=sweep_id) #sweep id can be set to any sweep id in the project
 save_sweep_models(entity, project, sweep_id, 'adult', 'lsb', 'benign')
-
