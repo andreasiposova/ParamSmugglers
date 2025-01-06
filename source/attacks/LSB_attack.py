@@ -472,6 +472,8 @@ def run_lsb_attack_eval():
     n_ecc = attack_config.n_ecc
     n_lsbs = attack_config.n_lsbs
     n_defense_lsbs = attack_config.n_defense_lsbs
+    num_hidden_layers = attack_config.num_hidden_layers
+    layer_size = attack_config.layer_size
     wandb.log({"Number of defense LSBs": n_defense_lsbs})
 
     # Load the preprocessed data
@@ -491,6 +493,12 @@ def run_lsb_attack_eval():
 
     if n_lsbs < n_defense_lsbs:
         print(f"Skipping run: param_a ({n_lsbs}) < param_b ({n_defense_lsbs})")
+        # Finish the wandb run and exit
+        wandb.finish()
+        sys.exit(0)
+
+    if num_hidden_layers != layer_size:
+        print(f"Skipping run: param_a ({num_hidden_layers}) != param_b ({layer_size})")
         # Finish the wandb run and exit
         wandb.finish()
         sys.exit(0)
